@@ -1,0 +1,187 @@
+import { useState, useCallback, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Scale, RefreshCw, Plug, AlertTriangle } from 'lucide-react';
+import { useBalanca } from '@/hooks/useBalanca';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
+
+interface ServeServiceDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAddToCart?: (item: { tempo: string; fichaTexto: string; fichaValor: number }) => void;
+}
+
+export function ServeServiceDialog({ open, onOpenChange, onAddToCart }: ServeServiceDialogProps) {
+  const {
+    config,
+    status,
+    tentativa,
+    lerPeso,
+    garantirConexaoComTentativas,
+    parearNovoDispositivo,
+  } = useBalanca();
+
+  const [peso, setPeso] = useState<number | null>(null);
+  const [pesoManual, setPesoManual] = useState('');
+  const [lendo, setLendo] = useState(false);
+  const [tentouConectar, setTentouConectar] = useState(false);
+
+  const pesoFinal = peso ?? (parseFloat(pesoManual.replace(',', '.')) || 0);
+
+  const conectada = status === 'conectada';
+  const falha = status === 'falha';
+  const tentando = status === 'tentando' || status === 'conectando';
+
+  // Auto-connect when dialog opens if not connected
+  useEffect(() => {
+    if (open && !conectada && !tentando && !tentouConectar) {
+      setTentouConectar(true);
+      garantirConexaoComTentativas(3);
+    }
+  }, [open, conectada, tentando, tentouConectar, garantirConexaoComTentativas]);
+
+  // Reset state when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setTentouConectar(false);
+    }
+  }, [open]);
+
+  const statusLabel = () => {
+    if (tentando) return { text: tentativa > 0 ? `Tentando (${tentativa}/3)` : 'Conectando...', variant: 'secondary' as const };
+    if (conectada) return { text: 'Conectada', variant: 'default' as const };
+    if (falha) return { text: 'Falha', variant: 'destructive' as const };
+    return { text: 'Desconectada', variant: 'outline' as const };
+  };
+
+  const handleLerPeso = useCallback(async () => {
+    setLendo(true);
+    setPeso(null);
+
+    const resultado = await lerPeso(3);
+    if (resultado !== null && resultado > 0) {
+      setPeso(resultado);
+    } else {
+      toast({ title: 'Não foi possível ler o peso', description: 'Digite o peso manualmente.', variant: 'destructive' });
+    }
+    setLendo(false);
+  }, [lerPeso]);
+
+  const handleConectar = useCallback(async () => {
+    await parearNovoDispositivo();
+  }, [parearNovoDispositivo]);
+
+  const handleAdicionar = useCallback(() => {
+    if (pesoFinal <= 0) {
+      toast({ title: 'Peso inválido', description: 'Informe ou leia o peso antes de adicionar.', variant: 'destructive' });
+      return;
+    }
+
+    if (onAddToCart) {
+      onAddToCart({
+        tempo: `Self Service ${pesoFinal.toFixed(3)}kg`,
+        fichaTexto: `Self Service ${pesoFinal.toFixed(3)}kg`,
+        fichaValor: 0, // valor será calculado pelo produto
+      });
+    }
+
+    toast({
+      title: 'Peso adicionado ao carrinho',
+      description: `${pesoFinal.toFixed(3)} kg`,
+    });
+
+    setPeso(null);
+    setPesoManual('');
+  }, [pesoFinal, onAddToCart]);
+
+  const handleReset = () => {
+    setPeso(null);
+    setPesoManual('');
+  };
+
+  const sl = statusLabel();
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Scale className="h-5 w-5 text-primary" />
+            COMIDA KG
+            <Badge variant={sl.variant} className="ml-auto text-xs">{sl.text}</Badge>
+          </DialogTitle>
+          <DialogDescription>
+            Leia o peso da balança e calcule o valor.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Show connect button only when connection failed */}
+          {falha && (
+            <Button
+              variant="outline"
+              onClick={handleConectar}
+              className="w-full"
+            >
+              <Plug className="h-4 w-4 mr-2" />
+              Conectar balança
+            </Button>
+          )}
+
+          {tentando && (
+            <div className="p-3 bg-muted rounded-lg text-center text-sm text-muted-foreground">
+              <RefreshCw className="h-4 w-4 animate-spin inline mr-2" />
+              Tentando conectar à balança...
+              {tentativa > 0 && ` (tentativa ${tentativa}/3)`}
+            </div>
+          )}
+
+          {conectada && (
+            <Button onClick={handleLerPeso} disabled={lendo} className="w-full">
+              <RefreshCw className={`h-4 w-4 mr-2 ${lendo ? 'animate-spin' : ''}`} />
+              {lendo ? 'Lendo...' : 'Ler Peso da Balança'}
+            </Button>
+          )}
+
+          {peso !== null ? (
+            <div className="p-3 bg-muted rounded-lg text-center">
+              <p className="text-sm text-muted-foreground">Peso lido:</p>
+              <p className="text-2xl font-bold text-foreground">{peso.toFixed(3)} kg</p>
+            </div>
+          ) : (
+            <div>
+              <Label className="text-sm">Peso manual (kg)</Label>
+              <Input
+                type="number"
+                step="0.001"
+                value={pesoManual}
+                onChange={e => setPesoManual(e.target.value)}
+                placeholder="Ex: 0.500"
+              />
+            </div>
+          )}
+
+          <div className="p-3 border rounded-lg space-y-1">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Peso:</span>
+              <span className="font-medium">{pesoFinal.toFixed(3)} kg</span>
+            </div>
+            <p className="text-xs text-muted-foreground pt-1">O valor total será calculado pelo preço do produto.</p>
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={handleAdicionar} className="flex-1" disabled={pesoFinal <= 0}>
+              Adicionar
+            </Button>
+            <Button variant="outline" onClick={handleReset}>
+              Limpar
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
