@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { getSupabaseClient } from '@/hooks/useVouchers';
+import { useUserSession } from '@/contexts/UserSessionContext';
 
 interface ProdutoAtivo {
   id: string;
@@ -52,6 +53,7 @@ interface EntradaItem {
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function EntradaMercadoriaTab() {
+  const { user, access } = useUserSession();
   const [produtos, setProdutos] = useState<ProdutoAtivo[]>([]);
   const [entradas, setEntradas] = useState<EntradaHeader[]>([]);
   const [loading, setLoading] = useState(true);
@@ -172,7 +174,7 @@ export default function EntradaMercadoriaTab() {
       const supabase = await getSupabaseClient();
       const { data: entrada, error: errH } = await supabase
         .from('entradas_mercadoria' as any)
-        .insert({ numero_nota: numeroNota.trim(), data_compra: dataCompra, observacao: observacao.trim() || null } as any)
+        .insert({ numero_nota: numeroNota.trim(), data_compra: dataCompra, observacao: observacao.trim() || null, usuario_id: user?.id || null, usuario_nome: access?.nome || null } as any)
         .select('id')
         .single();
       if (errH || !entrada) throw errH || new Error('Erro ao salvar cabeçalho');
