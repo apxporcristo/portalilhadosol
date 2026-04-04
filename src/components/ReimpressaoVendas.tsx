@@ -27,6 +27,10 @@ interface VendaItem {
   telefone_cliente: string | null;
   codigo_venda: string;
   created_at: string;
+  comanda_id: string | null;
+  comanda_numero: string | null;
+  pulseira_id: string | null;
+  pulseira_numero: string | null;
 }
 
 interface VendaGroup {
@@ -38,6 +42,7 @@ interface VendaGroup {
   created_at: string;
   atendente: string | null;
   cliente: string | null;
+  origem: string;
 }
 
 export function ReimpressaoVendas() {
@@ -80,6 +85,12 @@ export function ReimpressaoVendas() {
         if (!key) continue;
         if (!groups[key]) {
           const createdAt = new Date(item.created_at);
+          let origem = 'Venda única';
+          if (item.pulseira_id || item.pulseira_numero) {
+            origem = item.pulseira_numero ? `Pulseira (#${item.pulseira_numero})` : 'Pulseira';
+          } else if (item.comanda_id || item.comanda_numero) {
+            origem = item.comanda_numero ? `Comanda (#${item.comanda_numero})` : 'Comanda';
+          }
           groups[key] = {
             codigo_venda: key,
             items: [],
@@ -89,6 +100,7 @@ export function ReimpressaoVendas() {
             created_at: item.created_at,
             atendente: item.nome_atendente,
             cliente: item.nome_cliente,
+            origem,
           };
         }
         groups[key].items.push(item);
@@ -120,6 +132,7 @@ export function ReimpressaoVendas() {
       v.codigo_venda.toLowerCase().includes(q) ||
       (v.cliente || '').toLowerCase().includes(q) ||
       (v.atendente || '').toLowerCase().includes(q) ||
+      v.origem.toLowerCase().includes(q) ||
       v.total.toFixed(2).includes(q) ||
       v.items.some(i => i.produto_nome.toLowerCase().includes(q))
     );
@@ -271,6 +284,7 @@ export function ReimpressaoVendas() {
                       <Badge variant="outline" className="text-xs">{venda.hora}</Badge>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                      <Badge variant="secondary" className="text-[10px]">{venda.origem}</Badge>
                       {venda.cliente && <span>{venda.cliente}</span>}
                       <span>• {venda.items.length} item(ns)</span>
                     </div>
