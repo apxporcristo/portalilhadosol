@@ -73,6 +73,11 @@ const App = () => (
                   <PulseirasPage />
                 </ProtectedRoute>
               } />
+              <Route path="/caixa" element={
+                <ProtectedRoute>
+                  <CaixaPage />
+                </ProtectedRoute>
+              } />
               <Route path="/install" element={<Install />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
