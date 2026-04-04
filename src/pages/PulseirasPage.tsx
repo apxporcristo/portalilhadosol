@@ -53,6 +53,7 @@ export default function PulseirasPage() {
 
   // Busca saldo
   const [buscaSaldo, setBuscaSaldo] = useState('');
+  const [mostrarTodosSaldos, setMostrarTodosSaldos] = useState(false);
 
   useEffect(() => { listarAbertas(); listarFechadas(); }, [listarAbertas, listarFechadas]);
 
