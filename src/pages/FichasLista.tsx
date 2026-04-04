@@ -1438,7 +1438,6 @@ export default function FichasLista() {
                   nome_cliente: nomeCliente.trim() || null,
                   nome_atendente: userName || null,
                   codigo_venda: codigoVenda,
-                  comanda_id: confirmComanda.id,
                   comanda_numero: String(confirmComanda.numero),
                 });
               }
