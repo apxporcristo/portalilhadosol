@@ -1471,6 +1471,7 @@ export default function FichasLista() {
                   },
                 });
               }
+              logOrigemVenda({ comandaId: confirmComanda.id, comandaNumero: confirmComanda.numero }, codigoVenda);
             } catch (e) { console.warn('[Comanda] fichas_impressas insert falhou:', e); }
             toast({ title: `${totalItems} item(ns) lançados na comanda #${confirmComanda.numero}` });
             clearCart();
