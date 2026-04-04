@@ -131,7 +131,7 @@ export default function PulseirasPage() {
   const handleItem = async () => {
     if (!detalhe || !iProdutoNome.trim() || iQtd < 1 || !iValor) return;
     const ok = await registrarItem(detalhe.id, { produto_nome: iProdutoNome.trim(), quantidade: iQtd, valor_unitario: parseFloat(iValor), observacao: iObs || undefined });
-    if (ok) { setItemModal(false); setIProdutoNome(''); setIQtd(1); setIValor(''); setIObs(''); }
+    if (ok) { setIProdutoNome(''); setIQtd(1); setIValor(''); setIObs(''); setItemFormOpen(false); }
   };
 
   const handleConsumo = async () => {
