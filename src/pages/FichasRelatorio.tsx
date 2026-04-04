@@ -71,7 +71,7 @@ export default function FichasRelatorio() {
       
       return true;
     });
-  }, [registros, dataInicio, dataFim, categoriaFilter, produtoFilter]);
+  }, [registros, dataInicio, dataFim, categoriaFilter]);
 
   // Group by category, then by product
   const grouped = useMemo(() => {
