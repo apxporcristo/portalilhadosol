@@ -116,6 +116,7 @@ export function ReimpressaoVendas() {
   const [origemFilter, setOrigemFilter] = useState<string>('todas');
   const [selectedVenda, setSelectedVenda] = useState<VendaGroup | null>(null);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
+  const [detailLoading, setDetailLoading] = useState(false);
   const [printing, setPrinting] = useState(false);
   const { ensureBluetoothConnected, writeToCharacteristic } = usePrinterContext();
   const { produtos } = useFichasConsumo();
@@ -185,6 +186,41 @@ export function ReimpressaoVendas() {
     setSearch('');
     fetchVendasDoDia();
   };
+
+  const loadVendaDetalhe = useCallback(async (venda: VendaGroup) => {
+    setSelectedItemIds(new Set());
+    setSelectedVenda(venda);
+    setDetailLoading(true);
+
+    try {
+      const sbClient = await getSupabaseClient();
+      const { data, error } = await sbClient
+        .from('fichas_impressas' as any)
+        .select('*')
+        .eq('codigo_venda', venda.codigo_venda)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      const itensDetalhados = ((data || []) as any[]).map(normalizeVendaItem);
+
+      if (itensDetalhados.length > 0) {
+        const totalDetalhado = itensDetalhados.reduce((sum, item) => sum + item.valor_total, 0);
+        setSelectedVenda({
+          ...venda,
+          items: itensDetalhados,
+          total: totalDetalhado,
+          atendente: itensDetalhados[0]?.nome_atendente ?? venda.atendente,
+          cliente: itensDetalhados[0]?.nome_cliente ?? venda.cliente,
+        });
+      }
+    } catch (err) {
+      console.error('Erro ao carregar detalhe da venda:', err);
+      toast({ title: 'Erro', description: 'Não foi possível carregar os itens da venda.', variant: 'destructive' });
+    } finally {
+      setDetailLoading(false);
+    }
+  }, []);
 
   const filteredVendas = useMemo(() => {
     let result = vendas;
@@ -363,10 +399,7 @@ export function ReimpressaoVendas() {
               filteredVendas.map(venda => (
                 <button
                   key={venda.codigo_venda}
-                  onClick={() => {
-                    setSelectedVenda(venda);
-                    setSelectedItemIds(new Set());
-                  }}
+                  onClick={() => loadVendaDetalhe(venda)}
                   className="w-full flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors text-left"
                 >
                   <div className="flex-1 min-w-0">
@@ -415,36 +448,43 @@ export function ReimpressaoVendas() {
                 {selectedVenda.cliente && <span>• Cliente: {selectedVenda.cliente}</span>}
               </div>
 
-              <div className="border rounded-lg divide-y">
-                {selectedVenda.items.map(item => {
-                  const produto = produtos.find(p => p.id === item.produto_id);
-                  const isPrintable = (produto as any)?.imprimir_ficha !== false;
-                  const isSelected = selectedItemIds.has(item.id);
-                  return (
-                    <label key={item.id} className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/50 transition-colors">
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={(checked) => {
-                          setSelectedItemIds(prev => {
-                            const next = new Set(prev);
-                            if (checked) next.add(item.id);
-                            else next.delete(item.id);
-                            return next;
-                          });
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm font-medium">{(item.produto_nome || '').split(' | ')[0]}</span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">{item.quantidade}x R$ {Number(item.valor_unitario).toFixed(2).replace('.', ',')}</span>
-                          {isPrintable && <Badge variant="secondary" className="text-[10px]">Imprimível</Badge>}
+              {detailLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              ) : (
+                <div className="border rounded-lg divide-y">
+                  {selectedVenda.items.map(item => {
+                    const produto = produtos.find(p => p.id === item.produto_id);
+                    const isPrintable = (produto as any)?.imprimir_ficha !== false;
+                    const isSelected = selectedItemIds.has(item.id);
+                    return (
+                      <label key={item.id} className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(checked) => {
+                            setSelectedItemIds(prev => {
+                              const next = new Set(prev);
+                              if (checked) next.add(item.id);
+                              else next.delete(item.id);
+                              return next;
+                            });
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm font-medium">{(item.produto_nome || '').split(' | ')[0]}</span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-muted-foreground">{item.quantidade}x R$ {Number(item.valor_unitario).toFixed(2).replace('.', ',')}</span>
+                            {isPrintable && <Badge variant="secondary" className="text-[10px]">Imprimível</Badge>}
+                          </div>
                         </div>
-                      </div>
-                      <span className="text-sm font-bold text-primary">R$ {Number(item.valor_total).toFixed(2).replace('.', ',')}</span>
-                    </label>
-                  );
-                })}
-              </div>
+                        <span className="text-sm font-bold text-primary">R$ {Number(item.valor_total).toFixed(2).replace('.', ',')}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
 
               <div className="flex items-center justify-between border-t pt-3">
                 <span className="font-semibold">Total</span>
@@ -458,7 +498,7 @@ export function ReimpressaoVendas() {
               variant="outline"
               className="w-full sm:w-auto"
               onClick={() => selectedVenda && handleReprint(selectedVenda, 'all')}
-              disabled={printing}
+              disabled={printing || detailLoading}
             >
               <FileText className="h-4 w-4 mr-2" />
               {printing ? 'Imprimindo...' : 'Reimprimir tudo (conferência)'}
@@ -467,7 +507,7 @@ export function ReimpressaoVendas() {
               <Button
                 className="w-full sm:w-auto"
                 onClick={() => selectedVenda && handleReprint(selectedVenda, 'selected')}
-                disabled={printing}
+                disabled={printing || detailLoading}
               >
                 <Printer className="h-4 w-4 mr-2" />
                 {printing ? 'Imprimindo...' : `Reimprimir fichas (${selectedItemIds.size})`}
