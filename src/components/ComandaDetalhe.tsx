@@ -224,7 +224,7 @@ export function ComandaDetalhe({ comanda, open, onOpenChange, onPrintItems, onCl
             </div>
           )}
 
-          <div className="space-y-0">
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-0">
             {loading ? (
               <p className="text-center text-muted-foreground py-4">Carregando...</p>
             ) : groupedItems.length === 0 ? (
@@ -241,9 +241,9 @@ export function ComandaDetalhe({ comanda, open, onOpenChange, onPrintItems, onCl
                   <div key={group.key}>
                     <div className="flex items-start justify-between py-2">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold">{group.produto_nome}</span>
-                          <div className="flex items-center gap-1 ml-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-semibold truncate">{group.produto_nome}</span>
+                          <div className="flex items-center gap-1 shrink-0">
                             <span className="text-sm font-bold text-primary whitespace-nowrap">
                               R$ {group.valor_total.toFixed(2).replace('.', ',')}
                             </span>
@@ -281,7 +281,7 @@ export function ComandaDetalhe({ comanda, open, onOpenChange, onPrintItems, onCl
             )}
           </div>
 
-          <div className="flex items-center justify-between border-t pt-3">
+          <div className="flex items-center justify-between border-t pt-3 shrink-0">
             <span className="font-semibold">Total</span>
             <span className="text-lg font-bold text-primary">R$ {totalComanda.toFixed(2).replace('.', ',')}</span>
           </div>
