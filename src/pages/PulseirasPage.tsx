@@ -258,6 +258,36 @@ export default function PulseirasPage() {
               </CardContent>
             </Card>
 
+            {/* Ações */}
+            <Card>
+              <CardContent className="pt-4">
+                <div className="flex flex-wrap gap-2">
+                  {isAtiva && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/fichas?pulseira_id=${detalhe.id}&pulseira_numero=${encodeURIComponent(detalhe.numero)}&pulseira_nome=${encodeURIComponent(detalhe.nome_cliente)}`)}>
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Fichas
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setAbateModal(true)}><DollarSign className="h-3.5 w-3.5 mr-1" /> Abate de Crédito</Button>
+                      <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}><History className="h-3.5 w-3.5 mr-1" /> Histórico</Button>
+                      <Button size="sm" variant="destructive" onClick={() => fecharPulseira(detalhe.id, { fechada_por: userSession?.access?.user_id, fechada_por_nome: userSession?.access?.nome || userSession?.user?.email || undefined })}>Fechar Pulseira</Button>
+                      {!temItens && (
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
+                      )}
+                    </>
+                  )}
+                  {isFechada && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}><History className="h-3.5 w-3.5 mr-1" /> Histórico</Button>
+                      {detalhe.pode_reabrir && <Button size="sm" variant="outline" onClick={() => reabrirPulseira(detalhe.id, { reaberta_por: userSession?.access?.user_id, reaberta_por_nome: userSession?.access?.nome || userSession?.user?.email || undefined })}><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reabrir</Button>}
+                      {!temItens && (
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
+                      )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Saldo por Produto — clicável para baixa */}
             <Card>
               <CardHeader className="pb-2">
@@ -305,36 +335,6 @@ export default function PulseirasPage() {
                     </Table>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Ações */}
-            <Card>
-              <CardContent className="pt-4">
-                <div className="flex flex-wrap gap-2">
-                  {isAtiva && (
-                    <>
-                      <Button size="sm" variant="outline" onClick={() => navigate(`/fichas?pulseira_id=${detalhe.id}&pulseira_numero=${encodeURIComponent(detalhe.numero)}&pulseira_nome=${encodeURIComponent(detalhe.nome_cliente)}`)}>
-                        <Plus className="h-3.5 w-3.5 mr-1" /> Fichas
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => setAbateModal(true)}><DollarSign className="h-3.5 w-3.5 mr-1" /> Abate de Crédito</Button>
-                      <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}><History className="h-3.5 w-3.5 mr-1" /> Histórico</Button>
-                      <Button size="sm" variant="destructive" onClick={() => fecharPulseira(detalhe.id, { fechada_por: userSession?.access?.user_id, fechada_por_nome: userSession?.access?.nome || userSession?.user?.email || undefined })}>Fechar Pulseira</Button>
-                      {!temItens && (
-                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
-                      )}
-                    </>
-                  )}
-                  {isFechada && (
-                    <>
-                      <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}><History className="h-3.5 w-3.5 mr-1" /> Histórico</Button>
-                      {detalhe.pode_reabrir && <Button size="sm" variant="outline" onClick={() => reabrirPulseira(detalhe.id, { reaberta_por: userSession?.access?.user_id, reaberta_por_nome: userSession?.access?.nome || userSession?.user?.email || undefined })}><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reabrir</Button>}
-                      {!temItens && (
-                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
-                      )}
-                    </>
-                  )}
-                </div>
               </CardContent>
             </Card>
           </>
