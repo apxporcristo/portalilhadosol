@@ -261,9 +261,7 @@ export default function PulseirasPage() {
                           <TableHead>Produto</TableHead>
                           <TableHead className="text-center">Comprado</TableHead>
                           <TableHead className="text-center">Consumido</TableHead>
-                          <TableHead className="text-center">Baixado</TableHead>
                           <TableHead className="text-center">Disponível</TableHead>
-                          <TableHead className="text-right">Valor Comprado</TableHead>
                           <TableHead className="text-right">Valor Disponível</TableHead>
                         </TableRow>
                       </TableHeader>
