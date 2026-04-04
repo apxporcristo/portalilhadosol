@@ -461,10 +461,22 @@ export function usePulseiras() {
       });
     }
 
-    const [resumo, hist] = await Promise.all([
-      carregarSaldosPadronizados(db, pulseiraId),
-      carregarHistoricoPadronizado(db, pulseiraId, pulseiraData as any),
-    ]);
+    let resumo: PulseiraProdutoResumo[] = [];
+    let hist: PulseiraHistorico[] = [];
+    try {
+      [resumo, hist] = await Promise.all([
+        carregarSaldosPadronizados(db, pulseiraId).catch(err => {
+          console.warn('[Pulseiras] Erro ao carregar saldos (ignorado):', err?.message);
+          return [] as PulseiraProdutoResumo[];
+        }),
+        carregarHistoricoPadronizado(db, pulseiraId, pulseiraData as any).catch(err => {
+          console.warn('[Pulseiras] Erro ao carregar histórico (ignorado):', err?.message);
+          return [] as PulseiraHistorico[];
+        }),
+      ]);
+    } catch (err: any) {
+      console.warn('[Pulseiras] Erro geral ao carregar detalhes (ignorado):', err?.message);
+    }
 
     setResumoProdutos(resumo);
     setHistorico(hist);
