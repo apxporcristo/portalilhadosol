@@ -251,11 +251,11 @@ export default function EntradaMercadoriaTab() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Produto</TableHead>
-                      <TableHead className="w-20 text-center">Qtd</TableHead>
-                      <TableHead className="w-28 text-right">Compra</TableHead>
-                      <TableHead className="w-24 text-center">% Margem</TableHead>
-                      <TableHead className="w-28 text-right">Venda</TableHead>
+                      <TableHead className="text-center">Produto</TableHead>
+                      <TableHead className="w-24 text-center">Qtd</TableHead>
+                      <TableHead className="w-32 text-center">Compra</TableHead>
+                      <TableHead className="w-28 text-center">% Margem</TableHead>
+                      <TableHead className="w-32 text-center">Venda</TableHead>
                       <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
