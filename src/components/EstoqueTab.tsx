@@ -93,7 +93,7 @@ export default function EstoqueTab() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Categoria</TableHead>
+              
               <TableHead>Produto</TableHead>
               <TableHead className="text-center">Comprado</TableHead>
               <TableHead className="text-center">Vendido</TableHead>
