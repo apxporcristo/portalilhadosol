@@ -230,6 +230,7 @@ export default function FichasAdmin() {
       obs: (p as any).obs || '',
       imprimir_ficha: (p as any).imprimir_ficha ?? true,
       enviar_para_kds: (p as any).enviar_para_kds ?? false,
+      estoque_negativo: (p as any).estoque_negativo ?? false,
     });
     setShowProdModal(true);
   };
