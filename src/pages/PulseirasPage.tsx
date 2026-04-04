@@ -445,7 +445,7 @@ export default function PulseirasPage() {
                           <span className="text-muted-foreground text-xs">{formatDate(h.data_evento)}</span>
                         </div>
                         <p>{h.descricao_evento || '—'}</p>
-                        {h.usuario_nome && <p className="text-xs text-muted-foreground">por {h.usuario_nome}</p>}
+                        <p className="text-xs text-muted-foreground">por {h.usuario_nome || 'Usuário não informado'}</p>
                       </div>
                       <div className="text-right shrink-0">
                         {(h.quantidade ?? 0) > 0 && <span className="text-xs">Qtd: {h.quantidade}</span>}
