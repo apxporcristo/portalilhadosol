@@ -531,6 +531,14 @@ export default function FichasAdmin() {
               <BarChart3 className="h-4 w-4" />
               Relatório
             </TabsTrigger>
+            <TabsTrigger value="entradas" className="flex items-center gap-1">
+              <Truck className="h-4 w-4" />
+              Entrada
+            </TabsTrigger>
+            <TabsTrigger value="estoque" className="flex items-center gap-1">
+              <Warehouse className="h-4 w-4" />
+              Estoque
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="produtos" className="mt-6 space-y-6">
