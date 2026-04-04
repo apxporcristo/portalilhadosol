@@ -168,9 +168,9 @@ export function ReimpressaoVendas() {
       dataCmd, normalize('** REIMPRESSAO **'), '\n',
       titleCmd, normalize('Ficha de consumo'), '\n',
       subtitleCmd, normalize(`Categoria: ${item.categoria_nome}`), '\n',
-      numberCmd, normalize(item.produto_nome.split(' | ')[0]), '\n',
+      numberCmd, normalize((item.produto_nome || '').split(' | ')[0]), '\n',
     ];
-    const parts = item.produto_nome.split(' | ');
+    const parts = (item.produto_nome || '').split(' | ');
     if (parts.length > 1) {
       lines.push('\x1D\x21\x00', '- - - - - - - - - - - - - - - -\n');
       const comps = parts.slice(1).join(' | ').split(', ');
