@@ -132,6 +132,7 @@ export function ReimpressaoVendas() {
       v.codigo_venda.toLowerCase().includes(q) ||
       (v.cliente || '').toLowerCase().includes(q) ||
       (v.atendente || '').toLowerCase().includes(q) ||
+      v.origem.toLowerCase().includes(q) ||
       v.total.toFixed(2).includes(q) ||
       v.items.some(i => i.produto_nome.toLowerCase().includes(q))
     );
