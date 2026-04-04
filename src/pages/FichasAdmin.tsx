@@ -617,6 +617,13 @@ export default function FichasAdmin() {
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          {(p as any).kit ? (
+                            <Badge variant="outline" className="text-xs">{(p as any).quantidade_a_baixar ?? 1}x</Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {(p as any).tem_complementos ? (
                             <Badge variant="outline" className="cursor-pointer" onClick={() => setVinculoProdId(p.id)}>
                               <Link2 className="h-3 w-3 mr-1" />
