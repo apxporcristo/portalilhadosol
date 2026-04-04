@@ -604,7 +604,6 @@ export default function FichasLista() {
               nome_cliente: pulseiraContextNome || null,
               nome_atendente: userName || null,
               codigo_venda: codigoVenda,
-              pulseira_id: pulseiraContextId,
               pulseira_numero: pulseiraContextNumero,
             });
           }
