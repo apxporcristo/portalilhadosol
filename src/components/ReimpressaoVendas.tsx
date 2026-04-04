@@ -43,6 +43,7 @@ interface VendaGroup {
   atendente: string | null;
   cliente: string | null;
   origem: string;
+  origemKey: string;
 }
 
 export function ReimpressaoVendas() {
@@ -50,6 +51,7 @@ export function ReimpressaoVendas() {
   const [loading, setLoading] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
   const [search, setSearch] = useState('');
+  const [origemFilter, setOrigemFilter] = useState<string>('todas');
   const [selectedVenda, setSelectedVenda] = useState<VendaGroup | null>(null);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
   const [printing, setPrinting] = useState(false);
@@ -96,6 +98,7 @@ export function ReimpressaoVendas() {
             atendente: item.nome_atendente,
             cliente: item.nome_cliente,
             origem,
+            origemKey: item.origem_venda || 'venda_unica',
           };
         }
         groups[key].items.push(item);
@@ -121,17 +124,28 @@ export function ReimpressaoVendas() {
   };
 
   const filteredVendas = useMemo(() => {
-    if (!search.trim()) return vendas;
-    const q = search.toLowerCase();
-    return vendas.filter(v =>
-      v.codigo_venda.toLowerCase().includes(q) ||
-      (v.cliente || '').toLowerCase().includes(q) ||
-      (v.atendente || '').toLowerCase().includes(q) ||
-      v.origem.toLowerCase().includes(q) ||
-      v.total.toFixed(2).includes(q) ||
-      v.items.some(i => i.produto_nome.toLowerCase().includes(q))
-    );
-  }, [vendas, search]);
+    let result = vendas;
+    if (origemFilter !== 'todas') {
+      result = result.filter(v => {
+        if (origemFilter === 'venda_unica') return v.origemKey === 'venda_unica';
+        if (origemFilter === 'comanda') return v.origemKey === 'comanda';
+        if (origemFilter === 'pulseira') return v.origemKey === 'pulseira';
+        return true;
+      });
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(v =>
+        v.codigo_venda.toLowerCase().includes(q) ||
+        (v.cliente || '').toLowerCase().includes(q) ||
+        (v.atendente || '').toLowerCase().includes(q) ||
+        v.origem.toLowerCase().includes(q) ||
+        v.total.toFixed(2).includes(q) ||
+        v.items.some(i => i.produto_nome.toLowerCase().includes(q))
+      );
+    }
+    return result;
+  }, [vendas, search, origemFilter]);
 
   const generateReprintEscPos = (item: VendaItem, dateStr: string, timeStr: string, codigoVenda: string): Uint8Array => {
     const layoutCfg = getPrintLayoutConfig();
@@ -251,6 +265,25 @@ export function ReimpressaoVendas() {
               onChange={e => setSearch(e.target.value)}
               className="pl-10"
             />
+          </div>
+
+          <div className="flex gap-1.5 flex-wrap">
+            {[
+              { key: 'todas', label: 'Todas' },
+              { key: 'venda_unica', label: 'Venda única' },
+              { key: 'comanda', label: 'Comanda' },
+              { key: 'pulseira', label: 'Pulseira' },
+            ].map(opt => (
+              <Button
+                key={opt.key}
+                variant={origemFilter === opt.key ? 'default' : 'outline'}
+                size="sm"
+                className="text-xs h-7"
+                onClick={() => setOrigemFilter(opt.key)}
+              >
+                {opt.label}
+              </Button>
+            ))}
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
