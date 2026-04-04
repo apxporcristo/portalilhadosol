@@ -122,17 +122,28 @@ export function ReimpressaoVendas() {
   };
 
   const filteredVendas = useMemo(() => {
-    if (!search.trim()) return vendas;
-    const q = search.toLowerCase();
-    return vendas.filter(v =>
-      v.codigo_venda.toLowerCase().includes(q) ||
-      (v.cliente || '').toLowerCase().includes(q) ||
-      (v.atendente || '').toLowerCase().includes(q) ||
-      v.origem.toLowerCase().includes(q) ||
-      v.total.toFixed(2).includes(q) ||
-      v.items.some(i => i.produto_nome.toLowerCase().includes(q))
-    );
-  }, [vendas, search]);
+    let result = vendas;
+    if (origemFilter !== 'todas') {
+      result = result.filter(v => {
+        if (origemFilter === 'venda_unica') return v.origemKey === 'venda_unica';
+        if (origemFilter === 'comanda') return v.origemKey === 'comanda';
+        if (origemFilter === 'pulseira') return v.origemKey === 'pulseira';
+        return true;
+      });
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(v =>
+        v.codigo_venda.toLowerCase().includes(q) ||
+        (v.cliente || '').toLowerCase().includes(q) ||
+        (v.atendente || '').toLowerCase().includes(q) ||
+        v.origem.toLowerCase().includes(q) ||
+        v.total.toFixed(2).includes(q) ||
+        v.items.some(i => i.produto_nome.toLowerCase().includes(q))
+      );
+    }
+    return result;
+  }, [vendas, search, origemFilter]);
 
   const generateReprintEscPos = (item: VendaItem, dateStr: string, timeStr: string, codigoVenda: string): Uint8Array => {
     const layoutCfg = getPrintLayoutConfig();
