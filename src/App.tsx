@@ -21,6 +21,7 @@ import VoucherLista from "./pages/VoucherLista";
 import ComandasLista from "./pages/ComandasLista";
 import KdsPage from "./pages/KdsPage";
 import PulseirasPage from "./pages/PulseirasPage";
+import CaixaPage from "./pages/CaixaPage";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
@@ -70,6 +71,11 @@ const App = () => (
               <Route path="/pulseiras" element={
                 <ProtectedRoute permission="acesso_pulseira">
                   <PulseirasPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/caixa" element={
+                <ProtectedRoute>
+                  <CaixaPage />
                 </ProtectedRoute>
               } />
               <Route path="/install" element={<Install />} />

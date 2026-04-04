@@ -392,7 +392,25 @@ const Index = () => {
                 </Card>
               )}
 
-              {/* Serve Service removido da tela inicial - agora está dentro de Fichas */}
+              {/* Caixa */}
+              {isLoggedIn && (
+                <Card
+                  className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary"
+                  onClick={() => navigate('/caixa')}
+                >
+                  <CardContent className="flex items-center justify-between gap-3 p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-primary/10 rounded-xl">
+                        <DollarSign className="h-8 w-8 text-primary" />
+                      </div>
+                      <div>
+                        <span className="text-base font-semibold text-foreground">Caixa</span>
+                        <p className="text-sm text-muted-foreground">Controle do caixa do dia</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Reimpressão de vendas - only for users with permission */}
               {isLoggedIn && userAccess?.reimpressao_venda && (
