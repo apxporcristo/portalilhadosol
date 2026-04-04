@@ -27,12 +27,19 @@ interface KitItem {
   produto_nome?: string;
 }
 
+interface Categoria {
+  id: string;
+  nome_categoria: string;
+}
+
 interface Kit {
   id: string;
-  produto_principal_id: string;
+  produto_principal_id: string | null;
+  nome_kit: string;
+  categoria_id: string | null;
   observacao: string | null;
   ativo: boolean;
-  produto_nome?: string;
+  categoria_nome?: string;
   itens?: KitItem[];
 }
 
