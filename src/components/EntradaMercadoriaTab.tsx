@@ -151,7 +151,7 @@ export default function EntradaMercadoriaTab() {
     setAddingItemIndex(null);
   };
 
-  const calcValorVenda = (item: ItemNota) => item.valor_comprado * item.margem_lucro;
+  const calcValorVenda = (item: ItemNota) => (item.valor_comprado * item.margem_lucro) / 100;
   const calcTotalComprado = (item: ItemNota) => item.quantidade * item.valor_comprado;
   const calcTotalVenda = (item: ItemNota) => item.quantidade * calcValorVenda(item);
 
