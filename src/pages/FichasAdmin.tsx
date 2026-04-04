@@ -47,7 +47,7 @@ export default function FichasAdmin() {
   const impressorasAtivas = impressoras.filter(p => p.ativa);
 
   // Product form
-  const [prodForm, setProdForm] = useState({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false });
+  const [prodForm, setProdForm] = useState({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false, kit: false, quantidade_a_baixar: '1' });
   const [editProd, setEditProd] = useState<FichaProduto | null>(null);
   const [deleteProdId, setDeleteProdId] = useState<string | null>(null);
   const [filterAtivo, setFilterAtivo] = useState<'all' | 'true' | 'false'>('all');
@@ -168,6 +168,10 @@ export default function FichasAdmin() {
       toast({ title: 'Erro', description: 'Valor obrigatório quando complementos não está ativado.', variant: 'destructive' });
       return;
     }
+    if (prodForm.kit && (parseInt(prodForm.quantidade_a_baixar) || 0) <= 0) {
+      toast({ title: 'Erro', description: 'Quantidade a baixar deve ser maior que 0 quando Kit está ativado.', variant: 'destructive' });
+      return;
+    }
     setSavingProd(true);
     try {
       if (editProd) {
@@ -183,6 +187,8 @@ export default function FichasAdmin() {
           imprimir_ficha: prodForm.imprimir_ficha,
           enviar_para_kds: prodForm.enviar_para_kds,
           estoque_negativo: prodForm.estoque_negativo,
+          kit: prodForm.kit,
+          quantidade_a_baixar: prodForm.kit ? (parseInt(prodForm.quantidade_a_baixar) || 1) : 1,
         };
         if (isPrinted(editProd.id) && !isNameSimilar(editProd.nome_produto, prodForm.nome_produto.trim())) {
           toast({ title: 'Nome não pode ser alterado', description: 'Este produto já foi impresso. Apenas correções pequenas são permitidas.', variant: 'destructive' });
@@ -207,11 +213,13 @@ export default function FichasAdmin() {
           imprimir_ficha: prodForm.imprimir_ficha,
           enviar_para_kds: prodForm.enviar_para_kds,
           estoque_negativo: prodForm.estoque_negativo,
+          kit: prodForm.kit,
+          quantidade_a_baixar: prodForm.kit ? (parseInt(prodForm.quantidade_a_baixar) || 1) : 1,
         } as any);
         setShowProdModal(false);
         toast({ title: 'Produto cadastrado!' });
       }
-      setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false });
+      setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false, kit: false, quantidade_a_baixar: '1' });
     } catch (err: any) {
       toast({ title: 'Erro ao salvar produto', description: err?.message || 'Erro desconhecido', variant: 'destructive' });
     } finally {
@@ -234,6 +242,8 @@ export default function FichasAdmin() {
       imprimir_ficha: (p as any).imprimir_ficha ?? true,
       enviar_para_kds: (p as any).enviar_para_kds ?? false,
       estoque_negativo: (p as any).estoque_negativo ?? false,
+      kit: (p as any).kit ?? false,
+      quantidade_a_baixar: String((p as any).quantidade_a_baixar ?? 1),
     });
     setShowProdModal(true);
   };
@@ -546,7 +556,7 @@ export default function FichasAdmin() {
           <TabsContent value="produtos" className="mt-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Produtos cadastrados</h2>
-              <Button onClick={() => { setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false }); setShowProdModal(true); }}>
+              <Button onClick={() => { setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false, kit: false, quantidade_a_baixar: '1' }); setShowProdModal(true); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Incluir produto
               </Button>
@@ -586,6 +596,7 @@ export default function FichasAdmin() {
                     <TableHead>Nome</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Kit</TableHead>
                     <TableHead>Compl.</TableHead>
                     <TableHead>Impressões</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
@@ -593,7 +604,7 @@ export default function FichasAdmin() {
                 </TableHeader>
                 <TableBody>
                   {filteredProdutos.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Nenhum produto cadastrado.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Nenhum produto cadastrado.</TableCell></TableRow>
                   ) : (
                     filteredProdutos.map(p => (
                       <TableRow key={p.id}>
@@ -604,6 +615,13 @@ export default function FichasAdmin() {
                           <Badge variant={p.ativo ? 'default' : 'secondary'} className="cursor-pointer" onClick={() => toggleProdAtivo(p)}>
                             {p.ativo ? 'Ativado' : 'Desativado'}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {(p as any).kit ? (
+                            <Badge variant="outline" className="text-xs">{(p as any).quantidade_a_baixar ?? 1}x</Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
                         </TableCell>
                         <TableCell>
                           {(p as any).tem_complementos ? (
@@ -854,8 +872,25 @@ export default function FichasAdmin() {
                 <Switch checked={prodForm.estoque_negativo} onCheckedChange={(v) => setProdForm(p => ({ ...p, estoque_negativo: v }))} />
                 <Label>Permitir estoque negativo</Label>
               </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={prodForm.kit} onCheckedChange={(v) => setProdForm(p => ({ ...p, kit: v, quantidade_a_baixar: v ? p.quantidade_a_baixar : '1' }))} />
+                <Label>Produto é kit</Label>
+              </div>
             </div>
             <p className="text-xs text-muted-foreground">Quando ativado, o produto poderá ser vendido mesmo com estoque zerado ou negativo.</p>
+            {prodForm.kit && (
+              <div className="space-y-2">
+                <Label>Quantidade a baixar *</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={prodForm.quantidade_a_baixar}
+                  onChange={(e) => setProdForm(p => ({ ...p, quantidade_a_baixar: e.target.value }))}
+                  placeholder="Ex: 5"
+                />
+                <p className="text-xs text-muted-foreground">Informe quantas unidades devem ser baixadas do estoque a cada unidade vendida.</p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Observação <span className="text-muted-foreground text-xs">(opcional, aparece na ficha)</span></Label>
               <Input value={prodForm.obs} onChange={(e) => setProdForm(p => ({ ...p, obs: e.target.value }))} placeholder="Ex: Acompanha arroz e salada" maxLength={100} />
@@ -872,7 +907,7 @@ export default function FichasAdmin() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowProdModal(false); setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false }); }}>Cancelar</Button>
+            <Button variant="outline" onClick={() => { setShowProdModal(false); setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false, kit: false, quantidade_a_baixar: '1' }); }}>Cancelar</Button>
             <Button onClick={handleSaveProd} disabled={savingProd}>
               <Save className="h-4 w-4 mr-2" />
               {editProd ? 'Salvar alterações' : 'Cadastrar produto'}

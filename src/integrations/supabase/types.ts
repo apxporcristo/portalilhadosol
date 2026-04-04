@@ -392,9 +392,11 @@ export type Database = {
           estoque_negativo: boolean
           forma_venda: string
           id: string
+          kit: boolean
           nome_produto: string
           obs: string | null
           printer_id: string | null
+          quantidade_a_baixar: number
           tem_complementos: boolean
           updated_at: string
           valor: number
@@ -407,9 +409,11 @@ export type Database = {
           estoque_negativo?: boolean
           forma_venda?: string
           id?: string
+          kit?: boolean
           nome_produto: string
           obs?: string | null
           printer_id?: string | null
+          quantidade_a_baixar?: number
           tem_complementos?: boolean
           updated_at?: string
           valor?: number
@@ -422,9 +426,11 @@ export type Database = {
           estoque_negativo?: boolean
           forma_venda?: string
           id?: string
+          kit?: boolean
           nome_produto?: string
           obs?: string | null
           printer_id?: string | null
+          quantidade_a_baixar?: number
           tem_complementos?: boolean
           updated_at?: string
           valor?: number
@@ -662,9 +668,11 @@ export type Database = {
           categoria_id: string | null
           estoque_atual: number | null
           estoque_negativo: boolean | null
+          kit: boolean | null
           nome_categoria: string | null
           nome_produto: string | null
           produto_id: string | null
+          quantidade_a_baixar: number | null
           quantidade_comprada: number | null
           quantidade_vendida: number | null
           ultimo_valor_comprado: number | null

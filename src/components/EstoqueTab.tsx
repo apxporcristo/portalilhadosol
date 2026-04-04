@@ -14,6 +14,8 @@ interface EstoqueItem {
   categoria_id: string;
   nome_categoria: string;
   estoque_negativo: boolean;
+  kit: boolean;
+  quantidade_a_baixar: number;
   quantidade_comprada: number;
   quantidade_vendida: number;
   estoque_atual: number;
@@ -98,12 +100,13 @@ export default function EstoqueTab() {
               <TableHead className="text-center">Comprado</TableHead>
               <TableHead className="text-center">Vendido</TableHead>
               <TableHead className="text-center">Estoque atual</TableHead>
+              <TableHead className="text-center">Kit</TableHead>
               <TableHead className="text-center">Est. Negativo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
             ) : (
               filtered.map(item => {
                 const semEstoque = item.estoque_atual <= 0 && !item.estoque_negativo;
@@ -119,6 +122,13 @@ export default function EstoqueTab() {
                     <TableCell className="text-center">{item.quantidade_vendida}</TableCell>
                     <TableCell className={`text-center font-semibold ${negativo ? 'text-destructive' : item.estoque_atual === 0 ? 'text-yellow-600' : ''}`}>
                       {item.estoque_atual}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {item.kit ? (
+                        <Badge variant="outline" className="text-xs">{item.quantidade_a_baixar}x</Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       {item.estoque_negativo ? (
