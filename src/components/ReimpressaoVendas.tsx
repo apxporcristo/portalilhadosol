@@ -85,6 +85,12 @@ export function ReimpressaoVendas() {
         if (!key) continue;
         if (!groups[key]) {
           const createdAt = new Date(item.created_at);
+          let origem = 'Venda única';
+          if (item.pulseira_id || item.pulseira_numero) {
+            origem = item.pulseira_numero ? `Pulseira (#${item.pulseira_numero})` : 'Pulseira';
+          } else if (item.comanda_id || item.comanda_numero) {
+            origem = item.comanda_numero ? `Comanda (#${item.comanda_numero})` : 'Comanda';
+          }
           groups[key] = {
             codigo_venda: key,
             items: [],
@@ -94,6 +100,7 @@ export function ReimpressaoVendas() {
             created_at: item.created_at,
             atendente: item.nome_atendente,
             cliente: item.nome_cliente,
+            origem,
           };
         }
         groups[key].items.push(item);
