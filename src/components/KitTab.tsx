@@ -46,13 +46,14 @@ interface Kit {
 export default function KitTab() {
   const [kits, setKits] = useState<Kit[]>([]);
   const [produtos, setProdutos] = useState<ProdutoSimples[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Kit form
   const [showModal, setShowModal] = useState(false);
   const [editKit, setEditKit] = useState<Kit | null>(null);
-  const [form, setForm] = useState({ produto_principal_id: '', observacao: '', ativo: true });
+  const [form, setForm] = useState({ nome_kit: '', categoria_id: '', observacao: '', ativo: true });
   const [componentes, setComponentes] = useState<{ produto_componente_id: string; quantidade_baixa: number }[]>([]);
   const [deleteKitId, setDeleteKitId] = useState<string | null>(null);
 
@@ -63,16 +64,17 @@ export default function KitTab() {
 
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const [prodRes, kitRes] = await Promise.all([
+    const [prodRes, kitRes, catRes] = await Promise.all([
       supabase.from('fichas_produtos' as any).select('id, nome_produto, categoria_id').eq('ativo', true).order('nome_produto'),
       supabase.from('fichas_kits' as any).select('*').order('created_at', { ascending: false }),
+      supabase.from('fichas_categorias' as any).select('id, nome_categoria').eq('ativo', true).order('nome_categoria'),
     ]);
 
     const prodList = (prodRes.data || []) as ProdutoSimples[];
     setProdutos(prodList);
+    setCategorias((catRes.data || []) as Categoria[]);
 
     const kitList = (kitRes.data || []) as Kit[];
-    // Fetch items for all kits
     if (kitList.length > 0) {
       const kitIds = kitList.map(k => k.id);
       const { data: itensData } = await supabase
@@ -80,9 +82,10 @@ export default function KitTab() {
         .select('*')
         .in('kit_id', kitIds);
       const itens = (itensData || []) as KitItem[];
+      const cats = (catRes.data || []) as Categoria[];
 
       for (const kit of kitList) {
-        kit.produto_nome = prodList.find(p => p.id === kit.produto_principal_id)?.nome_produto || '—';
+        kit.categoria_nome = cats.find(c => c.id === kit.categoria_id)?.nome_categoria || '—';
         kit.itens = itens
           .filter(i => i.kit_id === kit.id)
           .map(i => ({ ...i, produto_nome: prodList.find(p => p.id === i.produto_componente_id)?.nome_produto || '—' }));
@@ -98,7 +101,7 @@ export default function KitTab() {
 
   const openNew = () => {
     setEditKit(null);
-    setForm({ produto_principal_id: '', observacao: '', ativo: true });
+    setForm({ nome_kit: '', categoria_id: '', observacao: '', ativo: true });
     setComponentes([]);
     setShowModal(true);
   };
