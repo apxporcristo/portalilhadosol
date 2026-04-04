@@ -172,29 +172,66 @@ export function useComandas() {
     console.log('[lancarItens] Usuário:', { login });
 
     for (const item of items) {
+      // Use numeric quantity (not integer) and jsonb complementos to match the correct overload
+      const complementos = item.complementos && item.complementos.length > 0 
+        ? item.complementos 
+        : [];
+      
       const payload = {
         p_comanda_id: comandaId,
         p_produto_id: item.produto_id,
         p_descricao_produto: item.produto_nome,
-        p_quantidade: item.quantidade,
-        p_valor_unitario: item.valor_unitario,
-        p_subtotal: item.valor_total,
+        p_quantidade: Number(item.quantidade) + 0.0, // force numeric
+        p_valor_unitario: Number(item.valor_unitario),
+        p_subtotal: Number(item.valor_total),
         p_origem: 'ficha',
         p_observacao: item.observacao || '',
         p_possui_complementos: !!(item.complementos && item.complementos.length > 0),
-        p_complementos_json: item.complementos ? JSON.stringify(item.complementos) : null,
+        p_complementos_json: JSON.stringify(complementos),
         p_produto_nome: item.produto_nome,
-        p_valor_total: item.valor_total,
+        p_valor_total: Number(item.valor_total),
         p_usuario_login: login,
       };
 
       console.log('[lancarItens] Payload RPC lancar_item_comanda:', payload);
 
-      const { error } = await supabase.rpc('lancar_item_comanda' as any, payload as any);
-
-      if (error) {
-        console.error('[lancarItens] Erro RPC lancar_item_comanda:', error);
-        throw new Error(`Erro ao lançar item "${item.produto_nome}": ${error.message}`);
+      // Use direct fetch to specify Content-Profile and resolve overloaded function
+      const sbUrl = (supabase as any).supabaseUrl || (supabase as any).restUrl?.replace('/rest/v1', '');
+      const sbKey = (supabase as any).supabaseKey;
+      
+      let rpcUrl: string;
+      let rpcKey: string;
+      
+      if (sbUrl && sbKey) {
+        rpcUrl = `${sbUrl}/rest/v1/rpc/lancar_item_comanda`;
+        rpcKey = sbKey;
+      } else {
+        // Fallback: try standard rpc
+        const { error } = await supabase.rpc('lancar_item_comanda' as any, payload as any);
+        if (error) {
+          console.error('[lancarItens] Erro RPC lancar_item_comanda:', error);
+          throw new Error(`Erro ao lançar item "${item.produto_nome}": ${error.message}`);
+        }
+        console.log('[lancarItens] Item lançado com sucesso:', item.produto_nome);
+        continue;
+      }
+      
+      const response = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': rpcKey,
+          'Authorization': `Bearer ${rpcKey}`,
+          'Content-Profile': 'public',
+          'Prefer': 'params=single-object',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        console.error('[lancarItens] Erro RPC lancar_item_comanda:', errBody);
+        throw new Error(`Erro ao lançar item "${item.produto_nome}": ${errBody.message || response.statusText}`);
       }
 
       console.log('[lancarItens] Item lançado com sucesso:', item.produto_nome);
