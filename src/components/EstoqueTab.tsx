@@ -99,13 +99,11 @@ export default function EstoqueTab() {
               <TableHead className="text-center">Vendido</TableHead>
               <TableHead className="text-center">Estoque atual</TableHead>
               <TableHead className="text-center">Est. Negativo</TableHead>
-              <TableHead className="text-right">Últ. Vlr Compra</TableHead>
-              <TableHead className="text-right">Últ. Vlr Venda</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
             ) : (
               filtered.map(item => {
                 const semEstoque = item.estoque_atual <= 0 && !item.estoque_negativo;
@@ -129,8 +127,6 @@ export default function EstoqueTab() {
                         <span className="text-muted-foreground text-xs">Não</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">{fmt(item.ultimo_valor_comprado)}</TableCell>
-                    <TableCell className="text-right">{fmt(item.ultimo_valor_venda)}</TableCell>
                   </TableRow>
                 );
               })
