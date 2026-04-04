@@ -58,9 +58,11 @@ export default function KitTab() {
   const [deleteKitId, setDeleteKitId] = useState<string | null>(null);
 
   // Component add form
-  const [compProdId, setCompProdId] = useState('');
   const [compQtd, setCompQtd] = useState('1');
-  const [searchProd, setSearchProd] = useState('');
+
+  // Product search modal
+  const [showProdModal, setShowProdModal] = useState(false);
+  const [prodSearch, setProdSearch] = useState('');
 
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
