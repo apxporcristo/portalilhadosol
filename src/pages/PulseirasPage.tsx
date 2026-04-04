@@ -275,22 +275,6 @@ export default function PulseirasPage() {
                     </>
                   )}
                 </div>
-                {/* Inline: Adicionar Item */}
-                {isAtiva && itemFormOpen && (
-                  <div className="mt-4 border-t pt-4 space-y-3">
-                    <h4 className="font-semibold text-sm">Adicionar Item</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div><Label>Nome do Produto *</Label><Input value={iProdutoNome} onChange={e => setIProdutoNome(e.target.value)} placeholder="Nome do produto" /></div>
-                      <div><Label>Quantidade *</Label><Input type="number" min={1} value={iQtd} onChange={e => setIQtd(parseInt(e.target.value) || 1)} /></div>
-                      <div><Label>Valor Unitário *</Label><Input type="number" step="0.01" min={0} value={iValor} onChange={e => setIValor(e.target.value)} placeholder="0.00" /></div>
-                      <div><Label>Observação</Label><Input value={iObs} onChange={e => setIObs(e.target.value)} placeholder="Opcional" /></div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={handleItem}>Adicionar</Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setItemFormOpen(false); setIProdutoNome(''); setIQtd(1); setIValor(''); setIObs(''); }}>Cancelar</Button>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
