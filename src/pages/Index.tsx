@@ -23,6 +23,7 @@ import { useOptionalUserSession } from '@/contexts/UserSessionContext';
 
 import { useFichasConsumo } from '@/hooks/useFichasConsumo';
 import { useComandas } from '@/hooks/useComandas';
+import { usePulseiras } from '@/hooks/usePulseiras';
 import { AuditoriaComandas } from '@/components/AuditoriaComandas';
 import { ReimpressaoVendas } from '@/components/ReimpressaoVendas';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -57,6 +58,7 @@ const Index = () => {
   const cart = useVoucherCart();
   const fichasConsumo = useFichasConsumo();
   const { comandasAbertas } = useComandas();
+  const { pulseirasAbertas } = usePulseiras();
   const navigate = useNavigate();
   const androidBridge = useAndroidBridge();
   const [batchPrinting, setBatchPrinting] = useState(false);
@@ -355,6 +357,11 @@ const Index = () => {
                           <Watch className="h-8 w-8 text-primary" />
                         </div>
                         <span className="text-base font-semibold text-foreground text-center">Pulseiras</span>
+                        {pulseirasAbertas.length > 0 && (
+                          <Badge variant="default" className="text-xs px-2 py-0.5">
+                            {pulseirasAbertas.length} ativa{pulseirasAbertas.length > 1 ? 's' : ''}
+                          </Badge>
+                        )}
                       </CardContent>
                     </Card>
                   )}
