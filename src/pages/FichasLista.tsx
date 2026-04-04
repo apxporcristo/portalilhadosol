@@ -546,6 +546,7 @@ export default function FichasLista() {
               }
             : undefined,
         });
+        logOrigemVenda(hasPulseiraContext ? { pulseiraId: pulseiraContextId, pulseiraNumero: pulseiraContextNumero } : undefined, codigoVenda);
       } catch (e) { console.warn('[Ficha] fichas_impressas insert falhou:', e); }
 
       // Send to KDS if product is marked
