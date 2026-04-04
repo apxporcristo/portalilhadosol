@@ -53,6 +53,7 @@ export default function PulseirasPage() {
 
   // Busca saldo
   const [buscaSaldo, setBuscaSaldo] = useState('');
+  const [mostrarTodosSaldos, setMostrarTodosSaldos] = useState(false);
 
   useEffect(() => { listarAbertas(); listarFechadas(); }, [listarAbertas, listarFechadas]);
 
@@ -153,19 +154,21 @@ export default function PulseirasPage() {
   };
 
   const filteredSaldos = useMemo(() => {
-    const list = buscaSaldo.trim()
+    let list = buscaSaldo.trim()
       ? saldos.filter(s => (s.produto_nome || '').toLowerCase().includes(buscaSaldo.toLowerCase()))
       : [...saldos];
+    // Hide fully consumed products unless "mostrar todos" is active
+    if (!mostrarTodosSaldos) {
+      list = list.filter(s => (s.quantidade_disponivel ?? 0) > 0);
+    }
     return list.sort((a, b) => {
       const aDisp = a.quantidade_disponivel ?? 0;
       const bDisp = b.quantidade_disponivel ?? 0;
-      // Items with disponivel=0 go to the end
       if (aDisp === 0 && bDisp > 0) return 1;
       if (bDisp === 0 && aDisp > 0) return -1;
-      // Alphabetical order
       return (a.produto_nome || '').localeCompare(b.produto_nome || '', 'pt-BR');
     });
-  }, [saldos, buscaSaldo]);
+  }, [saldos, buscaSaldo, mostrarTodosSaldos]);
 
   const isAtiva = detalhe?.status === 'ativa';
   const isFechada = detalhe?.status === 'fechada';
@@ -306,7 +309,17 @@ export default function PulseirasPage() {
                 {isAtiva && saldos.length > 0 && <p className="text-xs text-muted-foreground">Clique em um produto para registrar baixa</p>}
               </CardHeader>
               <CardContent>
-                <Input placeholder="Buscar produto..." value={buscaSaldo} onChange={e => setBuscaSaldo(e.target.value)} className="mb-3" />
+                <div className="flex gap-2 mb-3">
+                  <Input placeholder="Buscar produto..." value={buscaSaldo} onChange={e => setBuscaSaldo(e.target.value)} className="flex-1" />
+                  <Button
+                    variant={mostrarTodosSaldos ? 'default' : 'outline'}
+                    size="sm"
+                    className="whitespace-nowrap"
+                    onClick={() => setMostrarTodosSaldos(v => !v)}
+                  >
+                    {mostrarTodosSaldos ? 'Ocultar zerados' : 'Listar todos'}
+                  </Button>
+                </div>
                 {saldoLoading && <Skeleton className="h-20 w-full" />}
                 {saldoError && <p className="text-sm text-destructive">{saldoError}</p>}
                 {!saldoLoading && !saldoError && filteredSaldos.length === 0 && <p className="text-sm text-muted-foreground">Nenhum item encontrado.</p>}
