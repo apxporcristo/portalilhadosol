@@ -235,10 +235,6 @@ export default function EntradaMercadoriaTab() {
               <Label>Data da compra *</Label>
               <Input type="date" value={dataCompra} onChange={e => setDataCompra(e.target.value)} />
             </div>
-            <div className="space-y-1">
-              <Label>Observação</Label>
-              <Input value={observacao} onChange={e => setObservacao(e.target.value)} placeholder="Opcional" />
-            </div>
           </div>
 
           {/* Items */}
