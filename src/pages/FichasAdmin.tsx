@@ -242,6 +242,8 @@ export default function FichasAdmin() {
       imprimir_ficha: (p as any).imprimir_ficha ?? true,
       enviar_para_kds: (p as any).enviar_para_kds ?? false,
       estoque_negativo: (p as any).estoque_negativo ?? false,
+      kit: (p as any).kit ?? false,
+      quantidade_a_baixar: String((p as any).quantidade_a_baixar ?? 1),
     });
     setShowProdModal(true);
   };
