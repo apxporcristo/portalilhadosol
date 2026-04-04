@@ -58,9 +58,11 @@ export default function KitTab() {
   const [deleteKitId, setDeleteKitId] = useState<string | null>(null);
 
   // Component add form
-  const [compProdId, setCompProdId] = useState('');
   const [compQtd, setCompQtd] = useState('1');
-  const [searchProd, setSearchProd] = useState('');
+
+  // Product search modal
+  const [showProdModal, setShowProdModal] = useState(false);
+  const [prodSearch, setProdSearch] = useState('');
 
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
@@ -113,12 +115,8 @@ export default function KitTab() {
     setShowModal(true);
   };
 
-  const addComponente = () => {
-    if (!compProdId) {
-      toast({ title: 'Selecione um produto componente.', variant: 'destructive' });
-      return;
-    }
-    if (componentes.some(c => c.produto_componente_id === compProdId)) {
+  const selectComponente = (prodId: string) => {
+    if (componentes.some(c => c.produto_componente_id === prodId)) {
       toast({ title: 'Este componente já foi adicionado.', variant: 'destructive' });
       return;
     }
@@ -127,9 +125,10 @@ export default function KitTab() {
       toast({ title: 'Quantidade deve ser maior que 0.', variant: 'destructive' });
       return;
     }
-    setComponentes(prev => [...prev, { produto_componente_id: compProdId, quantidade_baixa: qtd }]);
-    setCompProdId('');
+    setComponentes(prev => [...prev, { produto_componente_id: prodId, quantidade_baixa: qtd }]);
     setCompQtd('1');
+    setShowProdModal(false);
+    setProdSearch('');
   };
 
   const removeComponente = (idx: number) => {
@@ -206,10 +205,10 @@ export default function KitTab() {
     fetchData();
   };
 
-  // Filter products for selects
-  const filteredProdutos = searchProd.trim()
-    ? produtos.filter(p => p.nome_produto.toLowerCase().includes(searchProd.toLowerCase()))
-    : produtos;
+  const availableProducts = produtos.filter(p => !componentes.some(c => c.produto_componente_id === p.id));
+  const filteredModalProducts = prodSearch.trim()
+    ? availableProducts.filter(p => p.nome_produto.toLowerCase().includes(prodSearch.toLowerCase()))
+    : availableProducts;
 
   if (loading) return <div className="text-center py-8 text-muted-foreground">Carregando kits...</div>;
 
@@ -304,22 +303,15 @@ export default function KitTab() {
               <div className="flex gap-2 items-end">
                 <div className="flex-1 space-y-1">
                   <Label className="text-xs">Produto componente</Label>
-                  <Select value={compProdId} onValueChange={setCompProdId}>
-                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                    <SelectContent>
-                      {produtos
-                        .filter(p => !componentes.some(c => c.produto_componente_id === p.id))
-                        .map(p => (
-                          <SelectItem key={p.id} value={p.id}>{p.nome_produto}</SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                  <Button variant="outline" className="w-full justify-start font-normal" onClick={() => { setProdSearch(''); setShowProdModal(true); }}>
+                    <Search className="h-4 w-4 mr-2 text-muted-foreground" />
+                    Selecione...
+                  </Button>
                 </div>
                 <div className="w-20 space-y-1">
                   <Label className="text-xs">Qtd baixa</Label>
                   <Input type="number" min="1" value={compQtd} onChange={e => setCompQtd(e.target.value)} />
                 </div>
-                <Button size="sm" onClick={addComponente}><Plus className="h-4 w-4" /></Button>
               </div>
 
               {componentes.length > 0 && (
@@ -360,6 +352,42 @@ export default function KitTab() {
               {editKit ? 'Salvar alterações' : 'Cadastrar kit'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal busca produto */}
+      <Dialog open={showProdModal} onOpenChange={setShowProdModal}>
+        <DialogContent className="max-w-md max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Selecionar Produto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar produto..."
+                value={prodSearch}
+                onChange={e => setProdSearch(e.target.value)}
+                className="pl-9"
+                autoFocus
+              />
+            </div>
+            <div className="max-h-[50vh] overflow-y-auto border rounded-md">
+              {filteredModalProducts.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhum produto encontrado.</p>
+              ) : (
+                filteredModalProducts.map(p => (
+                  <button
+                    key={p.id}
+                    className="w-full text-left px-3 py-2 hover:bg-accent text-sm border-b last:border-b-0 transition-colors"
+                    onClick={() => selectComponente(p.id)}
+                  >
+                    {p.nome_produto}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
