@@ -251,11 +251,11 @@ export default function EntradaMercadoriaTab() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Produto</TableHead>
-                      <TableHead className="w-20 text-center">Qtd</TableHead>
-                      <TableHead className="w-28 text-right">Compra</TableHead>
-                      <TableHead className="w-24 text-center">% Margem</TableHead>
-                      <TableHead className="w-28 text-right">Venda</TableHead>
+                      <TableHead className="text-center">Produto</TableHead>
+                      <TableHead className="w-24 text-center">Qtd</TableHead>
+                      <TableHead className="w-32 text-center">Compra</TableHead>
+                      <TableHead className="w-28 text-center">% Margem</TableHead>
+                      <TableHead className="w-32 text-center">Venda</TableHead>
                       <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -274,12 +274,12 @@ export default function EntradaMercadoriaTab() {
                             <Input type="number" min={1} className="h-8 text-center text-xs" value={item.quantidade} onChange={e => updateItem(idx, 'quantidade', parseInt(e.target.value) || 0)} />
                           </TableCell>
                           <TableCell>
-                            <Input type="number" min={0} step={0.01} className="h-8 text-right text-xs" value={item.valor_comprado} onChange={e => updateItem(idx, 'valor_comprado', parseFloat(e.target.value) || 0)} />
+                            <Input type="number" min={0} step={0.01} className="h-8 text-center text-xs" value={item.valor_comprado} onChange={e => updateItem(idx, 'valor_comprado', parseFloat(e.target.value) || 0)} />
                           </TableCell>
                           <TableCell>
                             <Input type="number" min={0.01} step={0.01} className="h-8 text-center text-xs" value={item.margem_lucro} onChange={e => updateItem(idx, 'margem_lucro', parseFloat(e.target.value) || 0)} />
                           </TableCell>
-                          <TableCell className="text-right text-xs font-medium">{fmt(vVenda)}</TableCell>
+                          <TableCell className="text-center text-xs font-medium">{fmt(vVenda)}</TableCell>
                           <TableCell>
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeItem(idx)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
                           </TableCell>
