@@ -32,7 +32,7 @@ export default function FichasRelatorio() {
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [categoriaFilter, setCategoriaFilter] = useState('todas');
-  const [produtoFilter, setProdutoFilter] = useState('todos');
+  
 
   const fetchRegistros = useCallback(async () => {
     setLoading(true);
@@ -54,11 +54,7 @@ export default function FichasRelatorio() {
     return Array.from(set).sort();
   }, [registros]);
 
-  const produtosUnicos = useMemo(() => {
-    const set = new Set<string>();
-    registros.forEach(r => set.add(r.produto_nome));
-    return Array.from(set).sort();
-  }, [registros]);
+
 
   // Filter logic
   const filtered = useMemo(() => {
@@ -72,10 +68,10 @@ export default function FichasRelatorio() {
         if (d > new Date(dataFim + 'T23:59:59')) return false;
       }
       if (categoriaFilter !== 'todas' && r.categoria_nome !== categoriaFilter) return false;
-      if (produtoFilter !== 'todos' && r.produto_nome !== produtoFilter) return false;
+      
       return true;
     });
-  }, [registros, dataInicio, dataFim, categoriaFilter, produtoFilter]);
+  }, [registros, dataInicio, dataFim, categoriaFilter]);
 
   // Group by category, then by product
   const grouped = useMemo(() => {
@@ -132,7 +128,7 @@ export default function FichasRelatorio() {
             <Filter className="h-4 w-4" />
             Filtros
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <Label className="text-xs">Data Início</Label>
               <Input type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} />
@@ -148,16 +144,6 @@ export default function FichasRelatorio() {
                 <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
                   {categorias.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs">Produto</Label>
-              <Select value={produtoFilter} onValueChange={setProdutoFilter}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {produtosUnicos.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
