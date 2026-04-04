@@ -48,6 +48,13 @@ interface CartItem {
   observacao?: string;
 }
 
+interface VendaOrigemContext {
+  comandaId?: string | null;
+  comandaNumero?: string | number | null;
+  pulseiraId?: string | null;
+  pulseiraNumero?: string | number | null;
+}
+
 function cartItemKey(item: CartItem) {
   const itemIds = item.selectedItems.map(si => si.item.id).sort().join(',');
   const pesoKey = item.peso != null ? `__peso_${item.peso.toFixed(3)}` : '';
@@ -455,6 +462,47 @@ export default function FichasLista() {
     return cart.filter(c => c.ficha.id === fichaId).reduce((sum, c) => sum + c.quantidade, 0);
   };
 
+  const buildVendaOrigem = (origem?: VendaOrigemContext) => ({
+    comanda_id: origem?.comandaId || null,
+    comanda_numero: origem?.comandaNumero != null ? String(origem.comandaNumero) : null,
+    pulseira_id: origem?.pulseiraId || null,
+    pulseira_numero: origem?.pulseiraNumero != null ? String(origem.pulseiraNumero) : null,
+  });
+
+  const insertFichaImpressa = async (
+    sbClient: any,
+    item: CartItem,
+    codigoVenda: string,
+    extras?: {
+      nomeCliente?: string | null;
+      telefoneCliente?: string | null;
+      nomeAtendente?: string | null;
+      origem?: VendaOrigemContext;
+    }
+  ) => {
+    const unitTotal = cartItemTotal(item);
+    let produtoNome = item.ficha.nome_produto;
+
+    if (item.selectedItems.length > 0) {
+      produtoNome += ' | ' + item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
+    }
+
+    await sbClient.from('fichas_impressas' as any).insert({
+      produto_id: item.ficha.id,
+      produto_nome: produtoNome,
+      categoria_id: item.ficha.categoria_id,
+      categoria_nome: item.ficha.categoria_nome,
+      quantidade: item.quantidade,
+      valor_unitario: unitTotal,
+      valor_total: unitTotal * item.quantidade,
+      nome_cliente: extras?.nomeCliente || null,
+      telefone_cliente: extras?.telefoneCliente || null,
+      nome_atendente: extras?.nomeAtendente || null,
+      codigo_venda: codigoVenda,
+      ...buildVendaOrigem(extras?.origem),
+    });
+  };
+
   // Save all cart items to DB (payment registration) without printing
   const saveAllToDB = async (): Promise<string | null> => {
     const codigoVenda = generateCodigoVenda();
@@ -473,24 +521,17 @@ export default function FichasLista() {
         await registrarImpressao(item.ficha.id, item.quantidade, unitTotal, dadosExtras);
       } catch (e) { console.warn('[Ficha] registrarImpressao falhou:', e); }
 
-      let produtoNome = item.ficha.nome_produto;
-      if (item.selectedItems.length > 0) {
-        produtoNome += ' | ' + item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
-      }
       try {
-        await sbClient.from('fichas_impressas' as any).insert({
-          produto_id: item.ficha.id,
-          produto_nome: produtoNome,
-          categoria_id: item.ficha.categoria_id,
-          categoria_nome: item.ficha.categoria_nome,
-          quantidade: item.quantidade,
-          valor_unitario: unitTotal,
-          valor_total: unitTotal * item.quantidade,
-          nome_cliente: nomeCliente.trim() || null,
-          telefone_cliente: telefoneCliente.trim() || null,
-          nome_atendente: nomeAtendente.trim() || null,
-          codigo_venda: codigoVenda,
-          pulseira_numero: pulseiraContextNumero || null,
+        await insertFichaImpressa(sbClient, item, codigoVenda, {
+          nomeCliente: nomeCliente.trim() || null,
+          telefoneCliente: telefoneCliente.trim() || null,
+          nomeAtendente: nomeAtendente.trim() || null,
+          origem: hasPulseiraContext
+            ? {
+                pulseiraId: pulseiraContextId,
+                pulseiraNumero: pulseiraContextNumero,
+              }
+            : undefined,
         });
       } catch (e) { console.warn('[Ficha] fichas_impressas insert falhou:', e); }
 
@@ -588,23 +629,13 @@ export default function FichasLista() {
           const sbClient = await getSupabaseClient();
           const codigoVenda = generateCodigoVenda();
           for (const ci of cart) {
-            const unitTotal = cartItemTotal(ci);
-            let produtoNome = ci.ficha.nome_produto;
-            if (ci.selectedItems.length > 0) {
-              produtoNome += ' | ' + ci.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
-            }
-            await sbClient.from('fichas_impressas' as any).insert({
-              produto_id: ci.ficha.id,
-              produto_nome: produtoNome,
-              categoria_id: ci.ficha.categoria_id,
-              categoria_nome: ci.ficha.categoria_nome,
-              quantidade: ci.quantidade,
-              valor_unitario: unitTotal,
-              valor_total: unitTotal * ci.quantidade,
-              nome_cliente: pulseiraContextNome || null,
-              nome_atendente: userName || null,
-              codigo_venda: codigoVenda,
-              pulseira_numero: pulseiraContextNumero,
+            await insertFichaImpressa(sbClient, ci, codigoVenda, {
+              nomeCliente: pulseiraContextNome || null,
+              nomeAtendente: userName || null,
+              origem: {
+                pulseiraId: pulseiraContextId,
+                pulseiraNumero: pulseiraContextNumero,
+              },
             });
           }
         } catch (e) { console.warn('[Pulseira] fichas_impressas insert falhou:', e); }
@@ -828,24 +859,17 @@ export default function FichasLista() {
           console.warn('[Ficha Print] registrarImpressao falhou (continuando):', regErr);
         }
 
-        let produtoNome = item.ficha.nome_produto;
-        if (item.selectedItems.length > 0) {
-          produtoNome += ' | ' + item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
-        }
         try {
-          await sbClient.from('fichas_impressas' as any).insert({
-            produto_id: item.ficha.id,
-            produto_nome: produtoNome,
-            categoria_id: item.ficha.categoria_id,
-            categoria_nome: item.ficha.categoria_nome,
-            quantidade: item.quantidade,
-            valor_unitario: unitTotal,
-            valor_total: unitTotal * item.quantidade,
-            nome_cliente: nomeCliente.trim() || null,
-            telefone_cliente: telefoneCliente.trim() || null,
-            nome_atendente: nomeAtendente.trim() || null,
-            codigo_venda: codigoVenda,
-            pulseira_numero: pulseiraContextNumero || null,
+          await insertFichaImpressa(sbClient, item, codigoVenda, {
+            nomeCliente: nomeCliente.trim() || null,
+            telefoneCliente: telefoneCliente.trim() || null,
+            nomeAtendente: nomeAtendente.trim() || null,
+            origem: hasPulseiraContext
+              ? {
+                  pulseiraId: pulseiraContextId,
+                  pulseiraNumero: pulseiraContextNumero,
+                }
+              : undefined,
           });
         } catch (insErr) {
           console.warn('[Ficha Print] fichas_impressas insert falhou (continuando):', insErr);
@@ -1422,23 +1446,13 @@ export default function FichasLista() {
               const sbClient = await getSupabaseClient();
               const codigoVenda = generateCodigoVenda();
               for (const ci of cart) {
-                const unitTotal = cartItemTotal(ci);
-                let produtoNome = ci.ficha.nome_produto;
-                if (ci.selectedItems.length > 0) {
-                  produtoNome += ' | ' + ci.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
-                }
-                await sbClient.from('fichas_impressas' as any).insert({
-                  produto_id: ci.ficha.id,
-                  produto_nome: produtoNome,
-                  categoria_id: ci.ficha.categoria_id,
-                  categoria_nome: ci.ficha.categoria_nome,
-                  quantidade: ci.quantidade,
-                  valor_unitario: unitTotal,
-                  valor_total: unitTotal * ci.quantidade,
-                  nome_cliente: nomeCliente.trim() || null,
-                  nome_atendente: userName || null,
-                  codigo_venda: codigoVenda,
-                  comanda_numero: String(confirmComanda.numero),
+                await insertFichaImpressa(sbClient, ci, codigoVenda, {
+                  nomeCliente: confirmComanda.nome_cliente || nomeCliente.trim() || null,
+                  nomeAtendente: userName || null,
+                  origem: {
+                    comandaId: confirmComanda.id,
+                    comandaNumero: confirmComanda.numero,
+                  },
                 });
               }
             } catch (e) { console.warn('[Comanda] fichas_impressas insert falhou:', e); }
@@ -1520,23 +1534,13 @@ export default function FichasLista() {
                 const sbClient = await getSupabaseClient();
                 const codigoVenda = generateCodigoVenda();
                 for (const ci of cart) {
-                  const unitTotal = cartItemTotal(ci);
-                  let produtoNome = ci.ficha.nome_produto;
-                  if (ci.selectedItems.length > 0) {
-                    produtoNome += ' | ' + ci.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
-                  }
-                  await sbClient.from('fichas_impressas' as any).insert({
-                    produto_id: ci.ficha.id,
-                    produto_nome: produtoNome,
-                    categoria_id: ci.ficha.categoria_id,
-                    categoria_nome: ci.ficha.categoria_nome,
-                    quantidade: ci.quantidade,
-                    valor_unitario: unitTotal,
-                    valor_total: unitTotal * ci.quantidade,
-                    nome_cliente: confirmPulseira.nome_cliente || null,
-                    nome_atendente: userName || null,
-                    codigo_venda: codigoVenda,
-                    pulseira_numero: confirmPulseira.numero,
+                  await insertFichaImpressa(sbClient, ci, codigoVenda, {
+                    nomeCliente: confirmPulseira.nome_cliente || null,
+                    nomeAtendente: userName || null,
+                    origem: {
+                      pulseiraId: confirmPulseira.id,
+                      pulseiraNumero: confirmPulseira.numero,
+                    },
                   });
                 }
               } catch (e) { console.warn('[Pulseira Modal] fichas_impressas insert falhou:', e); }
