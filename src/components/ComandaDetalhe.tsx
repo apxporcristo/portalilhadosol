@@ -286,7 +286,7 @@ export function ComandaDetalhe({ comanda, open, onOpenChange, onPrintItems, onCl
             <span className="text-lg font-bold text-primary">R$ {totalComanda.toFixed(2).replace('.', ',')}</span>
           </div>
 
-          <DialogFooter className="flex-col sm:flex-row gap-2">
+          <DialogFooter className="flex-col sm:flex-row gap-2 shrink-0 flex-wrap">
             {onPrintItems && items.length > 0 && (
               <Button variant="outline" onClick={() => onPrintItems(items, comanda)} className="w-full sm:w-auto">
                 <Printer className="h-4 w-4 mr-2" />
