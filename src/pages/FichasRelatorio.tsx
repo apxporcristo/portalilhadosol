@@ -68,7 +68,7 @@ export default function FichasRelatorio() {
         if (d > new Date(dataFim + 'T23:59:59')) return false;
       }
       if (categoriaFilter !== 'todas' && r.categoria_nome !== categoriaFilter) return false;
-      if (produtoFilter !== 'todos' && r.produto_nome !== produtoFilter) return false;
+      
       return true;
     });
   }, [registros, dataInicio, dataFim, categoriaFilter, produtoFilter]);
