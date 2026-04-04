@@ -832,7 +832,12 @@ export default function FichasAdmin() {
                 <Switch checked={prodForm.enviar_para_kds} onCheckedChange={(v) => setProdForm(p => ({ ...p, enviar_para_kds: v }))} />
                 <Label>Enviar para KDS</Label>
               </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={prodForm.estoque_negativo} onCheckedChange={(v) => setProdForm(p => ({ ...p, estoque_negativo: v }))} />
+                <Label>Permitir estoque negativo</Label>
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground">Quando ativado, o produto poderá ser vendido mesmo com estoque zerado ou negativo.</p>
             {prodForm.imprimir_ficha && (
               <div className="space-y-2">
                 <Label>Impressora</Label>
