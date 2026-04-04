@@ -193,7 +193,7 @@ export function usePulseiras() {
           .from('pulseiras' as any)
           .select('*')
           .eq('numero', numero.trim())
-          .eq('status', 'encerrada')
+          .eq('status', 'fechada')
           .maybeSingle();
         if (closedError) throw closedError;
         data = closedData;
