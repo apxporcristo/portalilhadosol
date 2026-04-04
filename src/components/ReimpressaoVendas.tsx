@@ -98,6 +98,7 @@ export function ReimpressaoVendas() {
             atendente: item.nome_atendente,
             cliente: item.nome_cliente,
             origem,
+            origemKey: item.origem_venda || 'venda_unica',
           };
         }
         groups[key].items.push(item);
