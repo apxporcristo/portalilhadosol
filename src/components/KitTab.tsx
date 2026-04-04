@@ -118,10 +118,6 @@ export default function KitTab() {
       toast({ title: 'Selecione um produto componente.', variant: 'destructive' });
       return;
     }
-    if (compProdId === form.produto_principal_id) {
-      toast({ title: 'Produto componente não pode ser igual ao principal.', variant: 'destructive' });
-      return;
-    }
     if (componentes.some(c => c.produto_componente_id === compProdId)) {
       toast({ title: 'Este componente já foi adicionado.', variant: 'destructive' });
       return;
