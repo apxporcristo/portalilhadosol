@@ -227,7 +227,7 @@ export function ReimpressaoVendas() {
 
       {/* List modal */}
       <Dialog open={showListModal} onOpenChange={setShowListModal}>
-        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
+        <DialogContent className="max-w-3xl w-[96vw] max-h-[90vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Printer className="h-5 w-5 text-primary" />
