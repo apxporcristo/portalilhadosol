@@ -66,29 +66,24 @@ export function ReimpressaoVendas() {
       const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
       const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
 
-      let query = sbClient
-        .from('fichas_impressas' as any)
+      const { data, error } = await sbClient
+        .from('vw_reimpressao_vendas' as any)
         .select('*')
-        .gte('created_at', startOfDay)
-        .lt('created_at', endOfDay)
-        .not('codigo_venda', 'is', null)
-        .order('created_at', { ascending: false });
+        .gte('data_venda', startOfDay)
+        .lt('data_venda', endOfDay)
+        .order('data_venda', { ascending: false });
 
-      // Todos os usuários com acesso à reimpressão veem todas as vendas do dia.
-
-      const { data, error } = await query;
       if (error) throw error;
 
       const groups: Record<string, VendaGroup> = {};
       for (const item of (data || []) as VendaItem[]) {
-        const key = item.codigo_venda;
-        if (!key) continue;
+        const key = item.codigo_venda || item.id;
         if (!groups[key]) {
-          const createdAt = new Date(item.created_at);
+          const createdAt = new Date(item.data_venda);
           let origem = 'Venda única';
-          if (item.pulseira_id || item.pulseira_numero) {
+          if (item.origem_venda === 'pulseira') {
             origem = item.pulseira_numero ? `Pulseira (#${item.pulseira_numero})` : 'Pulseira';
-          } else if (item.comanda_id || item.comanda_numero) {
+          } else if (item.origem_venda === 'comanda') {
             origem = item.comanda_numero ? `Comanda (#${item.comanda_numero})` : 'Comanda';
           }
           groups[key] = {
@@ -97,7 +92,7 @@ export function ReimpressaoVendas() {
             total: 0,
             hora: createdAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
             data: createdAt.toLocaleDateString('pt-BR'),
-            created_at: item.created_at,
+            created_at: item.data_venda,
             atendente: item.nome_atendente,
             cliente: item.nome_cliente,
             origem,
