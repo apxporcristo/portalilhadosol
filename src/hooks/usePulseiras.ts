@@ -724,11 +724,11 @@ export function usePulseiras() {
       // 3. Close the pulseira
       const { error: closeError } = await db
         .from('pulseiras')
-        .update({ status: 'encerrada', fechada_em: new Date().toISOString() } as any)
+        .update({ status: 'fechada', fechada_em: new Date().toISOString() } as any)
         .eq('id', pulseiraId);
       if (closeError) throw closeError;
 
-      toast({ title: 'Pulseira encerrada com abatimento de crédito!' });
+      toast({ title: 'Pulseira fechada com abatimento de crédito!' });
       setPulseira(null);
       return true;
     } catch (err: any) {

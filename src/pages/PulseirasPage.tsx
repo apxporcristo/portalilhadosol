@@ -444,7 +444,7 @@ export default function PulseirasPage() {
                     ⚠ A pulseira não pode ser finalizada manualmente enquanto existir crédito ou produtos disponíveis para retirada.
                   </p>
                 )}
-                {pulseira.status === 'encerrada' && (
+                {pulseira.status === 'fechada' && (
                   <div className="flex gap-2 pt-2 flex-wrap">
                     <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}>
                       <History className="h-3.5 w-3.5 mr-1" /> Histórico
