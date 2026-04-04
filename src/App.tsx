@@ -21,6 +21,7 @@ import VoucherLista from "./pages/VoucherLista";
 import ComandasLista from "./pages/ComandasLista";
 import KdsPage from "./pages/KdsPage";
 import PulseirasPage from "./pages/PulseirasPage";
+import CaixaPage from "./pages/CaixaPage";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
