@@ -43,6 +43,7 @@ interface VendaGroup {
   atendente: string | null;
   cliente: string | null;
   origem: string;
+  origemKey: string;
 }
 
 export function ReimpressaoVendas() {
