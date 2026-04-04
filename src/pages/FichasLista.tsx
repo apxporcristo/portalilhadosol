@@ -1520,6 +1520,31 @@ export default function FichasLista() {
               if (!ok) { success = false; break; }
             }
             if (success) {
+              try {
+                const sbClient = await getSupabaseClient();
+                const codigoVenda = generateCodigoVenda();
+                for (const ci of cart) {
+                  const unitTotal = cartItemTotal(ci);
+                  let produtoNome = ci.ficha.nome_produto;
+                  if (ci.selectedItems.length > 0) {
+                    produtoNome += ' | ' + ci.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
+                  }
+                  await sbClient.from('fichas_impressas' as any).insert({
+                    produto_id: ci.ficha.id,
+                    produto_nome: produtoNome,
+                    categoria_id: ci.ficha.categoria_id,
+                    categoria_nome: ci.ficha.categoria_nome,
+                    quantidade: ci.quantidade,
+                    valor_unitario: unitTotal,
+                    valor_total: unitTotal * ci.quantidade,
+                    nome_cliente: confirmPulseira.nome_cliente || null,
+                    nome_atendente: userName || null,
+                    codigo_venda: codigoVenda,
+                    pulseira_id: confirmPulseira.id,
+                    pulseira_numero: confirmPulseira.numero,
+                  });
+                }
+              } catch (e) { console.warn('[Pulseira Modal] fichas_impressas insert falhou:', e); }
               clearCart();
               setConfirmPulseira(null);
               setShowPulseiraModal(false);
