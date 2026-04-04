@@ -260,11 +260,10 @@ export default function PulseirasPage() {
                 <div className="flex flex-wrap gap-2">
                   {isAtiva && (
                     <>
-                      <Button size="sm" variant={itemFormOpen ? 'default' : 'outline'} onClick={() => setItemFormOpen(!itemFormOpen)}><Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Item</Button>
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/fichas?pulseira_id=${detalhe.id}&pulseira_numero=${encodeURIComponent(detalhe.numero)}&pulseira_nome=${encodeURIComponent(detalhe.nome_cliente)}`)}><Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Item (Fichas)</Button>
                       <Button size="sm" variant="outline" onClick={() => setConsumoModal(true)}><Minus className="h-3.5 w-3.5 mr-1" /> Registrar Consumo</Button>
                       <Button size="sm" variant="outline" onClick={() => setBaixaModal(true)}><Package className="h-3.5 w-3.5 mr-1" /> Registrar Baixa</Button>
                       <Button size="sm" variant="outline" onClick={() => setAbateModal(true)}><DollarSign className="h-3.5 w-3.5 mr-1" /> Abate de Crédito</Button>
-                      <Button size="sm" variant="outline" onClick={() => navigate(`/fichas?pulseira_id=${detalhe.id}&pulseira_numero=${encodeURIComponent(detalhe.numero)}&pulseira_nome=${encodeURIComponent(detalhe.nome_cliente)}`)}><Plus className="h-3.5 w-3.5 mr-1" /> Fichas</Button>
                       <Button size="sm" variant="destructive" onClick={() => fecharPulseira(detalhe.id)}>Fechar Pulseira</Button>
                       <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
                     </>
