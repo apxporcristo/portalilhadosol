@@ -552,6 +552,10 @@ export default function FichasAdmin() {
               <Warehouse className="h-4 w-4" />
               Estoque
             </TabsTrigger>
+            <TabsTrigger value="kits" className="flex items-center gap-1">
+              <Package className="h-4 w-4" />
+              Kit
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="produtos" className="mt-6 space-y-6">
