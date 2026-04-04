@@ -281,9 +281,7 @@ export default function PulseirasPage() {
                             <TableCell className="font-medium">{s.produto_nome || 'Sem nome'}</TableCell>
                             <TableCell className="text-center">{s.quantidade_comprada ?? 0}</TableCell>
                             <TableCell className="text-center">{s.quantidade_consumida ?? 0}</TableCell>
-                            <TableCell className="text-center">{s.quantidade_baixada ?? 0}</TableCell>
                             <TableCell className="text-center font-bold">{s.quantidade_disponivel ?? 0}</TableCell>
-                            <TableCell className="text-right">{formatMoney(s.valor_comprado ?? 0)}</TableCell>
                             <TableCell className="text-right font-bold">{formatMoney(s.valor_disponivel ?? 0)}</TableCell>
                           </TableRow>
                         ))}
