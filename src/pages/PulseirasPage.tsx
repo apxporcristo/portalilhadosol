@@ -414,7 +414,11 @@ export default function PulseirasPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>Abate de Crédito</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Valor *</Label><Input type="number" step="0.01" min={0} value={aValor} onChange={e => setAValor(e.target.value)} placeholder="0.00" /></div>
+            <div className="rounded-md bg-muted p-3 text-sm flex justify-between">
+              <span className="text-muted-foreground">Saldo disponível:</span>
+              <span className="font-bold">{formatMoney(detalhe?.total_disponivel ?? 0)}</span>
+            </div>
+            <div><Label>Valor *</Label><Input type="number" step="0.01" min={0} max={detalhe?.total_disponivel ?? 0} value={aValor} onChange={e => setAValor(e.target.value)} placeholder="0.00" /></div>
             <div><Label>Descrição</Label><Input value={aDesc} onChange={e => setADesc(e.target.value)} placeholder="Opcional" /></div>
           </div>
           <DialogFooter><Button onClick={handleAbate}>Registrar</Button></DialogFooter>
