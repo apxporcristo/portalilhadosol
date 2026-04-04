@@ -32,7 +32,7 @@ export default function PulseirasPage() {
 
   // Modals
   const [abrirModal, setAbrirModal] = useState(false);
-  const [itemFormOpen, setItemFormOpen] = useState(false);
+  
   const [consumoModal, setConsumoModal] = useState(false);
   const [baixaModal, setBaixaModal] = useState(false);
   const [abateModal, setAbateModal] = useState(false);
