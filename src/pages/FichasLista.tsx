@@ -1537,7 +1537,6 @@ export default function FichasLista() {
                     nome_cliente: confirmPulseira.nome_cliente || null,
                     nome_atendente: userName || null,
                     codigo_venda: codigoVenda,
-                    pulseira_id: confirmPulseira.id,
                     pulseira_numero: confirmPulseira.numero,
                   });
                 }
