@@ -130,7 +130,7 @@ export default function EntradaMercadoriaTab() {
   }, [produtos, prodSearch]);
 
   const addItem = () => {
-    setItens(prev => [...prev, { produto_id: '', produto_nome: '', quantidade: 1, valor_comprado: 0, margem_lucro: 1, }]);
+    setItens(prev => [...prev, { produto_id: '', produto_nome: '', quantidade: 1, valor_comprado: 0, margem_lucro: 100, }]);
   };
 
   const removeItem = (idx: number) => {
