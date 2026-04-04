@@ -100,6 +100,7 @@ export default function EstoqueTab() {
               <TableHead className="text-center">Comprado</TableHead>
               <TableHead className="text-center">Vendido</TableHead>
               <TableHead className="text-center">Estoque atual</TableHead>
+              <TableHead className="text-center">Kit</TableHead>
               <TableHead className="text-center">Est. Negativo</TableHead>
             </TableRow>
           </TableHeader>
