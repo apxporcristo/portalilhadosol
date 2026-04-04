@@ -244,11 +244,17 @@ export default function PulseirasPage() {
                   <div className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-muted-foreground" />Aberta em {formatDate(detalhe.aberta_em)}</div>
                   {detalhe.fechada_em && <div className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-muted-foreground" />Fechada em {formatDate(detalhe.fechada_em)}</div>}
                 </div>
-                <div className="grid grid-cols-3 gap-2 pt-2 text-center">
-                  <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Comprado</div><div className="font-bold">{formatMoney(detalhe.total_comprado)}</div></div>
-                  <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Consumido</div><div className="font-bold">{formatMoney((detalhe.total_consumido ?? 0) + (detalhe.total_baixado ?? 0))}</div></div>
-                  <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Disponível</div><div className="font-bold">{formatMoney(detalhe.total_disponivel)}</div></div>
-                </div>
+                {(() => {
+                  const temAbate = (detalhe.total_abatido ?? 0) > 0;
+                  return (
+                    <div className={`grid ${temAbate ? 'grid-cols-4' : 'grid-cols-3'} gap-2 pt-2 text-center`}>
+                      <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Comprado</div><div className="font-bold">{formatMoney(detalhe.total_comprado)}</div></div>
+                      <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Consumido</div><div className="font-bold">{formatMoney((detalhe.total_consumido ?? 0) + (detalhe.total_baixado ?? 0))}</div></div>
+                      {temAbate && <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Abatido</div><div className="font-bold">{formatMoney(detalhe.total_abatido)}</div></div>}
+                      <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Disponível</div><div className="font-bold">{formatMoney(detalhe.total_disponivel)}</div></div>
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
 
