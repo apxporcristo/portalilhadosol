@@ -100,7 +100,7 @@ export default function FichasLista() {
   // Lançar na comanda
   const [showComandaModal, setShowComandaModal] = useState(false);
   const [comandaSearch, setComandaSearch] = useState('');
-  const [confirmComanda, setConfirmComanda] = useState<{ id: string; numero: number } | null>(null);
+  const [confirmComanda, setConfirmComanda] = useState<{ id: string; numero: number; nome_cliente?: string | null } | null>(null);
 
   // Lançar na pulseira
   const [showPulseiraModal, setShowPulseiraModal] = useState(false);
@@ -1407,7 +1407,7 @@ export default function FichasLista() {
             }).map(c => (
               <button
                 key={c.id}
-                onClick={() => setConfirmComanda({ id: c.id, numero: c.numero })}
+                onClick={() => setConfirmComanda({ id: c.id, numero: c.numero, nome_cliente: c.nome_cliente })}
                 className="w-full flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors text-left"
               >
                 <div>
