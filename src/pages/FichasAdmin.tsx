@@ -763,6 +763,14 @@ export default function FichasAdmin() {
           <TabsContent value="comandas" className="mt-6">
             <ComandasAdminTab />
           </TabsContent>
+
+          <TabsContent value="entradas" className="mt-6">
+            <EntradaMercadoriaTab />
+          </TabsContent>
+
+          <TabsContent value="estoque" className="mt-6">
+            <EstoqueTab />
+          </TabsContent>
         </Tabs>
       </main>
 
