@@ -127,8 +127,6 @@ export default function EstoqueTab() {
                         <span className="text-muted-foreground text-xs">Não</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right">{fmt(item.ultimo_valor_comprado)}</TableCell>
-                    <TableCell className="text-right">{fmt(item.ultimo_valor_venda)}</TableCell>
                   </TableRow>
                 );
               })
