@@ -219,7 +219,7 @@ export default function FichasAdmin() {
         setShowProdModal(false);
         toast({ title: 'Produto cadastrado!' });
       }
-      setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false });
+      setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false, kit: false, quantidade_a_baixar: '1' });
     } catch (err: any) {
       toast({ title: 'Erro ao salvar produto', description: err?.message || 'Erro desconhecido', variant: 'destructive' });
     } finally {
