@@ -419,26 +419,32 @@ export type Database = {
       fichas_kits: {
         Row: {
           ativo: boolean
+          categoria_id: string | null
           created_at: string
           id: string
+          nome_kit: string
           observacao: string | null
-          produto_principal_id: string
+          produto_principal_id: string | null
           updated_at: string
         }
         Insert: {
           ativo?: boolean
+          categoria_id?: string | null
           created_at?: string
           id?: string
+          nome_kit?: string
           observacao?: string | null
-          produto_principal_id: string
+          produto_principal_id?: string | null
           updated_at?: string
         }
         Update: {
           ativo?: boolean
+          categoria_id?: string | null
           created_at?: string
           id?: string
+          nome_kit?: string
           observacao?: string | null
-          produto_principal_id?: string
+          produto_principal_id?: string | null
           updated_at?: string
         }
         Relationships: []
