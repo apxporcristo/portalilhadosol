@@ -58,7 +58,7 @@ const Index = () => {
   const cart = useVoucherCart();
   const fichasConsumo = useFichasConsumo();
   const { comandasAbertas } = useComandas();
-  const { pulseirasAbertas } = usePulseiras();
+  const { pulseirasAbertas, listarAbertas: listarPulseirasAbertas } = usePulseiras();
   const navigate = useNavigate();
   const androidBridge = useAndroidBridge();
   const [batchPrinting, setBatchPrinting] = useState(false);
@@ -85,6 +85,10 @@ const Index = () => {
       });
     });
   }, []);
+
+  useEffect(() => {
+    listarPulseirasAbertas();
+  }, [listarPulseirasAbertas]);
 
   useEffect(() => {
     if (isAdmin) refetch();
