@@ -490,7 +490,6 @@ export default function FichasLista() {
           telefone_cliente: telefoneCliente.trim() || null,
           nome_atendente: nomeAtendente.trim() || null,
           codigo_venda: codigoVenda,
-          pulseira_id: pulseiraContextId || null,
           pulseira_numero: pulseiraContextNumero || null,
         });
       } catch (e) { console.warn('[Ficha] fichas_impressas insert falhou:', e); }
@@ -605,7 +604,6 @@ export default function FichasLista() {
               nome_cliente: pulseiraContextNome || null,
               nome_atendente: userName || null,
               codigo_venda: codigoVenda,
-              pulseira_id: pulseiraContextId,
               pulseira_numero: pulseiraContextNumero,
             });
           }
@@ -847,7 +845,6 @@ export default function FichasLista() {
             telefone_cliente: telefoneCliente.trim() || null,
             nome_atendente: nomeAtendente.trim() || null,
             codigo_venda: codigoVenda,
-            pulseira_id: pulseiraContextId || null,
             pulseira_numero: pulseiraContextNumero || null,
           });
         } catch (insErr) {
@@ -1441,7 +1438,6 @@ export default function FichasLista() {
                   nome_cliente: nomeCliente.trim() || null,
                   nome_atendente: userName || null,
                   codigo_venda: codigoVenda,
-                  comanda_id: confirmComanda.id,
                   comanda_numero: String(confirmComanda.numero),
                 });
               }
@@ -1540,7 +1536,6 @@ export default function FichasLista() {
                     nome_cliente: confirmPulseira.nome_cliente || null,
                     nome_atendente: userName || null,
                     codigo_venda: codigoVenda,
-                    pulseira_id: confirmPulseira.id,
                     pulseira_numero: confirmPulseira.numero,
                   });
                 }
