@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { getSupabaseClient } from '@/hooks/useVouchers';
+import { useUserSession } from '@/contexts/UserSessionContext';
 
 interface ProdutoAtivo {
   id: string;
