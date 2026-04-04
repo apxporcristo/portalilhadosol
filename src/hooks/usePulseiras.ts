@@ -653,7 +653,7 @@ export function usePulseiras() {
       const db = await getSupabaseClient();
       const { error } = await db
         .from('pulseiras')
-        .update({ status: 'encerrada', fechada_em: new Date().toISOString() } as any)
+        .update({ status: 'fechada', fechada_em: new Date().toISOString() } as any)
         .eq('id', pulseiraId);
       if (error) throw error;
       toast({ title: 'Pulseira fechada!' });
