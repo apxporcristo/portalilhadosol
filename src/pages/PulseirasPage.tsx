@@ -32,7 +32,7 @@ export default function PulseirasPage() {
 
   // Modals
   const [abrirModal, setAbrirModal] = useState(false);
-  const [itemModal, setItemModal] = useState(false);
+  const [itemFormOpen, setItemFormOpen] = useState(false);
   const [consumoModal, setConsumoModal] = useState(false);
   const [baixaModal, setBaixaModal] = useState(false);
   const [abateModal, setAbateModal] = useState(false);
@@ -131,7 +131,7 @@ export default function PulseirasPage() {
   const handleItem = async () => {
     if (!detalhe || !iProdutoNome.trim() || iQtd < 1 || !iValor) return;
     const ok = await registrarItem(detalhe.id, { produto_nome: iProdutoNome.trim(), quantidade: iQtd, valor_unitario: parseFloat(iValor), observacao: iObs || undefined });
-    if (ok) { setItemModal(false); setIProdutoNome(''); setIQtd(1); setIValor(''); setIObs(''); }
+    if (ok) { setIProdutoNome(''); setIQtd(1); setIValor(''); setIObs(''); setItemFormOpen(false); }
   };
 
   const handleConsumo = async () => {
@@ -260,7 +260,7 @@ export default function PulseirasPage() {
                 <div className="flex flex-wrap gap-2">
                   {isAtiva && (
                     <>
-                      <Button size="sm" variant="outline" onClick={() => setItemModal(true)}><Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Item</Button>
+                      <Button size="sm" variant={itemFormOpen ? 'default' : 'outline'} onClick={() => setItemFormOpen(!itemFormOpen)}><Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Item</Button>
                       <Button size="sm" variant="outline" onClick={() => setConsumoModal(true)}><Minus className="h-3.5 w-3.5 mr-1" /> Registrar Consumo</Button>
                       <Button size="sm" variant="outline" onClick={() => setBaixaModal(true)}><Package className="h-3.5 w-3.5 mr-1" /> Registrar Baixa</Button>
                       <Button size="sm" variant="outline" onClick={() => setAbateModal(true)}><DollarSign className="h-3.5 w-3.5 mr-1" /> Abate de Crédito</Button>
@@ -276,6 +276,22 @@ export default function PulseirasPage() {
                     </>
                   )}
                 </div>
+                {/* Inline: Adicionar Item */}
+                {isAtiva && itemFormOpen && (
+                  <div className="mt-4 border-t pt-4 space-y-3">
+                    <h4 className="font-semibold text-sm">Adicionar Item</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div><Label>Nome do Produto *</Label><Input value={iProdutoNome} onChange={e => setIProdutoNome(e.target.value)} placeholder="Nome do produto" /></div>
+                      <div><Label>Quantidade *</Label><Input type="number" min={1} value={iQtd} onChange={e => setIQtd(parseInt(e.target.value) || 1)} /></div>
+                      <div><Label>Valor Unitário *</Label><Input type="number" step="0.01" min={0} value={iValor} onChange={e => setIValor(e.target.value)} placeholder="0.00" /></div>
+                      <div><Label>Observação</Label><Input value={iObs} onChange={e => setIObs(e.target.value)} placeholder="Opcional" /></div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={handleItem}>Adicionar</Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setItemFormOpen(false); setIProdutoNome(''); setIQtd(1); setIValor(''); setIObs(''); }}>Cancelar</Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -392,19 +408,6 @@ export default function PulseirasPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal: Adicionar Item */}
-      <Dialog open={itemModal} onOpenChange={setItemModal}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Adicionar Item</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Nome do Produto *</Label><Input value={iProdutoNome} onChange={e => setIProdutoNome(e.target.value)} placeholder="Nome do produto" /></div>
-            <div><Label>Quantidade *</Label><Input type="number" min={1} value={iQtd} onChange={e => setIQtd(parseInt(e.target.value) || 1)} /></div>
-            <div><Label>Valor Unitário *</Label><Input type="number" step="0.01" min={0} value={iValor} onChange={e => setIValor(e.target.value)} placeholder="0.00" /></div>
-            <div><Label>Observação</Label><Input value={iObs} onChange={e => setIObs(e.target.value)} placeholder="Opcional" /></div>
-          </div>
-          <DialogFooter><Button onClick={handleItem}>Adicionar</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Modal: Registrar Consumo */}
       <Dialog open={consumoModal} onOpenChange={setConsumoModal}>
