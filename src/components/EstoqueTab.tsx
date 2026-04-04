@@ -124,6 +124,13 @@ export default function EstoqueTab() {
                       {item.estoque_atual}
                     </TableCell>
                     <TableCell className="text-center">
+                      {item.kit ? (
+                        <Badge variant="outline" className="text-xs">{item.quantidade_a_baixar}x</Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
                       {item.estoque_negativo ? (
                         <Badge variant="outline" className="text-xs">Aceita negativo</Badge>
                       ) : (

@@ -907,7 +907,7 @@ export default function FichasAdmin() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowProdModal(false); setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false }); }}>Cancelar</Button>
+            <Button variant="outline" onClick={() => { setShowProdModal(false); setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false, kit: false, quantidade_a_baixar: '1' }); }}>Cancelar</Button>
             <Button onClick={handleSaveProd} disabled={savingProd}>
               <Save className="h-4 w-4 mr-2" />
               {editProd ? 'Salvar alterações' : 'Cadastrar produto'}
