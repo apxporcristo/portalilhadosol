@@ -38,6 +38,83 @@ export type Database = {
         }
         Relationships: []
       }
+      caixa_movimentacoes: {
+        Row: {
+          caixa_id: string
+          created_at: string
+          descricao: string | null
+          id: string
+          tipo: string
+          valor: number
+        }
+        Insert: {
+          caixa_id: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          tipo: string
+          valor?: number
+        }
+        Update: {
+          caixa_id?: string
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          tipo?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caixa_movimentacoes_caixa_id_fkey"
+            columns: ["caixa_id"]
+            isOneToOne: false
+            referencedRelation: "caixas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caixas: {
+        Row: {
+          aberto_em: string
+          created_at: string
+          fechado_em: string | null
+          id: string
+          observacao: string | null
+          status: string
+          total_sangrias: number
+          total_vendas: number
+          usuario_id: string
+          usuario_nome: string
+          valor_abertura: number
+        }
+        Insert: {
+          aberto_em?: string
+          created_at?: string
+          fechado_em?: string | null
+          id?: string
+          observacao?: string | null
+          status?: string
+          total_sangrias?: number
+          total_vendas?: number
+          usuario_id: string
+          usuario_nome?: string
+          valor_abertura?: number
+        }
+        Update: {
+          aberto_em?: string
+          created_at?: string
+          fechado_em?: string | null
+          id?: string
+          observacao?: string | null
+          status?: string
+          total_sangrias?: number
+          total_vendas?: number
+          usuario_id?: string
+          usuario_nome?: string
+          valor_abertura?: number
+        }
+        Relationships: []
+      }
       fichas_categorias: {
         Row: {
           ativo: boolean
@@ -592,6 +669,19 @@ export type Database = {
       }
     }
     Functions: {
+      abrir_caixa: {
+        Args: {
+          p_observacao?: string
+          p_usuario_id: string
+          p_usuario_nome: string
+          p_valor_abertura?: number
+        }
+        Returns: string
+      }
+      fechar_caixa: {
+        Args: { p_observacao?: string; p_usuario_id: string }
+        Returns: string
+      }
       registrar_impressao_fichas:
         | {
             Args: {
@@ -614,6 +704,10 @@ export type Database = {
             }
             Returns: string
           }
+      registrar_sangria_caixa: {
+        Args: { p_descricao?: string; p_usuario_id: string; p_valor: number }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
