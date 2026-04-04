@@ -556,22 +556,17 @@ export default function FichasLista() {
   const addItemsToPulseiraContext = async (): Promise<boolean> => {
     if (!hasPulseiraContext || !pulseiraContextId) return false;
     try {
-      const usuarioId = userSession?.user?.id;
-      if (!usuarioId) {
-        toast({ title: 'Erro', description: 'Não foi possível adicionar o produto à pulseira.', variant: 'destructive' });
-        return false;
+      for (const ci of cart) {
+        const produtoNome = ci.ficha.nome_produto + (ci.selectedItems.length > 0 ? ' | ' + ci.selectedItems.map(si => si.item.nome).join(', ') : '');
+        const success = await registrarItem(pulseiraContextId, {
+          produto_id: ci.ficha.id,
+          produto_nome: produtoNome,
+          quantidade: ci.quantidade,
+          valor_unitario: cartItemTotal(ci),
+        });
+        if (!success) return false;
       }
-
-      const itemsToAdd = cart.map(ci => ({
-        produto_id: ci.ficha.id,
-        produto_nome: ci.ficha.nome_produto + (ci.selectedItems.length > 0 ? ' | ' + ci.selectedItems.map(si => si.item.nome).join(', ') : ''),
-        quantidade: ci.quantidade,
-        valor_unitario: cartItemTotal(ci),
-        atendente_user_id: usuarioId,
-        atendente_nome: userName || undefined,
-      }));
-      const success = await adicionarItensPulseira(pulseiraContextId, itemsToAdd);
-      return !!success;
+      return true;
     } catch (err: any) {
       toast({ title: 'Erro', description: 'Não foi possível adicionar o produto à pulseira.', variant: 'destructive' });
       return false;
