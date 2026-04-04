@@ -246,7 +246,7 @@ export default function PulseirasPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-2 pt-2 text-center">
                   <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Comprado</div><div className="font-bold">{formatMoney(detalhe.total_comprado)}</div></div>
-                  <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Consumido</div><div className="font-bold">{formatMoney(detalhe.total_consumido)}</div></div>
+                  <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Consumido</div><div className="font-bold">{formatMoney((detalhe.total_consumido ?? 0) + (detalhe.total_baixado ?? 0))}</div></div>
                   <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Disponível</div><div className="font-bold">{formatMoney(detalhe.total_disponivel)}</div></div>
                 </div>
               </CardContent>
@@ -290,7 +290,7 @@ export default function PulseirasPage() {
                           >
                             <TableCell className="font-medium">{s.produto_nome || 'Sem nome'}</TableCell>
                             <TableCell className="text-center">{s.quantidade_comprada ?? 0}</TableCell>
-                            <TableCell className="text-center">{s.quantidade_consumida ?? 0}</TableCell>
+                            <TableCell className="text-center">{(s.quantidade_consumida ?? 0) + (s.quantidade_baixada ?? 0)}</TableCell>
                             <TableCell className="text-center font-bold">{s.quantidade_disponivel ?? 0}</TableCell>
                             <TableCell className="text-right font-bold">{formatMoney(s.valor_disponivel ?? 0)}</TableCell>
                           </TableRow>
