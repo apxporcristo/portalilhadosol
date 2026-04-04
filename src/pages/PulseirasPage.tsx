@@ -322,7 +322,7 @@ export default function PulseirasPage() {
                   {isFechada && (
                     <>
                       <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}><History className="h-3.5 w-3.5 mr-1" /> Histórico</Button>
-                      {detalhe.pode_reabrir && <Button size="sm" variant="outline" onClick={() => reabrirPulseira(detalhe.id)}><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reabrir</Button>}
+                      {detalhe.pode_reabrir && <Button size="sm" variant="outline" onClick={() => reabrirPulseira(detalhe.id, { reaberta_por: userSession?.access?.user_id, reaberta_por_nome: userSession?.access?.nome || userSession?.user?.email || undefined })}><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reabrir</Button>}
                       {!temItens && (
                         <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
                       )}
