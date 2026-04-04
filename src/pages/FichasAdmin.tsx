@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Pencil, Trash2, Save, Tag, Package, BarChart3, Filter, Search, Printer as PrinterIcon, Link2, Layers, Copy, ClipboardList } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, Trash2, Save, Tag, Package, BarChart3, Filter, Search, Printer as PrinterIcon, Link2, Layers, Copy, ClipboardList, Truck, Warehouse } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { Lock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import EntradaMercadoriaTab from '@/components/EntradaMercadoriaTab';
+import EstoqueTab from '@/components/EstoqueTab';
 
 export default function FichasAdmin() {
   const navigate = useNavigate();
@@ -45,7 +47,7 @@ export default function FichasAdmin() {
   const impressorasAtivas = impressoras.filter(p => p.ativa);
 
   // Product form
-  const [prodForm, setProdForm] = useState({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false });
+  const [prodForm, setProdForm] = useState({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false });
   const [editProd, setEditProd] = useState<FichaProduto | null>(null);
   const [deleteProdId, setDeleteProdId] = useState<string | null>(null);
   const [filterAtivo, setFilterAtivo] = useState<'all' | 'true' | 'false'>('all');
@@ -180,6 +182,7 @@ export default function FichasAdmin() {
           obs: prodForm.obs.trim() || null,
           imprimir_ficha: prodForm.imprimir_ficha,
           enviar_para_kds: prodForm.enviar_para_kds,
+          estoque_negativo: prodForm.estoque_negativo,
         };
         if (isPrinted(editProd.id) && !isNameSimilar(editProd.nome_produto, prodForm.nome_produto.trim())) {
           toast({ title: 'Nome não pode ser alterado', description: 'Este produto já foi impresso. Apenas correções pequenas são permitidas.', variant: 'destructive' });
@@ -203,11 +206,12 @@ export default function FichasAdmin() {
           obs: prodForm.obs.trim() || null,
           imprimir_ficha: prodForm.imprimir_ficha,
           enviar_para_kds: prodForm.enviar_para_kds,
+          estoque_negativo: prodForm.estoque_negativo,
         } as any);
         setShowProdModal(false);
         toast({ title: 'Produto cadastrado!' });
       }
-      setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false });
+      setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false });
     } catch (err: any) {
       toast({ title: 'Erro ao salvar produto', description: err?.message || 'Erro desconhecido', variant: 'destructive' });
     } finally {
@@ -229,6 +233,7 @@ export default function FichasAdmin() {
       obs: (p as any).obs || '',
       imprimir_ficha: (p as any).imprimir_ficha ?? true,
       enviar_para_kds: (p as any).enviar_para_kds ?? false,
+      estoque_negativo: (p as any).estoque_negativo ?? false,
     });
     setShowProdModal(true);
   };
@@ -528,12 +533,20 @@ export default function FichasAdmin() {
               <BarChart3 className="h-4 w-4" />
               Relatório
             </TabsTrigger>
+            <TabsTrigger value="entradas" className="flex items-center gap-1">
+              <Truck className="h-4 w-4" />
+              Entrada
+            </TabsTrigger>
+            <TabsTrigger value="estoque" className="flex items-center gap-1">
+              <Warehouse className="h-4 w-4" />
+              Estoque
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="produtos" className="mt-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Produtos cadastrados</h2>
-              <Button onClick={() => { setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false }); setShowProdModal(true); }}>
+              <Button onClick={() => { setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false }); setShowProdModal(true); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Incluir produto
               </Button>
@@ -752,6 +765,14 @@ export default function FichasAdmin() {
           <TabsContent value="comandas" className="mt-6">
             <ComandasAdminTab />
           </TabsContent>
+
+          <TabsContent value="entradas" className="mt-6">
+            <EntradaMercadoriaTab />
+          </TabsContent>
+
+          <TabsContent value="estoque" className="mt-6">
+            <EstoqueTab />
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -829,7 +850,12 @@ export default function FichasAdmin() {
                 <Switch checked={prodForm.enviar_para_kds} onCheckedChange={(v) => setProdForm(p => ({ ...p, enviar_para_kds: v }))} />
                 <Label>Enviar para KDS</Label>
               </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={prodForm.estoque_negativo} onCheckedChange={(v) => setProdForm(p => ({ ...p, estoque_negativo: v }))} />
+                <Label>Permitir estoque negativo</Label>
+              </div>
             </div>
+            <p className="text-xs text-muted-foreground">Quando ativado, o produto poderá ser vendido mesmo com estoque zerado ou negativo.</p>
             {prodForm.imprimir_ficha && (
               <div className="space-y-2">
                 <Label>Impressora</Label>
@@ -860,7 +886,7 @@ export default function FichasAdmin() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowProdModal(false); setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false }); }}>Cancelar</Button>
+            <Button variant="outline" onClick={() => { setShowProdModal(false); setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false }); }}>Cancelar</Button>
             <Button onClick={handleSaveProd} disabled={savingProd}>
               <Save className="h-4 w-4 mr-2" />
               {editProd ? 'Salvar alterações' : 'Cadastrar produto'}

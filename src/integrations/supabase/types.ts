@@ -115,6 +115,86 @@ export type Database = {
         }
         Relationships: []
       }
+      entradas_mercadoria: {
+        Row: {
+          created_at: string
+          data_compra: string
+          id: string
+          numero_nota: string
+          observacao: string | null
+          usuario_id: string | null
+          usuario_nome: string | null
+        }
+        Insert: {
+          created_at?: string
+          data_compra: string
+          id?: string
+          numero_nota: string
+          observacao?: string | null
+          usuario_id?: string | null
+          usuario_nome?: string | null
+        }
+        Update: {
+          created_at?: string
+          data_compra?: string
+          id?: string
+          numero_nota?: string
+          observacao?: string | null
+          usuario_id?: string | null
+          usuario_nome?: string | null
+        }
+        Relationships: []
+      }
+      entradas_mercadoria_itens: {
+        Row: {
+          created_at: string
+          entrada_id: string
+          id: string
+          margem_lucro: number
+          produto_id: string
+          produto_nome: string
+          quantidade: number
+          valor_comprado: number
+          valor_total_comprado: number
+          valor_total_venda: number
+          valor_venda: number
+        }
+        Insert: {
+          created_at?: string
+          entrada_id: string
+          id?: string
+          margem_lucro?: number
+          produto_id: string
+          produto_nome: string
+          quantidade?: number
+          valor_comprado?: number
+          valor_total_comprado?: number
+          valor_total_venda?: number
+          valor_venda?: number
+        }
+        Update: {
+          created_at?: string
+          entrada_id?: string
+          id?: string
+          margem_lucro?: number
+          produto_id?: string
+          produto_nome?: string
+          quantidade?: number
+          valor_comprado?: number
+          valor_total_comprado?: number
+          valor_total_venda?: number
+          valor_venda?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entradas_mercadoria_itens_entrada_id_fkey"
+            columns: ["entrada_id"]
+            isOneToOne: false
+            referencedRelation: "entradas_mercadoria"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fichas_categorias: {
         Row: {
           ativo: boolean
@@ -215,6 +295,13 @@ export type Database = {
             foreignKeyName: "fichas_impressas_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
+            referencedRelation: "vw_estoque"
+            referencedColumns: ["produto_id"]
+          },
+          {
+            foreignKeyName: "fichas_impressas_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
             referencedRelation: "vw_fichas_ativas"
             referencedColumns: ["id"]
           },
@@ -285,6 +372,13 @@ export type Database = {
             foreignKeyName: "fichas_impressoes_produto_id_fkey"
             columns: ["produto_id"]
             isOneToOne: false
+            referencedRelation: "vw_estoque"
+            referencedColumns: ["produto_id"]
+          },
+          {
+            foreignKeyName: "fichas_impressoes_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
             referencedRelation: "vw_fichas_ativas"
             referencedColumns: ["id"]
           },
@@ -295,6 +389,7 @@ export type Database = {
           ativo: boolean
           categoria_id: string
           created_at: string
+          estoque_negativo: boolean
           forma_venda: string
           id: string
           nome_produto: string
@@ -309,6 +404,7 @@ export type Database = {
           ativo?: boolean
           categoria_id: string
           created_at?: string
+          estoque_negativo?: boolean
           forma_venda?: string
           id?: string
           nome_produto: string
@@ -323,6 +419,7 @@ export type Database = {
           ativo?: boolean
           categoria_id?: string
           created_at?: string
+          estoque_negativo?: boolean
           forma_venda?: string
           id?: string
           nome_produto?: string
@@ -559,6 +656,31 @@ export type Database = {
       }
     }
     Views: {
+      vw_estoque: {
+        Row: {
+          ativo: boolean | null
+          categoria_id: string | null
+          estoque_atual: number | null
+          estoque_negativo: boolean | null
+          nome_categoria: string | null
+          nome_produto: string | null
+          produto_id: string | null
+          quantidade_comprada: number | null
+          quantidade_vendida: number | null
+          ultimo_valor_comprado: number | null
+          ultimo_valor_venda: number | null
+          valor_venda_atual: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fichas_produtos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "fichas_categorias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vw_fichas_ativas: {
         Row: {
           categoria_id: string | null
@@ -657,6 +779,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "fichas_produtos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fichas_impressas_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_estoque"
+            referencedColumns: ["produto_id"]
           },
           {
             foreignKeyName: "fichas_impressas_produto_id_fkey"
