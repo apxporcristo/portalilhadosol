@@ -355,6 +355,42 @@ export default function KitTab() {
         </DialogContent>
       </Dialog>
 
+      {/* Modal busca produto */}
+      <Dialog open={showProdModal} onOpenChange={setShowProdModal}>
+        <DialogContent className="max-w-md max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Selecionar Produto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar produto..."
+                value={prodSearch}
+                onChange={e => setProdSearch(e.target.value)}
+                className="pl-9"
+                autoFocus
+              />
+            </div>
+            <div className="max-h-[50vh] overflow-y-auto border rounded-md">
+              {filteredModalProducts.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhum produto encontrado.</p>
+              ) : (
+                filteredModalProducts.map(p => (
+                  <button
+                    key={p.id}
+                    className="w-full text-left px-3 py-2 hover:bg-accent text-sm border-b last:border-b-0 transition-colors"
+                    onClick={() => selectComponente(p.id)}
+                  >
+                    {p.nome_produto}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <ConfirmDialog open={!!deleteKitId} onOpenChange={(open) => !open && setDeleteKitId(null)} title="Excluir kit" description="Tem certeza que deseja excluir este kit? Os componentes serão removidos." onConfirm={handleDelete} />
     </div>
   );
