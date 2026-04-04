@@ -856,20 +856,6 @@ export default function FichasAdmin() {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">Quando ativado, o produto poderá ser vendido mesmo com estoque zerado ou negativo.</p>
-            {prodForm.imprimir_ficha && (
-              <div className="space-y-2">
-                <Label>Impressora</Label>
-                <Select value={prodForm.printer_id} onValueChange={(v) => setProdForm(p => ({ ...p, printer_id: v === '_none' ? '' : v }))}>
-                  <SelectTrigger><SelectValue placeholder="Usar padrão" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_none">Nenhuma (usar padrão)</SelectItem>
-                    {impressorasAtivas.map(imp => (
-                      <SelectItem key={imp.id} value={imp.id}>{imp.nome} ({imp.tipo})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
             <div className="space-y-2">
               <Label>Observação <span className="text-muted-foreground text-xs">(opcional, aparece na ficha)</span></Label>
               <Input value={prodForm.obs} onChange={(e) => setProdForm(p => ({ ...p, obs: e.target.value }))} placeholder="Ex: Acompanha arroz e salada" maxLength={100} />
