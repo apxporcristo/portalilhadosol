@@ -146,6 +146,7 @@ export default function FichasRelatorio() {
                   {categorias.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
           </div>
         </div>
 
