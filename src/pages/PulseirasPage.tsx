@@ -143,7 +143,12 @@ export default function PulseirasPage() {
 
   const handleAbate = async () => {
     if (!detalhe || !aValor) return;
-    const ok = await registrarAbateCredito(detalhe.id, { valor: parseFloat(aValor), descricao: aDesc || undefined });
+    const ok = await registrarAbateCredito(detalhe.id, {
+      valor: parseFloat(aValor),
+      descricao: aDesc || undefined,
+      usuario_id: userSession?.access?.user_id,
+      usuario_nome: userSession?.access?.nome || userSession?.user?.email || undefined,
+    });
     if (ok) { setAbateModal(false); setAValor(''); setADesc(''); }
   };
 
