@@ -110,7 +110,7 @@ export default function EstoqueTab() {
                 const negativo = item.estoque_atual < 0;
                 return (
                   <TableRow key={item.produto_id} className={semEstoque ? 'bg-destructive/5' : negativo ? 'bg-yellow-50 dark:bg-yellow-950/20' : ''}>
-                    <TableCell>{item.nome_categoria}</TableCell>
+                    
                     <TableCell className="font-medium">
                       {item.nome_produto}
                       {semEstoque && <Badge variant="destructive" className="ml-2 text-xs">Sem estoque</Badge>}
