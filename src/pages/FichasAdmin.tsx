@@ -556,7 +556,7 @@ export default function FichasAdmin() {
           <TabsContent value="produtos" className="mt-6 space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Produtos cadastrados</h2>
-              <Button onClick={() => { setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false }); setShowProdModal(true); }}>
+              <Button onClick={() => { setEditProd(null); setProdForm({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false, kit: false, quantidade_a_baixar: '1' }); setShowProdModal(true); }}>
                 <Plus className="h-4 w-4 mr-2" />
                 Incluir produto
               </Button>
