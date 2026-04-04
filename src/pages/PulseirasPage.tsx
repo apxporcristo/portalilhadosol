@@ -246,7 +246,7 @@ export default function PulseirasPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-2 pt-2 text-center">
                   <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Comprado</div><div className="font-bold">{formatMoney(detalhe.total_comprado)}</div></div>
-                  <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Consumido</div><div className="font-bold">{formatMoney(detalhe.total_consumido)}</div></div>
+                  <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Consumido</div><div className="font-bold">{formatMoney((detalhe.total_consumido ?? 0) + (detalhe.total_baixado ?? 0))}</div></div>
                   <div className="rounded-md bg-muted p-2"><div className="text-xs text-muted-foreground">Disponível</div><div className="font-bold">{formatMoney(detalhe.total_disponivel)}</div></div>
                 </div>
               </CardContent>
