@@ -219,19 +219,39 @@ export function usePulseiras() {
   }, []);
 
   const carregarSaldosFallback = useCallback(async (db: any, pulseiraId: string): Promise<PulseiraProdutoResumo[]> => {
-    // Step 1: Try view
-    console.log('[Pulseiras][Fallback] Step 1: Tentando view vw_pulseira_saldo_produto com pulseira_id:', pulseiraId);
+    // Step 1: Try view vw_pulseira_saldos (preferred)
+    console.log('[Pulseiras][Fallback] Step 1: Tentando view vw_pulseira_saldos com pulseira_id:', pulseiraId);
+    const { data: saldosData, error: saldosError } = await db
+      .from('vw_pulseira_saldos' as any)
+      .select('*')
+      .eq('pulseira_id', pulseiraId);
+
+    if (!saldosError && Array.isArray(saldosData) && saldosData.length > 0) {
+      console.log('[Pulseiras][Fallback] vw_pulseira_saldos OK:', saldosData.length, 'registros');
+      return saldosData.map((row: any): PulseiraProdutoResumo => ({
+        pulseira_id: String(row.pulseira_id || pulseiraId),
+        produto_id: String(row.produto_id || ''),
+        produto_nome: String(row.produto_nome || 'Produto sem nome'),
+        comprado: Number(row.quantidade_comprada ?? 0),
+        consumido: Number(row.quantidade_consumida ?? 0),
+        disponivel: Math.max(0, Number(row.quantidade_disponivel ?? 0)),
+        valor_unitario: Number(row.quantidade_comprada) > 0 ? Number(row.valor_comprado ?? 0) / Number(row.quantidade_comprada) : 0,
+        ultima_retirada: null,
+        ultimo_atendente: null,
+      }));
+    }
+    if (saldosError) console.warn('[Pulseiras][Fallback] vw_pulseira_saldos falhou:', saldosError.message);
+
+    // Step 1b: Try legacy view vw_pulseira_saldo_produto
     const { data: viewData, error: viewError } = await db
       .from('vw_pulseira_saldo_produto' as any)
       .select('*')
       .eq('pulseira_id', pulseiraId);
 
     if (!viewError && Array.isArray(viewData) && viewData.length > 0) {
-      console.log('[Pulseiras][Fallback] View OK:', viewData.length, 'registros. Primeiro:', JSON.stringify(viewData[0]));
       return viewData.map((row: any) => normalizeSaldoRow(row, pulseiraId));
     }
-    if (viewError) console.warn('[Pulseiras][Fallback] View falhou:', viewError.message, viewError.code);
-    else console.warn('[Pulseiras][Fallback] View retornou array vazio');
+    if (viewError) console.warn('[Pulseiras][Fallback] vw_pulseira_saldo_produto falhou:', viewError.message);
 
     // Step 2: Try direct tables
     console.log('[Pulseiras][Fallback] Step 2: Tentando tabelas diretas pulseira_itens e pulseira_baixas');
