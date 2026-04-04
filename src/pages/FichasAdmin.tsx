@@ -596,6 +596,7 @@ export default function FichasAdmin() {
                     <TableHead>Nome</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Kit</TableHead>
                     <TableHead>Compl.</TableHead>
                     <TableHead>Impressões</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
