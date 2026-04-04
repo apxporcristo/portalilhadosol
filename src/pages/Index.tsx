@@ -324,33 +324,41 @@ const Index = () => {
                 )}
               </div>
 
-              {/* Comandas abaixo, largura total */}
-              {canSeeFichas && (
-                <Card
-                  className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary"
-                  onClick={() => navigate('/comandas')}
-                >
-                  <CardContent className="flex items-center justify-between gap-3 p-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <ClipboardList className="h-8 w-8 text-primary" />
-                      </div>
-                      <div>
-                        <span className="text-base font-semibold text-foreground">Comandas</span>
+              {/* Comandas e Pulseiras lado a lado */}
+              {(canSeeFichas || canSeePulseira) && (
+                <div className="grid grid-cols-2 gap-3">
+                  {canSeeFichas && (
+                    <Card
+                      className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary"
+                      onClick={() => navigate('/comandas')}
+                    >
+                      <CardContent className="flex flex-col items-center justify-center gap-3 p-6">
+                        <div className="p-3 bg-primary/10 rounded-xl">
+                          <ClipboardList className="h-8 w-8 text-primary" />
+                        </div>
+                        <span className="text-base font-semibold text-foreground text-center">Comandas</span>
                         {comandasAbertas.length > 0 && (
-                          <p className="text-sm text-muted-foreground">
-                            {comandasAbertas.length} comanda{comandasAbertas.length > 1 ? 's' : ''} aberta{comandasAbertas.length > 1 ? 's' : ''}
-                          </p>
+                          <Badge variant="default" className="text-xs px-2 py-0.5">
+                            {comandasAbertas.length} aberta{comandasAbertas.length > 1 ? 's' : ''}
+                          </Badge>
                         )}
-                      </div>
-                    </div>
-                    {comandasAbertas.length > 0 && (
-                      <Badge variant="default" className="text-sm px-3 py-1">
-                        {comandasAbertas.length}
-                      </Badge>
-                    )}
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {canSeePulseira && (
+                    <Card
+                      className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary"
+                      onClick={() => navigate('/pulseiras')}
+                    >
+                      <CardContent className="flex flex-col items-center justify-center gap-3 p-6">
+                        <div className="p-3 bg-primary/10 rounded-xl">
+                          <Watch className="h-8 w-8 text-primary" />
+                        </div>
+                        <span className="text-base font-semibold text-foreground text-center">Pulseiras</span>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               )}
 
               {/* KDS */}
@@ -367,26 +375,6 @@ const Index = () => {
                       <div>
                         <span className="text-base font-semibold text-foreground">KDS Cozinha</span>
                         <p className="text-sm text-muted-foreground">Painel de pedidos da cozinha</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Pulseiras */}
-              {canSeePulseira && (
-                <Card
-                  className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary"
-                  onClick={() => navigate('/pulseiras')}
-                >
-                  <CardContent className="flex items-center justify-between gap-3 p-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <Watch className="h-8 w-8 text-primary" />
-                      </div>
-                      <div>
-                        <span className="text-base font-semibold text-foreground">Pulseiras</span>
-                        <p className="text-sm text-muted-foreground">Pulseiras pré-pagas</p>
                       </div>
                     </div>
                   </CardContent>
