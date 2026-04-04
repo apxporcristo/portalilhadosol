@@ -303,22 +303,15 @@ export default function KitTab() {
               <div className="flex gap-2 items-end">
                 <div className="flex-1 space-y-1">
                   <Label className="text-xs">Produto componente</Label>
-                  <Select value={compProdId} onValueChange={setCompProdId}>
-                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                    <SelectContent>
-                      {produtos
-                        .filter(p => !componentes.some(c => c.produto_componente_id === p.id))
-                        .map(p => (
-                          <SelectItem key={p.id} value={p.id}>{p.nome_produto}</SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
+                  <Button variant="outline" className="w-full justify-start font-normal" onClick={() => { setProdSearch(''); setShowProdModal(true); }}>
+                    <Search className="h-4 w-4 mr-2 text-muted-foreground" />
+                    Selecione...
+                  </Button>
                 </div>
                 <div className="w-20 space-y-1">
                   <Label className="text-xs">Qtd baixa</Label>
                   <Input type="number" min="1" value={compQtd} onChange={e => setCompQtd(e.target.value)} />
                 </div>
-                <Button size="sm" onClick={addComponente}><Plus className="h-4 w-4" /></Button>
               </div>
 
               {componentes.length > 0 && (
