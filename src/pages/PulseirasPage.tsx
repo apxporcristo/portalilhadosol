@@ -216,15 +216,17 @@ export default function PulseirasPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4">
-        {/* Busca */}
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex gap-2">
-              <Input placeholder="Buscar por número, nome ou telefone..." value={busca} onChange={e => setBusca(e.target.value)} className="flex-1" />
-              <Button variant="outline"><Search className="h-4 w-4" /></Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Busca — só aparece quando não tem detalhe aberto */}
+        {!detalhe && (
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex gap-2">
+                <Input placeholder="Buscar por número, nome ou telefone..." value={busca} onChange={e => setBusca(e.target.value)} className="flex-1" />
+                <Button variant="outline"><Search className="h-4 w-4" /></Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {loading && <Skeleton className="h-64 w-full" />}
 
