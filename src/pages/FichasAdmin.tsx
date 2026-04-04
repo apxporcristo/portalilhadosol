@@ -47,7 +47,7 @@ export default function FichasAdmin() {
   const impressorasAtivas = impressoras.filter(p => p.ativa);
 
   // Product form
-  const [prodForm, setProdForm] = useState({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false });
+  const [prodForm, setProdForm] = useState({ categoria_id: '', nome_produto: '', valor: '', ativo: true, tem_complementos: false, printer_id: '', forma_venda: 'unitario', valor_por_kg: '', obs: '', imprimir_ficha: true, enviar_para_kds: false, estoque_negativo: false, kit: false, quantidade_a_baixar: '1' });
   const [editProd, setEditProd] = useState<FichaProduto | null>(null);
   const [deleteProdId, setDeleteProdId] = useState<string | null>(null);
   const [filterAtivo, setFilterAtivo] = useState<'all' | 'true' | 'false'>('all');
