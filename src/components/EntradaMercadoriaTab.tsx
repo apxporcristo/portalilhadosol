@@ -279,7 +279,7 @@ export default function EntradaMercadoriaTab() {
                           <TableCell>
                             <Input type="number" min={0.01} step={0.01} className="h-8 text-center text-xs" value={item.margem_lucro} onChange={e => updateItem(idx, 'margem_lucro', parseFloat(e.target.value) || 0)} />
                           </TableCell>
-                          <TableCell className="text-right text-xs font-medium">{fmt(vVenda)}</TableCell>
+                          <TableCell className="text-center text-xs font-medium">{fmt(vVenda)}</TableCell>
                           <TableCell>
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeItem(idx)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
                           </TableCell>
