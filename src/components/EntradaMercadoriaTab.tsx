@@ -251,51 +251,51 @@ export default function EntradaMercadoriaTab() {
             {itens.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">Nenhum item adicionado. Clique em "Adicionar item".</p>
             ) : (
-              <div className="space-y-3">
-                {itens.map((item, idx) => {
-                  const vVenda = calcValorVenda(item);
-                  const tComprado = calcTotalComprado(item);
-                  const tVenda = calcTotalVenda(item);
-                  return (
-                    <div key={idx} className="border rounded-md p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Item {idx + 1}</span>
-                        <Button size="icon" variant="ghost" onClick={() => removeItem(idx)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Produto *</Label>
-                          <Button variant="outline" className="w-full justify-start text-left h-9" onClick={() => { setAddingItemIndex(idx); setShowProdModal(true); }}>
-                            <Search className="h-3 w-3 mr-1 shrink-0" />
-                            <span className="truncate">{item.produto_nome || 'Selecionar produto...'}</span>
-                          </Button>
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Quantidade *</Label>
-                          <Input type="number" min={1} value={item.quantidade} onChange={e => updateItem(idx, 'quantidade', parseInt(e.target.value) || 0)} />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Valor comprado (R$)</Label>
-                          <Input type="number" min={0} step={0.01} value={item.valor_comprado} onChange={e => updateItem(idx, 'valor_comprado', parseFloat(e.target.value) || 0)} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Margem de lucro</Label>
-                          <Input type="number" min={0.01} step={0.01} value={item.margem_lucro} onChange={e => updateItem(idx, 'margem_lucro', parseFloat(e.target.value) || 0)} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Valor venda</Label>
-                          <div className="h-9 flex items-center text-sm font-medium">{fmt(vVenda)}</div>
-                        </div>
-                      </div>
-                      <div className="flex gap-4 text-xs text-muted-foreground">
-                        <span>Total comprado: <strong>{fmt(tComprado)}</strong></span>
-                        <span>Total venda: <strong>{fmt(tVenda)}</strong></span>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="rounded-md border overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Produto</TableHead>
+                      <TableHead className="w-20 text-center">Qtd</TableHead>
+                      <TableHead className="w-28 text-right">Vlr Compra</TableHead>
+                      <TableHead className="w-24 text-center">% Margem</TableHead>
+                      <TableHead className="w-28 text-right">Vlr Venda</TableHead>
+                      <TableHead className="w-10"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {itens.map((item, idx) => {
+                      const vVenda = calcValorVenda(item);
+                      return (
+                        <TableRow key={idx}>
+                          <TableCell>
+                            <Button variant="outline" size="sm" className="w-full justify-start text-left h-8 text-xs" onClick={() => { setAddingItemIndex(idx); setShowProdModal(true); }}>
+                              <Search className="h-3 w-3 mr-1 shrink-0" />
+                              <span className="truncate">{item.produto_nome || 'Selecionar...'}</span>
+                            </Button>
+                          </TableCell>
+                          <TableCell>
+                            <Input type="number" min={1} className="h-8 text-center text-xs" value={item.quantidade} onChange={e => updateItem(idx, 'quantidade', parseInt(e.target.value) || 0)} />
+                          </TableCell>
+                          <TableCell>
+                            <Input type="number" min={0} step={0.01} className="h-8 text-right text-xs" value={item.valor_comprado} onChange={e => updateItem(idx, 'valor_comprado', parseFloat(e.target.value) || 0)} />
+                          </TableCell>
+                          <TableCell>
+                            <Input type="number" min={0.01} step={0.01} className="h-8 text-center text-xs" value={item.margem_lucro} onChange={e => updateItem(idx, 'margem_lucro', parseFloat(e.target.value) || 0)} />
+                          </TableCell>
+                          <TableCell className="text-right text-xs font-medium">{fmt(vVenda)}</TableCell>
+                          <TableCell>
+                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeItem(idx)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+                <div className="flex gap-4 text-xs text-muted-foreground px-3 py-2 border-t">
+                  <span>Total comprado: <strong>{fmt(itens.reduce((s, i) => s + calcTotalComprado(i), 0))}</strong></span>
+                  <span>Total venda: <strong>{fmt(itens.reduce((s, i) => s + calcTotalVenda(i), 0))}</strong></span>
+                </div>
               </div>
             )}
           </div>
