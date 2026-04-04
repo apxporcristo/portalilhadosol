@@ -1448,15 +1448,17 @@ export default function FichasLista() {
               return;
             }
 
-            const itemsToAdd = cart.map(ci => ({
-              produto_id: ci.ficha.id,
-              produto_nome: ci.ficha.nome_produto + (ci.selectedItems.length > 0 ? ' | ' + ci.selectedItems.map(si => si.item.nome).join(', ') : ''),
-              quantidade: ci.quantidade,
-              valor_unitario: cartItemTotal(ci),
-              atendente_user_id: usuarioId,
-              atendente_nome: userName || undefined,
-            }));
-            const success = await adicionarItensPulseira(confirmPulseira.id, itemsToAdd);
+            let success = true;
+            for (const ci of cart) {
+              const produtoNome = ci.ficha.nome_produto + (ci.selectedItems.length > 0 ? ' | ' + ci.selectedItems.map(si => si.item.nome).join(', ') : '');
+              const ok = await registrarItem(confirmPulseira.id, {
+                produto_id: ci.ficha.id,
+                produto_nome: produtoNome,
+                quantidade: ci.quantidade,
+                valor_unitario: cartItemTotal(ci),
+              });
+              if (!ok) { success = false; break; }
+            }
             if (success) {
               clearCart();
               setConfirmPulseira(null);
