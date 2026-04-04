@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, X, AlertTriangle, Package } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -14,14 +13,11 @@ interface EstoqueItem {
   categoria_id: string;
   nome_categoria: string;
   estoque_negativo: boolean;
-  kit: boolean;
-  quantidade_a_baixar: number;
   quantidade_comprada: number;
+  quantidade_vendida_direta: number;
+  quantidade_consumida_kit: number;
   quantidade_vendida: number;
   estoque_atual: number;
-  ultimo_valor_comprado: number | null;
-  ultimo_valor_venda: number | null;
-  valor_venda_atual: number;
 }
 
 interface Categoria {
@@ -29,15 +25,12 @@ interface Categoria {
   nome_categoria: string;
 }
 
-const fmt = (v: number | null) => v != null ? v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—';
-
 export default function EstoqueTab() {
   const [items, setItems] = useState<EstoqueItem[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [filterCategoria, setFilterCategoria] = useState('all');
-  const [filterProduto, setFilterProduto] = useState('');
   const [searchText, setSearchText] = useState('');
 
   const fetchData = useCallback(async () => {
@@ -65,7 +58,6 @@ export default function EstoqueTab() {
 
   const clearFilters = () => {
     setFilterCategoria('all');
-    setFilterProduto('');
     setSearchText('');
   };
 
@@ -95,40 +87,34 @@ export default function EstoqueTab() {
         <Table>
           <TableHeader>
             <TableRow>
-              
               <TableHead>Produto</TableHead>
               <TableHead className="text-center">Comprado</TableHead>
-              <TableHead className="text-center">Vendido</TableHead>
+              <TableHead className="text-center">Venda direta</TableHead>
+              <TableHead className="text-center">Consumo kit</TableHead>
+              <TableHead className="text-center">Saída total</TableHead>
               <TableHead className="text-center">Estoque atual</TableHead>
-              <TableHead className="text-center">Kit</TableHead>
               <TableHead className="text-center">Est. Negativo</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
             ) : (
               filtered.map(item => {
                 const semEstoque = item.estoque_atual <= 0 && !item.estoque_negativo;
                 const negativo = item.estoque_atual < 0;
                 return (
                   <TableRow key={item.produto_id} className={semEstoque ? 'bg-destructive/5' : negativo ? 'bg-yellow-50 dark:bg-yellow-950/20' : ''}>
-                    
                     <TableCell className="font-medium">
                       {item.nome_produto}
                       {semEstoque && <Badge variant="destructive" className="ml-2 text-xs">Sem estoque</Badge>}
                     </TableCell>
                     <TableCell className="text-center">{item.quantidade_comprada}</TableCell>
+                    <TableCell className="text-center">{item.quantidade_vendida_direta}</TableCell>
+                    <TableCell className="text-center">{item.quantidade_consumida_kit > 0 ? item.quantidade_consumida_kit : '—'}</TableCell>
                     <TableCell className="text-center">{item.quantidade_vendida}</TableCell>
                     <TableCell className={`text-center font-semibold ${negativo ? 'text-destructive' : item.estoque_atual === 0 ? 'text-yellow-600' : ''}`}>
                       {item.estoque_atual}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {item.kit ? (
-                        <Badge variant="outline" className="text-xs">{item.quantidade_a_baixar}x</Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       {item.estoque_negativo ? (

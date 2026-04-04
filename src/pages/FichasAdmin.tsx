@@ -24,6 +24,7 @@ import { Lock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import EntradaMercadoriaTab from '@/components/EntradaMercadoriaTab';
 import EstoqueTab from '@/components/EstoqueTab';
+import KitTab from '@/components/KitTab';
 
 export default function FichasAdmin() {
   const navigate = useNavigate();
@@ -166,10 +167,6 @@ export default function FichasAdmin() {
     }
     if (!prodForm.tem_complementos && valorNum <= 0) {
       toast({ title: 'Erro', description: 'Valor obrigatório quando complementos não está ativado.', variant: 'destructive' });
-      return;
-    }
-    if (prodForm.kit && (parseInt(prodForm.quantidade_a_baixar) || 0) <= 0) {
-      toast({ title: 'Erro', description: 'Quantidade a baixar deve ser maior que 0 quando Kit está ativado.', variant: 'destructive' });
       return;
     }
     setSavingProd(true);
@@ -551,6 +548,10 @@ export default function FichasAdmin() {
               <Warehouse className="h-4 w-4" />
               Estoque
             </TabsTrigger>
+            <TabsTrigger value="kits" className="flex items-center gap-1">
+              <Package className="h-4 w-4" />
+              Kit
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="produtos" className="mt-6 space-y-6">
@@ -791,6 +792,10 @@ export default function FichasAdmin() {
           <TabsContent value="estoque" className="mt-6">
             <EstoqueTab />
           </TabsContent>
+
+          <TabsContent value="kits" className="mt-6">
+            <KitTab />
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -872,25 +877,8 @@ export default function FichasAdmin() {
                 <Switch checked={prodForm.estoque_negativo} onCheckedChange={(v) => setProdForm(p => ({ ...p, estoque_negativo: v }))} />
                 <Label>Permitir estoque negativo</Label>
               </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={prodForm.kit} onCheckedChange={(v) => setProdForm(p => ({ ...p, kit: v, quantidade_a_baixar: v ? p.quantidade_a_baixar : '1' }))} />
-                <Label>Produto é kit</Label>
-              </div>
             </div>
             <p className="text-xs text-muted-foreground">Quando ativado, o produto poderá ser vendido mesmo com estoque zerado ou negativo.</p>
-            {prodForm.kit && (
-              <div className="space-y-2">
-                <Label>Quantidade a baixar *</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={prodForm.quantidade_a_baixar}
-                  onChange={(e) => setProdForm(p => ({ ...p, quantidade_a_baixar: e.target.value }))}
-                  placeholder="Ex: 5"
-                />
-                <p className="text-xs text-muted-foreground">Informe quantas unidades devem ser baixadas do estoque a cada unidade vendida.</p>
-              </div>
-            )}
             <div className="space-y-2">
               <Label>Observação <span className="text-muted-foreground text-xs">(opcional, aparece na ficha)</span></Label>
               <Input value={prodForm.obs} onChange={(e) => setProdForm(p => ({ ...p, obs: e.target.value }))} placeholder="Ex: Acompanha arroz e salada" maxLength={100} />

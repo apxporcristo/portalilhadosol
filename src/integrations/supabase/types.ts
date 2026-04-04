@@ -384,6 +384,65 @@ export type Database = {
           },
         ]
       }
+      fichas_kit_itens: {
+        Row: {
+          created_at: string
+          id: string
+          kit_id: string
+          produto_componente_id: string
+          quantidade_baixa: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kit_id: string
+          produto_componente_id: string
+          quantidade_baixa?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kit_id?: string
+          produto_componente_id?: string
+          quantidade_baixa?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fichas_kit_itens_kit_id_fkey"
+            columns: ["kit_id"]
+            isOneToOne: false
+            referencedRelation: "fichas_kits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fichas_kits: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          observacao: string | null
+          produto_principal_id: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          produto_principal_id: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          observacao?: string | null
+          produto_principal_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       fichas_produtos: {
         Row: {
           ativo: boolean
@@ -674,7 +733,9 @@ export type Database = {
           produto_id: string | null
           quantidade_a_baixar: number | null
           quantidade_comprada: number | null
+          quantidade_consumida_kit: number | null
           quantidade_vendida: number | null
+          quantidade_vendida_direta: number | null
           ultimo_valor_comprado: number | null
           ultimo_valor_venda: number | null
           valor_venda_atual: number | null
