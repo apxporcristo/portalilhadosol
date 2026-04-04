@@ -385,9 +385,9 @@ export default function EntradaMercadoriaTab() {
                       <TableRow>
                         <TableHead>Produto</TableHead>
                         <TableHead className="text-center">Qtd</TableHead>
-                        <TableHead className="text-right">Vlr Comprado</TableHead>
+                        <TableHead className="text-right">Compra</TableHead>
                         <TableHead className="text-center">Margem</TableHead>
-                        <TableHead className="text-right">Vlr Venda</TableHead>
+                        <TableHead className="text-right">Venda</TableHead>
                         <TableHead className="text-right">Total Comprado</TableHead>
                         <TableHead className="text-right">Total Venda</TableHead>
                       </TableRow>
