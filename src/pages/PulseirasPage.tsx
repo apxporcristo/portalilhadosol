@@ -476,7 +476,7 @@ export default function PulseirasPage() {
                       <div className="flex items-center gap-2">
                         <Badge variant={badge.variant} className="text-xs">{badge.label}</Badge>
                         <span className="text-muted-foreground text-xs">{formatDate(h.data_evento)}</span>
-                        {(h.valor ?? 0) > 0 && <span className="text-xs font-medium ml-auto">{formatMoney(h.valor)}</span>}
+                        
                       </div>
                       <p>
                         {(() => {
