@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Plus, Watch, User, Phone, CreditCard, Clock, Package, History, Trash2, RotateCcw, Minus, DollarSign, X } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Watch, User, Phone, CreditCard, Clock, Package, History, Trash2, RotateCcw, DollarSign, X } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,7 @@ export default function PulseirasPage() {
     loading, pulseirasAbertas, pulseirasFechadas, detalhe, saldos, historico,
     saldoLoading, historicoLoading, saldoError, historicoError,
     listarAbertas, listarFechadas, carregarDetalhe, limpar,
-    abrirPulseira, registrarItem, registrarConsumo, registrarBaixa, registrarAbateCredito,
+    abrirPulseira, registrarBaixa, registrarAbateCredito,
     fecharPulseira, reabrirPulseira, excluirPulseira,
   } = usePulseiras();
 
@@ -32,29 +32,20 @@ export default function PulseirasPage() {
 
   // Modals
   const [abrirModal, setAbrirModal] = useState(false);
-  
-  const [consumoModal, setConsumoModal] = useState(false);
-  const [baixaModal, setBaixaModal] = useState(false);
   const [abateModal, setAbateModal] = useState(false);
   const [confirmExcluir, setConfirmExcluir] = useState(false);
+  const [historicoModal, setHistoricoModal] = useState(false);
+
+  // Baixa por item do saldo
+  const [baixaItem, setBaixaItem] = useState<PulseiraSaldo | null>(null);
+  const [baixaQtd, setBaixaQtd] = useState(1);
+  const [baixaMotivo, setBaixaMotivo] = useState('');
 
   // Form: abrir
   const [fNumero, setFNumero] = useState('');
   const [fNome, setFNome] = useState('');
   const [fTelefone, setFTelefone] = useState('');
   const [fCpf, setFCpf] = useState('');
-
-  // Form: consumo
-  const [cProdutoNome, setCProdutoNome] = useState('');
-  const [cQtd, setCQtd] = useState(1);
-  const [cValor, setCValor] = useState('');
-  const [cObs, setCObs] = useState('');
-
-  // Form: baixa
-  const [bProdutoNome, setBProdutoNome] = useState('');
-  const [bQtd, setBQtd] = useState(1);
-  const [bValor, setBValor] = useState('');
-  const [bMotivo, setBMotivo] = useState('');
 
   // Form: abate
   const [aValor, setAValor] = useState('');
@@ -65,7 +56,6 @@ export default function PulseirasPage() {
 
   useEffect(() => { listarAbertas(); listarFechadas(); }, [listarAbertas, listarFechadas]);
 
-  // Auto-reload on focus
   useEffect(() => {
     const handler = () => { listarAbertas(); listarFechadas(); };
     const vis = () => { if (document.visibilityState === 'visible') handler(); };
@@ -103,6 +93,9 @@ export default function PulseirasPage() {
     return { label: tipo, variant: 'secondary' as const };
   };
 
+  // Pulseira tem itens lançados?
+  const temItens = (detalhe?.quantidade_itens ?? 0) > 0 || saldos.length > 0 || historico.length > 0;
+
   // Handlers
   const handleAbrir = async () => {
     if (!fNumero.trim() || !fNome.trim()) {
@@ -122,17 +115,25 @@ export default function PulseirasPage() {
     }
   };
 
-
-  const handleConsumo = async () => {
-    if (!detalhe || !cProdutoNome.trim() || cQtd < 1) return;
-    const ok = await registrarConsumo(detalhe.id, { produto_nome: cProdutoNome.trim(), quantidade: cQtd, valor_unitario: cValor ? parseFloat(cValor) : undefined, observacao: cObs || undefined });
-    if (ok) { setConsumoModal(false); setCProdutoNome(''); setCQtd(1); setCValor(''); setCObs(''); }
-  };
-
-  const handleBaixa = async () => {
-    if (!detalhe || !bProdutoNome.trim() || bQtd < 1) return;
-    const ok = await registrarBaixa(detalhe.id, { produto_nome: bProdutoNome.trim(), quantidade: bQtd, valor_unitario: bValor ? parseFloat(bValor) : undefined, motivo: bMotivo || undefined });
-    if (ok) { setBaixaModal(false); setBProdutoNome(''); setBQtd(1); setBValor(''); setBMotivo(''); }
+  const handleBaixaItem = async () => {
+    if (!detalhe || !baixaItem || baixaQtd < 1) return;
+    const maxQtd = baixaItem.quantidade_disponivel ?? 0;
+    if (baixaQtd > maxQtd) {
+      toast({ title: 'Quantidade excede o disponível', description: `Máximo: ${maxQtd}`, variant: 'destructive' });
+      return;
+    }
+    const ok = await registrarBaixa(detalhe.id, {
+      produto_id: baixaItem.produto_id || undefined,
+      produto_nome: baixaItem.produto_nome || 'Sem nome',
+      quantidade: baixaQtd,
+      valor_unitario: maxQtd > 0 ? (baixaItem.valor_disponivel ?? 0) / maxQtd : 0,
+      motivo: baixaMotivo || undefined,
+    });
+    if (ok) {
+      setBaixaItem(null);
+      setBaixaQtd(1);
+      setBaixaMotivo('');
+    }
   };
 
   const handleAbate = async () => {
@@ -149,8 +150,6 @@ export default function PulseirasPage() {
 
   const isAtiva = detalhe?.status === 'ativa';
   const isFechada = detalhe?.status === 'fechada';
-
-  /* ── Render helpers ── */
 
   const renderPulseiraCard = (p: PulseiraResumo) => (
     <button
@@ -213,7 +212,7 @@ export default function PulseirasPage() {
         {/* Detalhe da Pulseira */}
         {detalhe && !loading && (
           <>
-            {/* 1. Cabeçalho */}
+            {/* Cabeçalho */}
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-2">
@@ -243,34 +242,11 @@ export default function PulseirasPage() {
               </CardContent>
             </Card>
 
-            {/* 4. Ações */}
-            <Card>
-              <CardContent className="pt-4">
-                <div className="flex flex-wrap gap-2">
-                  {isAtiva && (
-                    <>
-                      <Button size="sm" variant="outline" onClick={() => navigate(`/fichas?pulseira_id=${detalhe.id}&pulseira_numero=${encodeURIComponent(detalhe.numero)}&pulseira_nome=${encodeURIComponent(detalhe.nome_cliente)}`)}><Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Item (Fichas)</Button>
-                      <Button size="sm" variant="outline" onClick={() => setConsumoModal(true)}><Minus className="h-3.5 w-3.5 mr-1" /> Registrar Consumo</Button>
-                      <Button size="sm" variant="outline" onClick={() => setBaixaModal(true)}><Package className="h-3.5 w-3.5 mr-1" /> Registrar Baixa</Button>
-                      <Button size="sm" variant="outline" onClick={() => setAbateModal(true)}><DollarSign className="h-3.5 w-3.5 mr-1" /> Abate de Crédito</Button>
-                      <Button size="sm" variant="destructive" onClick={() => fecharPulseira(detalhe.id)}>Fechar Pulseira</Button>
-                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
-                    </>
-                  )}
-                  {isFechada && (
-                    <>
-                      {detalhe.pode_reabrir && <Button size="sm" variant="outline" onClick={() => reabrirPulseira(detalhe.id)}><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reabrir</Button>}
-                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 2. Saldo por Produto */}
+            {/* Saldo por Produto — clicável para baixa */}
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2"><Package className="h-4 w-4" /> Saldo por Produto</CardTitle>
+                {isAtiva && saldos.length > 0 && <p className="text-xs text-muted-foreground">Clique em um produto para registrar baixa</p>}
               </CardHeader>
               <CardContent>
                 <Input placeholder="Buscar produto..." value={buscaSaldo} onChange={e => setBuscaSaldo(e.target.value)} className="mb-3" />
@@ -293,7 +269,17 @@ export default function PulseirasPage() {
                       </TableHeader>
                       <TableBody>
                         {filteredSaldos.map((s, i) => (
-                          <TableRow key={i}>
+                          <TableRow
+                            key={i}
+                            className={isAtiva && (s.quantidade_disponivel ?? 0) > 0 ? 'cursor-pointer hover:bg-muted/60 transition-colors' : ''}
+                            onClick={() => {
+                              if (isAtiva && (s.quantidade_disponivel ?? 0) > 0) {
+                                setBaixaItem(s);
+                                setBaixaQtd(1);
+                                setBaixaMotivo('');
+                              }
+                            }}
+                          >
                             <TableCell className="font-medium">{s.produto_nome || 'Sem nome'}</TableCell>
                             <TableCell className="text-center">{s.quantidade_comprada ?? 0}</TableCell>
                             <TableCell className="text-center">{s.quantidade_consumida ?? 0}</TableCell>
@@ -310,38 +296,33 @@ export default function PulseirasPage() {
               </CardContent>
             </Card>
 
-            {/* 3. Histórico */}
+            {/* Ações */}
             <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2"><History className="h-4 w-4" /> Histórico</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {historicoLoading && <Skeleton className="h-20 w-full" />}
-                {historicoError && <p className="text-sm text-destructive">{historicoError}</p>}
-                {!historicoLoading && !historicoError && historico.length === 0 && <p className="text-sm text-muted-foreground">Nenhum registro.</p>}
-                {!historicoLoading && historico.length > 0 && (
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {historico.map((h, i) => {
-                      const badge = tipoBadge(h.tipo_evento || '');
-                      return (
-                        <div key={i} className="flex items-start justify-between border-b pb-2 last:border-b-0 text-sm">
-                          <div className="space-y-0.5">
-                            <div className="flex items-center gap-2">
-                              <Badge variant={badge.variant} className="text-xs">{badge.label}</Badge>
-                              <span className="text-muted-foreground text-xs">{formatDate(h.data_evento)}</span>
-                            </div>
-                            <p>{h.descricao_evento || '—'}</p>
-                            {h.usuario_nome && <p className="text-xs text-muted-foreground">por {h.usuario_nome}</p>}
-                          </div>
-                          <div className="text-right shrink-0">
-                            {(h.quantidade ?? 0) > 0 && <span className="text-xs">Qtd: {h.quantidade}</span>}
-                            {(h.valor ?? 0) > 0 && <div className="text-xs font-medium">{formatMoney(h.valor)}</div>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+              <CardContent className="pt-4">
+                <div className="flex flex-wrap gap-2">
+                  {isAtiva && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/fichas?pulseira_id=${detalhe.id}&pulseira_numero=${encodeURIComponent(detalhe.numero)}&pulseira_nome=${encodeURIComponent(detalhe.nome_cliente)}`)}>
+                        <Plus className="h-3.5 w-3.5 mr-1" /> Fichas
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setAbateModal(true)}><DollarSign className="h-3.5 w-3.5 mr-1" /> Abate de Crédito</Button>
+                      <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}><History className="h-3.5 w-3.5 mr-1" /> Histórico</Button>
+                      <Button size="sm" variant="destructive" onClick={() => fecharPulseira(detalhe.id)}>Fechar Pulseira</Button>
+                      {!temItens && (
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
+                      )}
+                    </>
+                  )}
+                  {isFechada && (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}><History className="h-3.5 w-3.5 mr-1" /> Histórico</Button>
+                      {detalhe.pode_reabrir && <Button size="sm" variant="outline" onClick={() => reabrirPulseira(detalhe.id)}><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reabrir</Button>}
+                      {!temItens && (
+                        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
+                      )}
+                    </>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </>
@@ -380,32 +361,45 @@ export default function PulseirasPage() {
         </DialogContent>
       </Dialog>
 
-
-      {/* Modal: Registrar Consumo */}
-      <Dialog open={consumoModal} onOpenChange={setConsumoModal}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Registrar Consumo</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Nome do Produto *</Label><Input value={cProdutoNome} onChange={e => setCProdutoNome(e.target.value)} placeholder="Nome do produto" /></div>
-            <div><Label>Quantidade *</Label><Input type="number" min={1} value={cQtd} onChange={e => setCQtd(parseInt(e.target.value) || 1)} /></div>
-            <div><Label>Valor Unitário</Label><Input type="number" step="0.01" min={0} value={cValor} onChange={e => setCValor(e.target.value)} placeholder="Opcional" /></div>
-            <div><Label>Observação</Label><Input value={cObs} onChange={e => setCObs(e.target.value)} placeholder="Opcional" /></div>
-          </div>
-          <DialogFooter><Button onClick={handleConsumo}>Registrar</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal: Registrar Baixa */}
-      <Dialog open={baixaModal} onOpenChange={setBaixaModal}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Registrar Baixa</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Nome do Produto *</Label><Input value={bProdutoNome} onChange={e => setBProdutoNome(e.target.value)} placeholder="Nome do produto" /></div>
-            <div><Label>Quantidade *</Label><Input type="number" min={1} value={bQtd} onChange={e => setBQtd(parseInt(e.target.value) || 1)} /></div>
-            <div><Label>Valor Unitário</Label><Input type="number" step="0.01" min={0} value={bValor} onChange={e => setBValor(e.target.value)} placeholder="Opcional" /></div>
-            <div><Label>Motivo</Label><Input value={bMotivo} onChange={e => setBMotivo(e.target.value)} placeholder="Opcional" /></div>
-          </div>
-          <DialogFooter><Button onClick={handleBaixa}>Registrar</Button></DialogFooter>
+      {/* Modal: Baixa por Item do Saldo */}
+      <Dialog open={!!baixaItem} onOpenChange={(open) => { if (!open) setBaixaItem(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Registrar Baixa</DialogTitle>
+            <DialogDescription>
+              {baixaItem?.produto_nome || 'Produto'}
+            </DialogDescription>
+          </DialogHeader>
+          {baixaItem && (
+            <div className="space-y-3">
+              <div className="rounded-md bg-muted p-3 text-sm space-y-1">
+                <div className="flex justify-between"><span className="text-muted-foreground">Quantidade disponível:</span><span className="font-bold">{baixaItem.quantidade_disponivel ?? 0}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Valor disponível:</span><span className="font-bold">{formatMoney(baixaItem.valor_disponivel ?? 0)}</span></div>
+              </div>
+              <div>
+                <Label>Quantidade para baixar *</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={baixaItem.quantidade_disponivel ?? 1}
+                  value={baixaQtd}
+                  onChange={e => {
+                    const v = parseInt(e.target.value) || 1;
+                    setBaixaQtd(Math.min(v, baixaItem.quantidade_disponivel ?? 1));
+                  }}
+                />
+                <p className="text-xs text-muted-foreground mt-1">A baixa só pode ser dada até a quantidade disponível deste item.</p>
+              </div>
+              <div>
+                <Label>Motivo</Label>
+                <Input value={baixaMotivo} onChange={e => setBaixaMotivo(e.target.value)} placeholder="Opcional" />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBaixaItem(null)}>Cancelar</Button>
+            <Button onClick={handleBaixaItem}>Confirmar Baixa</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -418,6 +412,48 @@ export default function PulseirasPage() {
             <div><Label>Descrição</Label><Input value={aDesc} onChange={e => setADesc(e.target.value)} placeholder="Opcional" /></div>
           </div>
           <DialogFooter><Button onClick={handleAbate}>Registrar</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Histórico */}
+      <Dialog open={historicoModal} onOpenChange={setHistoricoModal}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><History className="h-4 w-4" /> Histórico da Pulseira</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto">
+            {historicoLoading && <Skeleton className="h-20 w-full" />}
+            {historicoError && <p className="text-sm text-destructive">{historicoError}</p>}
+            {!historicoLoading && !historicoError && historico.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">Nenhum registro no histórico.</p>
+            )}
+            {!historicoLoading && historico.length > 0 && (
+              <div className="space-y-2">
+                {historico.map((h, i) => {
+                  const badge = tipoBadge(h.tipo_evento || '');
+                  return (
+                    <div key={i} className="flex items-start justify-between border-b pb-2 last:border-b-0 text-sm">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={badge.variant} className="text-xs">{badge.label}</Badge>
+                          <span className="text-muted-foreground text-xs">{formatDate(h.data_evento)}</span>
+                        </div>
+                        <p>{h.descricao_evento || '—'}</p>
+                        {h.usuario_nome && <p className="text-xs text-muted-foreground">por {h.usuario_nome}</p>}
+                      </div>
+                      <div className="text-right shrink-0">
+                        {(h.quantidade ?? 0) > 0 && <span className="text-xs">Qtd: {h.quantidade}</span>}
+                        {(h.valor ?? 0) > 0 && <div className="text-xs font-medium">{formatMoney(h.valor)}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHistoricoModal(false)}>Fechar</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
