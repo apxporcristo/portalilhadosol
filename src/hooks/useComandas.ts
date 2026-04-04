@@ -167,14 +167,9 @@ export function useComandas() {
   }[], usuarioLogin?: string) => {
     const supabase = await getSupabaseClient();
 
-    // Get authenticated user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      throw new Error('Usuário não autenticado. Faça login para lançar itens.');
-    }
-
-    const login = usuarioLogin || user.email || user.id;
-    console.log('[lancarItens] Usuário autenticado:', { id: user.id, email: user.email, login });
+    // Use custom auth login (CPF-based) — Supabase Auth is not used in this project
+    const login = usuarioLogin || 'sistema';
+    console.log('[lancarItens] Usuário:', { login });
 
     for (const item of items) {
       const payload = {
