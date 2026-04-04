@@ -234,11 +234,6 @@ export function useComandas() {
         throw new Error(`Erro ao lançar item "${item.produto_nome}": ${errBody.message || response.statusText}`);
       }
 
-      if (error) {
-        console.error('[lancarItens] Erro RPC lancar_item_comanda:', error);
-        throw new Error(`Erro ao lançar item "${item.produto_nome}": ${error.message}`);
-      }
-
       console.log('[lancarItens] Item lançado com sucesso:', item.produto_nome);
     }
   }, []);
