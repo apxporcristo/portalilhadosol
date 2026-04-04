@@ -267,13 +267,15 @@ export function usePulseiras() {
     }
   }, [carregarDetalhe, listarAbertas]);
 
-  const registrarAbateCredito = useCallback(async (pulseiraId: string, params: { valor: number; descricao?: string }) => {
+  const registrarAbateCredito = useCallback(async (pulseiraId: string, params: { valor: number; descricao?: string; usuario_id?: string; usuario_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
       const { error } = await db.rpc('registrar_abate_credito_pulseira' as any, {
         p_pulseira_id: pulseiraId,
         p_valor: params.valor,
         p_descricao: params.descricao || null,
+        p_usuario_id: params.usuario_id || null,
+        p_usuario_nome: params.usuario_nome || null,
       } as any);
       if (error) throw error;
       toast({ title: 'Abate de crédito registrado!' });
