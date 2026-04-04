@@ -199,7 +199,7 @@ export function usePulseiras() {
     }
   }, [listarAbertas]);
 
-  const registrarItem = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario: number; observacao?: string }) => {
+  const registrarItem = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario: number; observacao?: string; usuario_id?: string; usuario_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
       const { error } = await db.rpc('registrar_item_pulseira' as any, {
@@ -209,6 +209,8 @@ export function usePulseiras() {
         p_quantidade: params.quantidade,
         p_valor_unitario: params.valor_unitario,
         p_observacao: params.observacao || null,
+        p_usuario_id: params.usuario_id || null,
+        p_usuario_nome: params.usuario_nome || null,
       } as any);
       if (error) throw error;
       toast({ title: 'Item adicionado!' });
