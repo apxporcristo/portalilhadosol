@@ -154,19 +154,21 @@ export default function PulseirasPage() {
   };
 
   const filteredSaldos = useMemo(() => {
-    const list = buscaSaldo.trim()
+    let list = buscaSaldo.trim()
       ? saldos.filter(s => (s.produto_nome || '').toLowerCase().includes(buscaSaldo.toLowerCase()))
       : [...saldos];
+    // Hide fully consumed products unless "mostrar todos" is active
+    if (!mostrarTodosSaldos) {
+      list = list.filter(s => (s.quantidade_disponivel ?? 0) > 0);
+    }
     return list.sort((a, b) => {
       const aDisp = a.quantidade_disponivel ?? 0;
       const bDisp = b.quantidade_disponivel ?? 0;
-      // Items with disponivel=0 go to the end
       if (aDisp === 0 && bDisp > 0) return 1;
       if (bDisp === 0 && aDisp > 0) return -1;
-      // Alphabetical order
       return (a.produto_nome || '').localeCompare(b.produto_nome || '', 'pt-BR');
     });
-  }, [saldos, buscaSaldo]);
+  }, [saldos, buscaSaldo, mostrarTodosSaldos]);
 
   const isAtiva = detalhe?.status === 'ativa';
   const isFechada = detalhe?.status === 'fechada';
