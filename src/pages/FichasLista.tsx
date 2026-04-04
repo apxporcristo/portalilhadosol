@@ -563,6 +563,8 @@ export default function FichasLista() {
           produto_nome: produtoNome,
           quantidade: ci.quantidade,
           valor_unitario: cartItemTotal(ci),
+          usuario_id: userId || undefined,
+          usuario_nome: userName || undefined,
         });
         if (!success) return false;
       }
