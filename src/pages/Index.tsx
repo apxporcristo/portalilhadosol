@@ -87,6 +87,10 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    listarPulseirasAbertas();
+  }, [listarPulseirasAbertas]);
+
+  useEffect(() => {
     if (isAdmin) refetch();
   }, [isAdmin, refetch]);
 
