@@ -274,7 +274,7 @@ export default function EntradaMercadoriaTab() {
                             <Input type="number" min={1} className="h-8 text-center text-xs" value={item.quantidade} onChange={e => updateItem(idx, 'quantidade', parseInt(e.target.value) || 0)} />
                           </TableCell>
                           <TableCell>
-                            <Input type="number" min={0} step={0.01} className="h-8 text-right text-xs" value={item.valor_comprado} onChange={e => updateItem(idx, 'valor_comprado', parseFloat(e.target.value) || 0)} />
+                            <Input type="number" min={0} step={0.01} className="h-8 text-center text-xs" value={item.valor_comprado} onChange={e => updateItem(idx, 'valor_comprado', parseFloat(e.target.value) || 0)} />
                           </TableCell>
                           <TableCell>
                             <Input type="number" min={0.01} step={0.01} className="h-8 text-center text-xs" value={item.margem_lucro} onChange={e => updateItem(idx, 'margem_lucro', parseFloat(e.target.value) || 0)} />
