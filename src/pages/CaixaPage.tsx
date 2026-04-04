@@ -355,7 +355,6 @@ export default function CaixaPage() {
         description={`Deseja fechar o caixa? Saldo atual: ${formatCurrency(saldoAtual)}`}
         onConfirm={handleFecharCaixa}
         confirmText="Fechar Caixa"
-        variant="destructive"
       />
 
       {/* Dialog: Relatório */}
