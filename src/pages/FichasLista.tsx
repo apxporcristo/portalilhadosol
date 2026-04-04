@@ -1426,7 +1426,7 @@ export default function FichasLista() {
                   <span className="font-bold">#{p.numero}</span>
                   <span className="text-sm text-muted-foreground ml-2">{p.nome_cliente}</span>
                 </div>
-                {p.telefone_cliente && <span className="text-xs text-muted-foreground">{p.telefone_cliente}</span>}
+                {p.telefone && <span className="text-xs text-muted-foreground">{p.telefone}</span>}
               </button>
             ))}
           </div>
