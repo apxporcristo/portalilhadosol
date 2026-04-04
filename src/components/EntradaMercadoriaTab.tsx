@@ -241,7 +241,7 @@ export default function EntradaMercadoriaTab() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-base font-medium">Itens da nota</Label>
-              <Button size="sm" variant="outline" onClick={addItem}><Plus className="h-4 w-4 mr-1" /> Adicionar item</Button>
+              {numeroNota.trim() && <Button size="sm" variant="outline" onClick={addItem}><Plus className="h-4 w-4 mr-1" /> Adicionar item</Button>}
             </div>
 
             {itens.length === 0 ? (
