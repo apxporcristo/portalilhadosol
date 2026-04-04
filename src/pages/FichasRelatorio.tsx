@@ -54,11 +54,7 @@ export default function FichasRelatorio() {
     return Array.from(set).sort();
   }, [registros]);
 
-  const produtosUnicos = useMemo(() => {
-    const set = new Set<string>();
-    registros.forEach(r => set.add(r.produto_nome));
-    return Array.from(set).sort();
-  }, [registros]);
+
 
   // Filter logic
   const filtered = useMemo(() => {
