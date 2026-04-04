@@ -472,19 +472,27 @@ export default function PulseirasPage() {
                 {historico.map((h, i) => {
                   const badge = tipoBadge(h.tipo_evento || '');
                   return (
-                    <div key={i} className="flex items-start justify-between border-b pb-2 last:border-b-0 text-sm">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <Badge variant={badge.variant} className="text-xs">{badge.label}</Badge>
-                          <span className="text-muted-foreground text-xs">{formatDate(h.data_evento)}</span>
-                        </div>
-                        <p>{h.descricao_evento || '—'}</p>
-                        <p className="text-xs text-muted-foreground">por {h.usuario_nome || 'Usuário não informado'}</p>
+                    <div key={i} className="border-b pb-2 last:border-b-0 text-sm space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={badge.variant} className="text-xs">{badge.label}</Badge>
+                        <span className="text-muted-foreground text-xs">{formatDate(h.data_evento)}</span>
+                        {(h.valor ?? 0) > 0 && <span className="text-xs font-medium ml-auto">{formatMoney(h.valor)}</span>}
                       </div>
-                      <div className="text-right shrink-0">
-                        {(h.quantidade ?? 0) > 0 && <span className="text-xs">Qtd: {h.quantidade}</span>}
-                        {(h.valor ?? 0) > 0 && <div className="text-xs font-medium">{formatMoney(h.valor)}</div>}
-                      </div>
+                      <p>
+                        {(() => {
+                          const desc = h.descricao_evento || '—';
+                          const qty = h.quantidade ?? 0;
+                          if (qty > 0) {
+                            const prefixMatch = desc.match(/^(.*?:\s*)/);
+                            if (prefixMatch) {
+                              return `${prefixMatch[1]}${qty} x ${desc.slice(prefixMatch[1].length)}`;
+                            }
+                            return `${qty} x ${desc}`;
+                          }
+                          return desc;
+                        })()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">por {h.usuario_nome || 'Usuário não informado'}</p>
                     </div>
                   );
                 })}
