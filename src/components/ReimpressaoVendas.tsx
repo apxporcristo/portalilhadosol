@@ -267,7 +267,25 @@ export function ReimpressaoVendas() {
             />
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+          <div className="flex gap-1.5 flex-wrap">
+            {[
+              { key: 'todas', label: 'Todas' },
+              { key: 'venda_unica', label: 'Venda única' },
+              { key: 'comanda', label: 'Comanda' },
+              { key: 'pulseira', label: 'Pulseira' },
+            ].map(opt => (
+              <Button
+                key={opt.key}
+                variant={origemFilter === opt.key ? 'default' : 'outline'}
+                size="sm"
+                className="text-xs h-7"
+                onClick={() => setOrigemFilter(opt.key)}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+
             {loading ? (
               <div className="space-y-2 py-4">
                 <Skeleton className="h-16 w-full" />
