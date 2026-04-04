@@ -204,6 +204,7 @@ export default function FichasAdmin() {
           obs: prodForm.obs.trim() || null,
           imprimir_ficha: prodForm.imprimir_ficha,
           enviar_para_kds: prodForm.enviar_para_kds,
+          estoque_negativo: prodForm.estoque_negativo,
         } as any);
         setShowProdModal(false);
         toast({ title: 'Produto cadastrado!' });
