@@ -259,15 +259,20 @@ export function usePulseiras() {
     }
     if (viewError) console.warn('[Pulseiras][Fallback] vw_pulseira_saldo_produto falhou:', viewError.message);
 
-    // Step 2: Try direct tables
-    console.log('[Pulseiras][Fallback] Step 2: Tentando tabelas diretas pulseira_itens e pulseira_baixas');
-    const [itensRes, baixasRes] = await Promise.all([
+    // Step 2: Try direct tables pulseira_itens, pulseira_baixas, AND fichas_impressoes with pulseira_id
+    console.log('[Pulseiras][Fallback] Step 2: Tentando tabelas diretas');
+    const [itensRes, baixasRes, fichasRes] = await Promise.all([
       db
         .from('pulseira_itens' as any)
         .select('*')
         .eq('pulseira_id', pulseiraId),
       db
         .from('pulseira_baixas' as any)
+        .select('*')
+        .eq('pulseira_id', pulseiraId),
+      // Also check fichas_impressoes which might link to pulseira
+      db
+        .from('fichas_impressoes' as any)
         .select('*')
         .eq('pulseira_id', pulseiraId),
     ]);
@@ -277,6 +282,9 @@ export function usePulseiras() {
     
     if (baixasRes.error) console.warn('[Pulseiras][Fallback] pulseira_baixas erro:', baixasRes.error.message, baixasRes.error.code);
     else console.log('[Pulseiras][Fallback] pulseira_baixas retornou', (baixasRes.data || []).length, 'registros');
+
+    if (fichasRes.error) console.warn('[Pulseiras][Fallback] fichas_impressoes (pulseira_id) erro:', fichasRes.error.message, fichasRes.error.code);
+    else console.log('[Pulseiras][Fallback] fichas_impressoes (pulseira_id) retornou', (fichasRes.data || []).length, 'registros', fichasRes.data?.length ? JSON.stringify(fichasRes.data[0]) : '');
 
     const map = new Map<string, PulseiraProdutoResumo>();
 
@@ -329,6 +337,31 @@ export function usePulseiras() {
         curr.ultima_retirada = createdAt;
         curr.ultimo_atendente = atendenteNome;
       }
+      map.set(produtoId, curr);
+    }
+
+    // Step 3: Also process fichas_impressoes data if available (items linked to pulseira via fichas)
+    for (const row of (fichasRes.data || []) as any[]) {
+      const produtoId = String(getFirstDefined(row, ['produto_id']) || `nome:${String(getFirstDefined(row, ['produto_nome', 'nome_produto']) || '')}`);
+      const produtoNome = String(getFirstDefined(row, ['produto_nome', 'nome_produto']) || 'Produto sem nome');
+      const qtd = Number(getFirstDefined(row, ['quantidade']) ?? 1);
+      const valorUnit = Number(getFirstDefined(row, ['valor_unitario']) ?? 0);
+
+      const curr = map.get(produtoId) || {
+        pulseira_id: pulseiraId,
+        produto_id: produtoId,
+        produto_nome: produtoNome,
+        comprado: 0,
+        consumido: 0,
+        disponivel: 0,
+        valor_unitario: valorUnit,
+        ultima_retirada: null,
+        ultimo_atendente: null,
+      };
+
+      curr.comprado += Number.isFinite(qtd) ? qtd : 0;
+      if (!curr.valor_unitario && Number.isFinite(valorUnit)) curr.valor_unitario = valorUnit;
+      curr.disponivel = Math.max(0, curr.comprado - curr.consumido);
       map.set(produtoId, curr);
     }
 
