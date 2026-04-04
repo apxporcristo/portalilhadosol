@@ -14,6 +14,8 @@ interface EstoqueItem {
   categoria_id: string;
   nome_categoria: string;
   estoque_negativo: boolean;
+  kit: boolean;
+  quantidade_a_baixar: number;
   quantidade_comprada: number;
   quantidade_vendida: number;
   estoque_atual: number;
