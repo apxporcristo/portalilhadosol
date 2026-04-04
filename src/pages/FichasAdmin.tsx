@@ -604,7 +604,7 @@ export default function FichasAdmin() {
                 </TableHeader>
                 <TableBody>
                   {filteredProdutos.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Nenhum produto cadastrado.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Nenhum produto cadastrado.</TableCell></TableRow>
                   ) : (
                     filteredProdutos.map(p => (
                       <TableRow key={p.id}>
