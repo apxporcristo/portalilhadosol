@@ -27,25 +27,33 @@ interface KitItem {
   produto_nome?: string;
 }
 
+interface Categoria {
+  id: string;
+  nome_categoria: string;
+}
+
 interface Kit {
   id: string;
-  produto_principal_id: string;
+  produto_principal_id: string | null;
+  nome_kit: string;
+  categoria_id: string | null;
   observacao: string | null;
   ativo: boolean;
-  produto_nome?: string;
+  categoria_nome?: string;
   itens?: KitItem[];
 }
 
 export default function KitTab() {
   const [kits, setKits] = useState<Kit[]>([]);
   const [produtos, setProdutos] = useState<ProdutoSimples[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Kit form
   const [showModal, setShowModal] = useState(false);
   const [editKit, setEditKit] = useState<Kit | null>(null);
-  const [form, setForm] = useState({ produto_principal_id: '', observacao: '', ativo: true });
+  const [form, setForm] = useState({ nome_kit: '', categoria_id: '', observacao: '', ativo: true });
   const [componentes, setComponentes] = useState<{ produto_componente_id: string; quantidade_baixa: number }[]>([]);
   const [deleteKitId, setDeleteKitId] = useState<string | null>(null);
 
@@ -56,16 +64,17 @@ export default function KitTab() {
 
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const [prodRes, kitRes] = await Promise.all([
+    const [prodRes, kitRes, catRes] = await Promise.all([
       supabase.from('fichas_produtos' as any).select('id, nome_produto, categoria_id').eq('ativo', true).order('nome_produto'),
       supabase.from('fichas_kits' as any).select('*').order('created_at', { ascending: false }),
+      supabase.from('fichas_categorias' as any).select('id, nome_categoria').eq('ativo', true).order('nome_categoria'),
     ]);
 
     const prodList = (prodRes.data || []) as ProdutoSimples[];
     setProdutos(prodList);
+    setCategorias((catRes.data || []) as Categoria[]);
 
     const kitList = (kitRes.data || []) as Kit[];
-    // Fetch items for all kits
     if (kitList.length > 0) {
       const kitIds = kitList.map(k => k.id);
       const { data: itensData } = await supabase
@@ -73,9 +82,10 @@ export default function KitTab() {
         .select('*')
         .in('kit_id', kitIds);
       const itens = (itensData || []) as KitItem[];
+      const cats = (catRes.data || []) as Categoria[];
 
       for (const kit of kitList) {
-        kit.produto_nome = prodList.find(p => p.id === kit.produto_principal_id)?.nome_produto || '—';
+        kit.categoria_nome = cats.find(c => c.id === kit.categoria_id)?.nome_categoria || '—';
         kit.itens = itens
           .filter(i => i.kit_id === kit.id)
           .map(i => ({ ...i, produto_nome: prodList.find(p => p.id === i.produto_componente_id)?.nome_produto || '—' }));
@@ -91,14 +101,14 @@ export default function KitTab() {
 
   const openNew = () => {
     setEditKit(null);
-    setForm({ produto_principal_id: '', observacao: '', ativo: true });
+    setForm({ nome_kit: '', categoria_id: '', observacao: '', ativo: true });
     setComponentes([]);
     setShowModal(true);
   };
 
   const openEdit = (kit: Kit) => {
     setEditKit(kit);
-    setForm({ produto_principal_id: kit.produto_principal_id, observacao: kit.observacao || '', ativo: kit.ativo });
+    setForm({ nome_kit: kit.nome_kit || '', categoria_id: kit.categoria_id || '', observacao: kit.observacao || '', ativo: kit.ativo });
     setComponentes((kit.itens || []).map(i => ({ produto_componente_id: i.produto_componente_id, quantidade_baixa: i.quantidade_baixa })));
     setShowModal(true);
   };
@@ -106,10 +116,6 @@ export default function KitTab() {
   const addComponente = () => {
     if (!compProdId) {
       toast({ title: 'Selecione um produto componente.', variant: 'destructive' });
-      return;
-    }
-    if (compProdId === form.produto_principal_id) {
-      toast({ title: 'Produto componente não pode ser igual ao principal.', variant: 'destructive' });
       return;
     }
     if (componentes.some(c => c.produto_componente_id === compProdId)) {
@@ -131,8 +137,12 @@ export default function KitTab() {
   };
 
   const handleSave = async () => {
-    if (!form.produto_principal_id) {
-      toast({ title: 'Selecione o produto principal.', variant: 'destructive' });
+    if (!form.nome_kit.trim()) {
+      toast({ title: 'Informe o nome do kit.', variant: 'destructive' });
+      return;
+    }
+    if (!form.categoria_id) {
+      toast({ title: 'Selecione a categoria.', variant: 'destructive' });
       return;
     }
     if (componentes.length === 0) {
@@ -143,22 +153,21 @@ export default function KitTab() {
     try {
       const supabase = await getSupabaseClient();
       if (editKit) {
-        // Update kit
         await supabase.from('fichas_kits' as any).update({
-          produto_principal_id: form.produto_principal_id,
+          nome_kit: form.nome_kit.trim(),
+          categoria_id: form.categoria_id,
           observacao: form.observacao.trim() || null,
           ativo: form.ativo,
         } as any).eq('id', editKit.id);
-        // Delete old items and re-insert
         await supabase.from('fichas_kit_itens' as any).delete().eq('kit_id', editKit.id);
         await supabase.from('fichas_kit_itens' as any).insert(
           componentes.map(c => ({ kit_id: editKit.id, produto_componente_id: c.produto_componente_id, quantidade_baixa: c.quantidade_baixa })) as any
         );
         toast({ title: 'Kit atualizado!' });
       } else {
-        // Create kit
         const { data: newKit, error } = await supabase.from('fichas_kits' as any).insert({
-          produto_principal_id: form.produto_principal_id,
+          nome_kit: form.nome_kit.trim(),
+          categoria_id: form.categoria_id,
           observacao: form.observacao.trim() || null,
           ativo: form.ativo,
         } as any).select('id').single();
@@ -217,9 +226,10 @@ export default function KitTab() {
       {/* Listagem de kits */}
       <div className="rounded-md border overflow-x-auto">
         <Table>
-          <TableHeader>
+           <TableHeader>
             <TableRow>
-              <TableHead>Produto Principal</TableHead>
+              <TableHead>Nome do Kit</TableHead>
+              <TableHead>Categoria</TableHead>
               <TableHead className="text-center">Componentes</TableHead>
               <TableHead>Observação</TableHead>
               <TableHead>Status</TableHead>
@@ -228,11 +238,12 @@ export default function KitTab() {
           </TableHeader>
           <TableBody>
             {kits.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
             ) : (
               kits.map(kit => (
                 <TableRow key={kit.id}>
-                  <TableCell className="font-medium">{kit.produto_nome}</TableCell>
+                  <TableCell className="font-medium">{kit.nome_kit || '—'}</TableCell>
+                  <TableCell>{kit.categoria_nome || '—'}</TableCell>
                   <TableCell className="text-center">{kit.itens?.length || 0}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{kit.observacao || '—'}</TableCell>
                   <TableCell>
@@ -258,17 +269,23 @@ export default function KitTab() {
             <DialogTitle>{editKit ? 'Editar Kit' : 'Novo Kit'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Produto principal */}
+            {/* Categoria */}
             <div className="space-y-2">
-              <Label>Produto principal *</Label>
-              <Select value={form.produto_principal_id} onValueChange={(v) => setForm(p => ({ ...p, produto_principal_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Selecione o produto..." /></SelectTrigger>
+              <Label>Categoria *</Label>
+              <Select value={form.categoria_id} onValueChange={(v) => setForm(p => ({ ...p, categoria_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Selecione a categoria..." /></SelectTrigger>
                 <SelectContent>
-                  {produtos.map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.nome_produto}</SelectItem>
+                  {categorias.map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.nome_categoria}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Nome do kit */}
+            <div className="space-y-2">
+              <Label>Nome do kit *</Label>
+              <Input value={form.nome_kit} onChange={e => setForm(p => ({ ...p, nome_kit: e.target.value }))} placeholder="Ex: Balde Antartica 600ml" maxLength={100} />
             </div>
 
             <div className="space-y-2">
@@ -291,7 +308,7 @@ export default function KitTab() {
                     <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                     <SelectContent>
                       {produtos
-                        .filter(p => p.id !== form.produto_principal_id && !componentes.some(c => c.produto_componente_id === p.id))
+                        .filter(p => !componentes.some(c => c.produto_componente_id === p.id))
                         .map(p => (
                           <SelectItem key={p.id} value={p.id}>{p.nome_produto}</SelectItem>
                         ))}
