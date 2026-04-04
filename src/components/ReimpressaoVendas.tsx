@@ -24,9 +24,9 @@ interface VendaItem {
   valor_total: number;
   nome_cliente: string | null;
   nome_atendente: string | null;
-  telefone_cliente: string | null;
   codigo_venda: string;
-  created_at: string;
+  data_venda: string;
+  origem_venda: string;
   comanda_id: string | null;
   comanda_numero: string | null;
   pulseira_id: string | null;
