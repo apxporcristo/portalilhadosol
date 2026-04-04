@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Pencil, Trash2, Save, Tag, Package, BarChart3, Filter, Search, Printer as PrinterIcon, Link2, Layers, Copy, ClipboardList } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, Trash2, Save, Tag, Package, BarChart3, Filter, Search, Printer as PrinterIcon, Link2, Layers, Copy, ClipboardList, Truck, Warehouse } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
