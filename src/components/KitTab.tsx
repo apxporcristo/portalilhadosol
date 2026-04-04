@@ -269,17 +269,23 @@ export default function KitTab() {
             <DialogTitle>{editKit ? 'Editar Kit' : 'Novo Kit'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Produto principal */}
+            {/* Categoria */}
             <div className="space-y-2">
-              <Label>Produto principal *</Label>
-              <Select value={form.produto_principal_id} onValueChange={(v) => setForm(p => ({ ...p, produto_principal_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Selecione o produto..." /></SelectTrigger>
+              <Label>Categoria *</Label>
+              <Select value={form.categoria_id} onValueChange={(v) => setForm(p => ({ ...p, categoria_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Selecione a categoria..." /></SelectTrigger>
                 <SelectContent>
-                  {produtos.map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.nome_produto}</SelectItem>
+                  {categorias.map(c => (
+                    <SelectItem key={c.id} value={c.id}>{c.nome_categoria}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Nome do kit */}
+            <div className="space-y-2">
+              <Label>Nome do kit *</Label>
+              <Input value={form.nome_kit} onChange={e => setForm(p => ({ ...p, nome_kit: e.target.value }))} placeholder="Ex: Balde Antartica 600ml" maxLength={100} />
             </div>
 
             <div className="space-y-2">
@@ -302,7 +308,7 @@ export default function KitTab() {
                     <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                     <SelectContent>
                       {produtos
-                        .filter(p => p.id !== form.produto_principal_id && !componentes.some(c => c.produto_componente_id === p.id))
+                        .filter(p => !componentes.some(c => c.produto_componente_id === p.id))
                         .map(p => (
                           <SelectItem key={p.id} value={p.id}>{p.nome_produto}</SelectItem>
                         ))}
