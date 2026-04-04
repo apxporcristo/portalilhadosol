@@ -309,7 +309,17 @@ export default function PulseirasPage() {
                 {isAtiva && saldos.length > 0 && <p className="text-xs text-muted-foreground">Clique em um produto para registrar baixa</p>}
               </CardHeader>
               <CardContent>
-                <Input placeholder="Buscar produto..." value={buscaSaldo} onChange={e => setBuscaSaldo(e.target.value)} className="mb-3" />
+                <div className="flex gap-2 mb-3">
+                  <Input placeholder="Buscar produto..." value={buscaSaldo} onChange={e => setBuscaSaldo(e.target.value)} className="flex-1" />
+                  <Button
+                    variant={mostrarTodosSaldos ? 'default' : 'outline'}
+                    size="sm"
+                    className="whitespace-nowrap"
+                    onClick={() => setMostrarTodosSaldos(v => !v)}
+                  >
+                    {mostrarTodosSaldos ? 'Ocultar zerados' : 'Listar todos'}
+                  </Button>
+                </div>
                 {saldoLoading && <Skeleton className="h-20 w-full" />}
                 {saldoError && <p className="text-sm text-destructive">{saldoError}</p>}
                 {!saldoLoading && !saldoError && filteredSaldos.length === 0 && <p className="text-sm text-muted-foreground">Nenhum item encontrado.</p>}
