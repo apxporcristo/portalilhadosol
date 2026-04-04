@@ -102,12 +102,15 @@ export default function PulseirasPage() {
       toast({ title: 'Preencha número e nome.', variant: 'destructive' });
       return;
     }
+    const userId = userSession?.access?.user_id;
+    const userName = userSession?.access?.nome || userSession?.user?.email || undefined;
     const result = await abrirPulseira({
       numero: fNumero.trim(),
       nome_cliente: fNome.trim(),
       telefone: fTelefone.trim() || undefined,
       cpf: fCpf.trim() || undefined,
-      aberta_por: userSession?.access?.nome || userSession?.user?.email || undefined,
+      aberta_por: userId,
+      aberta_por_nome: userName,
     });
     if (result) {
       setAbrirModal(false);
