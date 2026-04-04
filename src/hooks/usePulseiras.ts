@@ -308,10 +308,14 @@ export function usePulseiras() {
     }
   }, [limpar, listarAbertas, listarFechadas]);
 
-  const reabrirPulseira = useCallback(async (pulseiraId: string) => {
+  const reabrirPulseira = useCallback(async (pulseiraId: string, params?: { reaberta_por?: string; reaberta_por_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
-      const { error } = await db.rpc('reabrir_pulseira' as any, { p_pulseira_id: pulseiraId } as any);
+      const { error } = await db.rpc('reabrir_pulseira' as any, {
+        p_pulseira_id: pulseiraId,
+        p_reaberta_por: params?.reaberta_por || null,
+        p_reaberta_por_nome: params?.reaberta_por_nome || null,
+      } as any);
       if (error) throw error;
       toast({ title: 'Pulseira reaberta!' });
       limpar();
