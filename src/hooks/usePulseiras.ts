@@ -340,6 +340,31 @@ export function usePulseiras() {
       map.set(produtoId, curr);
     }
 
+    // Step 3: Also process fichas_impressoes data if available (items linked to pulseira via fichas)
+    for (const row of (fichasRes.data || []) as any[]) {
+      const produtoId = String(getFirstDefined(row, ['produto_id']) || `nome:${String(getFirstDefined(row, ['produto_nome', 'nome_produto']) || '')}`);
+      const produtoNome = String(getFirstDefined(row, ['produto_nome', 'nome_produto']) || 'Produto sem nome');
+      const qtd = Number(getFirstDefined(row, ['quantidade']) ?? 1);
+      const valorUnit = Number(getFirstDefined(row, ['valor_unitario']) ?? 0);
+
+      const curr = map.get(produtoId) || {
+        pulseira_id: pulseiraId,
+        produto_id: produtoId,
+        produto_nome: produtoNome,
+        comprado: 0,
+        consumido: 0,
+        disponivel: 0,
+        valor_unitario: valorUnit,
+        ultima_retirada: null,
+        ultimo_atendente: null,
+      };
+
+      curr.comprado += Number.isFinite(qtd) ? qtd : 0;
+      if (!curr.valor_unitario && Number.isFinite(valorUnit)) curr.valor_unitario = valorUnit;
+      curr.disponivel = Math.max(0, curr.comprado - curr.consumido);
+      map.set(produtoId, curr);
+    }
+
     return Array.from(map.values());
   }, []);
 
