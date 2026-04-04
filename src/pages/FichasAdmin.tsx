@@ -169,10 +169,6 @@ export default function FichasAdmin() {
       toast({ title: 'Erro', description: 'Valor obrigatório quando complementos não está ativado.', variant: 'destructive' });
       return;
     }
-    if (prodForm.kit && (parseInt(prodForm.quantidade_a_baixar) || 0) <= 0) {
-      toast({ title: 'Erro', description: 'Quantidade a baixar deve ser maior que 0 quando Kit está ativado.', variant: 'destructive' });
-      return;
-    }
     setSavingProd(true);
     try {
       if (editProd) {
