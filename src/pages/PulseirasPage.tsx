@@ -86,7 +86,7 @@ export default function PulseirasPage() {
   const hasMovimentacao = useMemo(() => {
     return totalItensLancados > 0 || historico.length > 0 || itens.length > 0 || consumos.length > 0 || resumoProdutos.length > 0;
   }, [totalItensLancados, historico, itens, consumos, resumoProdutos]);
-  const canClosePulseira = pulseira?.status === 'ativa' && hasMovimentacao && !temSaldo;
+  const canClosePulseira = pulseira?.status === 'ativa' && !temSaldo;
   const canDeletePulseira = pulseira?.status === 'ativa' && !hasMovimentacao;
 
   const pulseiraIdRef = useRef<string | null>(null);
