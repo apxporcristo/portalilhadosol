@@ -332,10 +332,14 @@ export function usePulseiras() {
     }
   }, [limpar, listarAbertas, listarFechadas]);
 
-  const excluirPulseira = useCallback(async (pulseiraId: string) => {
+  const excluirPulseira = useCallback(async (pulseiraId: string, params?: { usuario_id?: string; usuario_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
-      const { error } = await db.rpc('excluir_pulseira_completa' as any, { p_pulseira_id: pulseiraId } as any);
+      const { error } = await db.rpc('excluir_pulseira_completa' as any, {
+        p_pulseira_id: pulseiraId,
+        p_usuario_id: params?.usuario_id || null,
+        p_usuario_nome: params?.usuario_nome || null,
+      } as any);
       if (error) throw error;
       toast({ title: 'Pulseira excluída!' });
       limpar();
