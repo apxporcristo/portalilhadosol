@@ -137,8 +137,12 @@ export default function KitTab() {
   };
 
   const handleSave = async () => {
-    if (!form.produto_principal_id) {
-      toast({ title: 'Selecione o produto principal.', variant: 'destructive' });
+    if (!form.nome_kit.trim()) {
+      toast({ title: 'Informe o nome do kit.', variant: 'destructive' });
+      return;
+    }
+    if (!form.categoria_id) {
+      toast({ title: 'Selecione a categoria.', variant: 'destructive' });
       return;
     }
     if (componentes.length === 0) {
@@ -149,22 +153,21 @@ export default function KitTab() {
     try {
       const supabase = await getSupabaseClient();
       if (editKit) {
-        // Update kit
         await supabase.from('fichas_kits' as any).update({
-          produto_principal_id: form.produto_principal_id,
+          nome_kit: form.nome_kit.trim(),
+          categoria_id: form.categoria_id,
           observacao: form.observacao.trim() || null,
           ativo: form.ativo,
         } as any).eq('id', editKit.id);
-        // Delete old items and re-insert
         await supabase.from('fichas_kit_itens' as any).delete().eq('kit_id', editKit.id);
         await supabase.from('fichas_kit_itens' as any).insert(
           componentes.map(c => ({ kit_id: editKit.id, produto_componente_id: c.produto_componente_id, quantidade_baixa: c.quantidade_baixa })) as any
         );
         toast({ title: 'Kit atualizado!' });
       } else {
-        // Create kit
         const { data: newKit, error } = await supabase.from('fichas_kits' as any).insert({
-          produto_principal_id: form.produto_principal_id,
+          nome_kit: form.nome_kit.trim(),
+          categoria_id: form.categoria_id,
           observacao: form.observacao.trim() || null,
           ativo: form.ativo,
         } as any).select('id').single();
