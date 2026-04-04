@@ -27,6 +27,10 @@ interface VendaItem {
   telefone_cliente: string | null;
   codigo_venda: string;
   created_at: string;
+  comanda_id: string | null;
+  comanda_numero: string | null;
+  pulseira_id: string | null;
+  pulseira_numero: string | null;
 }
 
 interface VendaGroup {
@@ -38,6 +42,7 @@ interface VendaGroup {
   created_at: string;
   atendente: string | null;
   cliente: string | null;
+  origem: string;
 }
 
 export function ReimpressaoVendas() {
