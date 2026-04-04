@@ -469,6 +469,19 @@ export default function FichasLista() {
     pulseira_numero: origem?.pulseiraNumero != null ? String(origem.pulseiraNumero) : null,
   });
 
+  const logOrigemVenda = (origem?: VendaOrigemContext, codigoVenda?: string) => {
+    if (origem?.pulseiraNumero) {
+      console.info(`[Venda] ✅ Gravada como Pulseira (#${origem.pulseiraNumero}) - Código: ${codigoVenda}`);
+      toast({ title: '📋 Venda registrada', description: `Origem: Pulseira #${origem.pulseiraNumero}` });
+    } else if (origem?.comandaNumero) {
+      console.info(`[Venda] ✅ Gravada como Comanda (#${origem.comandaNumero}) - Código: ${codigoVenda}`);
+      toast({ title: '📋 Venda registrada', description: `Origem: Comanda #${origem.comandaNumero}` });
+    } else {
+      console.info(`[Venda] ✅ Gravada como Venda única - Código: ${codigoVenda}`);
+      toast({ title: '📋 Venda registrada', description: 'Origem: Venda única' });
+    }
+  };
+
   const insertFichaImpressa = async (
     sbClient: any,
     item: CartItem,
