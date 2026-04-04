@@ -130,7 +130,7 @@ export default function EntradaMercadoriaTab() {
   }, [produtos, prodSearch]);
 
   const addItem = () => {
-    setItens(prev => [...prev, { produto_id: '', produto_nome: '', quantidade: 1, valor_comprado: 0, margem_lucro: 1, }]);
+    setItens(prev => [...prev, { produto_id: '', produto_nome: '', quantidade: 1, valor_comprado: 0, margem_lucro: 100, }]);
   };
 
   const removeItem = (idx: number) => {
@@ -151,7 +151,7 @@ export default function EntradaMercadoriaTab() {
     setAddingItemIndex(null);
   };
 
-  const calcValorVenda = (item: ItemNota) => item.valor_comprado * item.margem_lucro;
+  const calcValorVenda = (item: ItemNota) => (item.valor_comprado * item.margem_lucro) / 100;
   const calcTotalComprado = (item: ItemNota) => item.quantidade * item.valor_comprado;
   const calcTotalVenda = (item: ItemNota) => item.quantidade * calcValorVenda(item);
 
@@ -257,9 +257,9 @@ export default function EntradaMercadoriaTab() {
                     <TableRow>
                       <TableHead>Produto</TableHead>
                       <TableHead className="w-20 text-center">Qtd</TableHead>
-                      <TableHead className="w-28 text-right">Vlr Compra</TableHead>
+                      <TableHead className="w-28 text-right">Compra</TableHead>
                       <TableHead className="w-24 text-center">% Margem</TableHead>
-                      <TableHead className="w-28 text-right">Vlr Venda</TableHead>
+                      <TableHead className="w-28 text-right">Venda</TableHead>
                       <TableHead className="w-10"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -385,9 +385,9 @@ export default function EntradaMercadoriaTab() {
                       <TableRow>
                         <TableHead>Produto</TableHead>
                         <TableHead className="text-center">Qtd</TableHead>
-                        <TableHead className="text-right">Vlr Comprado</TableHead>
+                        <TableHead className="text-right">Compra</TableHead>
                         <TableHead className="text-center">Margem</TableHead>
-                        <TableHead className="text-right">Vlr Venda</TableHead>
+                        <TableHead className="text-right">Venda</TableHead>
                         <TableHead className="text-right">Total Comprado</TableHead>
                         <TableHead className="text-right">Total Venda</TableHead>
                       </TableRow>
