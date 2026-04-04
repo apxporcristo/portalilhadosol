@@ -98,7 +98,7 @@ export default function FichasLista() {
   // Lançar na pulseira
   const [showPulseiraModal, setShowPulseiraModal] = useState(false);
   const [pulseiraSearch, setPulseiraSearch] = useState('');
-  const [confirmPulseira, setConfirmPulseira] = useState<Pulseira | null>(null);
+  const [confirmPulseira, setConfirmPulseira] = useState<PulseiraResumo | null>(null);
 
   // Load pulseiras when needed
   useEffect(() => {
