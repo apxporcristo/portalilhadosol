@@ -99,8 +99,6 @@ export default function EstoqueTab() {
               <TableHead className="text-center">Vendido</TableHead>
               <TableHead className="text-center">Estoque atual</TableHead>
               <TableHead className="text-center">Est. Negativo</TableHead>
-              <TableHead className="text-right">Últ. Vlr Compra</TableHead>
-              <TableHead className="text-right">Últ. Vlr Venda</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
