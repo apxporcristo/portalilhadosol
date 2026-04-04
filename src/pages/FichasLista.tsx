@@ -469,6 +469,19 @@ export default function FichasLista() {
     pulseira_numero: origem?.pulseiraNumero != null ? String(origem.pulseiraNumero) : null,
   });
 
+  const logOrigemVenda = (origem?: VendaOrigemContext, codigoVenda?: string) => {
+    if (origem?.pulseiraNumero) {
+      console.info(`[Venda] ✅ Gravada como Pulseira (#${origem.pulseiraNumero}) - Código: ${codigoVenda}`);
+      toast({ title: '📋 Venda registrada', description: `Origem: Pulseira #${origem.pulseiraNumero}` });
+    } else if (origem?.comandaNumero) {
+      console.info(`[Venda] ✅ Gravada como Comanda (#${origem.comandaNumero}) - Código: ${codigoVenda}`);
+      toast({ title: '📋 Venda registrada', description: `Origem: Comanda #${origem.comandaNumero}` });
+    } else {
+      console.info(`[Venda] ✅ Gravada como Venda única - Código: ${codigoVenda}`);
+      toast({ title: '📋 Venda registrada', description: 'Origem: Venda única' });
+    }
+  };
+
   const insertFichaImpressa = async (
     sbClient: any,
     item: CartItem,
@@ -533,6 +546,7 @@ export default function FichasLista() {
               }
             : undefined,
         });
+        logOrigemVenda(hasPulseiraContext ? { pulseiraId: pulseiraContextId, pulseiraNumero: pulseiraContextNumero } : undefined, codigoVenda);
       } catch (e) { console.warn('[Ficha] fichas_impressas insert falhou:', e); }
 
       // Send to KDS if product is marked
@@ -638,6 +652,7 @@ export default function FichasLista() {
               },
             });
           }
+          logOrigemVenda({ pulseiraId: pulseiraContextId, pulseiraNumero: pulseiraContextNumero }, codigoVenda);
         } catch (e) { console.warn('[Pulseira] fichas_impressas insert falhou:', e); }
         clearCart();
         toast({ title: 'Itens adicionados à pulseira!', description: `Pulseira #${pulseiraContextNumero}` });
@@ -871,6 +886,7 @@ export default function FichasLista() {
                 }
               : undefined,
           });
+          logOrigemVenda(hasPulseiraContext ? { pulseiraId: pulseiraContextId, pulseiraNumero: pulseiraContextNumero } : undefined, codigoVenda);
         } catch (insErr) {
           console.warn('[Ficha Print] fichas_impressas insert falhou (continuando):', insErr);
         }
@@ -1455,6 +1471,7 @@ export default function FichasLista() {
                   },
                 });
               }
+              logOrigemVenda({ comandaId: confirmComanda.id, comandaNumero: confirmComanda.numero }, codigoVenda);
             } catch (e) { console.warn('[Comanda] fichas_impressas insert falhou:', e); }
             toast({ title: `${totalItems} item(ns) lançados na comanda #${confirmComanda.numero}` });
             clearCart();
@@ -1543,6 +1560,7 @@ export default function FichasLista() {
                     },
                   });
                 }
+                logOrigemVenda({ pulseiraId: confirmPulseira.id, pulseiraNumero: confirmPulseira.numero }, codigoVenda);
               } catch (e) { console.warn('[Pulseira Modal] fichas_impressas insert falhou:', e); }
               clearCart();
               setConfirmPulseira(null);
