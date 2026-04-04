@@ -226,9 +226,10 @@ export default function KitTab() {
       {/* Listagem de kits */}
       <div className="rounded-md border overflow-x-auto">
         <Table>
-          <TableHeader>
+           <TableHeader>
             <TableRow>
-              <TableHead>Produto Principal</TableHead>
+              <TableHead>Nome do Kit</TableHead>
+              <TableHead>Categoria</TableHead>
               <TableHead className="text-center">Componentes</TableHead>
               <TableHead>Observação</TableHead>
               <TableHead>Status</TableHead>
@@ -237,11 +238,12 @@ export default function KitTab() {
           </TableHeader>
           <TableBody>
             {kits.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
             ) : (
               kits.map(kit => (
                 <TableRow key={kit.id}>
-                  <TableCell className="font-medium">{kit.produto_nome}</TableCell>
+                  <TableCell className="font-medium">{kit.nome_kit || '—'}</TableCell>
+                  <TableCell>{kit.categoria_nome || '—'}</TableCell>
                   <TableCell className="text-center">{kit.itens?.length || 0}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{kit.observacao || '—'}</TableCell>
                   <TableCell>
