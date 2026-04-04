@@ -652,6 +652,7 @@ export default function FichasLista() {
               },
             });
           }
+          logOrigemVenda({ pulseiraId: pulseiraContextId, pulseiraNumero: pulseiraContextNumero }, codigoVenda);
         } catch (e) { console.warn('[Pulseira] fichas_impressas insert falhou:', e); }
         clearCart();
         toast({ title: 'Itens adicionados à pulseira!', description: `Pulseira #${pulseiraContextNumero}` });
