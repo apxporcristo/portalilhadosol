@@ -821,6 +821,8 @@ export default function FichasLista() {
             telefone_cliente: telefoneCliente.trim() || null,
             nome_atendente: nomeAtendente.trim() || null,
             codigo_venda: codigoVenda,
+            pulseira_id: pulseiraContextId || null,
+            pulseira_numero: pulseiraContextNumero || null,
           });
         } catch (insErr) {
           console.warn('[Ficha Print] fichas_impressas insert falhou (continuando):', insErr);
