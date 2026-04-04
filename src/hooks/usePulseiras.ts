@@ -162,11 +162,10 @@ export function usePulseiras() {
   const listarFechadas = useCallback(async () => {
     try {
       const db = await getSupabaseClient();
-      // Try both possible status values: 'encerrada' and 'fechada'
       const { data, error } = await db
         .from('pulseiras' as any)
         .select('*')
-        .in('status', ['encerrada', 'fechada'])
+        .eq('status', 'fechada')
         .order('fechada_em', { ascending: false });
       if (error) throw error;
       setPulseirasFechadas((data || []) as any[]);
@@ -194,7 +193,7 @@ export function usePulseiras() {
           .from('pulseiras' as any)
           .select('*')
           .eq('numero', numero.trim())
-          .eq('status', 'encerrada')
+          .eq('status', 'fechada')
           .maybeSingle();
         if (closedError) throw closedError;
         data = closedData;
@@ -654,7 +653,7 @@ export function usePulseiras() {
       const db = await getSupabaseClient();
       const { error } = await db
         .from('pulseiras')
-        .update({ status: 'encerrada', fechada_em: new Date().toISOString() } as any)
+        .update({ status: 'fechada', fechada_em: new Date().toISOString() } as any)
         .eq('id', pulseiraId);
       if (error) throw error;
       toast({ title: 'Pulseira fechada!' });
@@ -725,11 +724,11 @@ export function usePulseiras() {
       // 3. Close the pulseira
       const { error: closeError } = await db
         .from('pulseiras')
-        .update({ status: 'encerrada', fechada_em: new Date().toISOString() } as any)
+        .update({ status: 'fechada', fechada_em: new Date().toISOString() } as any)
         .eq('id', pulseiraId);
       if (closeError) throw closeError;
 
-      toast({ title: 'Pulseira encerrada com abatimento de crédito!' });
+      toast({ title: 'Pulseira fechada com abatimento de crédito!' });
       setPulseira(null);
       return true;
     } catch (err: any) {
