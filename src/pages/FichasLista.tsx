@@ -886,6 +886,7 @@ export default function FichasLista() {
                 }
               : undefined,
           });
+          logOrigemVenda(hasPulseiraContext ? { pulseiraId: pulseiraContextId, pulseiraNumero: pulseiraContextNumero } : undefined, codigoVenda);
         } catch (insErr) {
           console.warn('[Ficha Print] fichas_impressas insert falhou (continuando):', insErr);
         }
