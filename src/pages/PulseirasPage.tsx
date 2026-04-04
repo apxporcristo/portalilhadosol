@@ -408,19 +408,6 @@ export default function PulseirasPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal: Adicionar Item */}
-      <Dialog open={itemModal} onOpenChange={setItemModal}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Adicionar Item</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>Nome do Produto *</Label><Input value={iProdutoNome} onChange={e => setIProdutoNome(e.target.value)} placeholder="Nome do produto" /></div>
-            <div><Label>Quantidade *</Label><Input type="number" min={1} value={iQtd} onChange={e => setIQtd(parseInt(e.target.value) || 1)} /></div>
-            <div><Label>Valor Unitário *</Label><Input type="number" step="0.01" min={0} value={iValor} onChange={e => setIValor(e.target.value)} placeholder="0.00" /></div>
-            <div><Label>Observação</Label><Input value={iObs} onChange={e => setIObs(e.target.value)} placeholder="Opcional" /></div>
-          </div>
-          <DialogFooter><Button onClick={handleItem}>Adicionar</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Modal: Registrar Consumo */}
       <Dialog open={consumoModal} onOpenChange={setConsumoModal}>
