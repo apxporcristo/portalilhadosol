@@ -172,17 +172,21 @@ export function useComandas() {
     console.log('[lancarItens] Usuário:', { login });
 
     for (const item of items) {
+      const complementosJson = item.complementos && item.complementos.length > 0 
+        ? JSON.stringify(item.complementos) 
+        : '[]';
+      
       const payload = {
         p_comanda_id: comandaId,
         p_produto_id: item.produto_id,
         p_descricao_produto: item.produto_nome,
-        p_quantidade: item.quantidade,
+        p_quantidade: Math.floor(item.quantidade),
         p_valor_unitario: item.valor_unitario,
         p_subtotal: item.valor_total,
         p_origem: 'ficha',
         p_observacao: item.observacao || '',
         p_possui_complementos: !!(item.complementos && item.complementos.length > 0),
-        p_complementos_json: item.complementos && item.complementos.length > 0 ? item.complementos : null,
+        p_complementos_json: complementosJson,
         p_produto_nome: item.produto_nome,
         p_valor_total: item.valor_total,
         p_usuario_login: login,
