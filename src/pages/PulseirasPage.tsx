@@ -44,12 +44,6 @@ export default function PulseirasPage() {
   const [fTelefone, setFTelefone] = useState('');
   const [fCpf, setFCpf] = useState('');
 
-  // Form: item
-  const [iProdutoNome, setIProdutoNome] = useState('');
-  const [iQtd, setIQtd] = useState(1);
-  const [iValor, setIValor] = useState('');
-  const [iObs, setIObs] = useState('');
-
   // Form: consumo
   const [cProdutoNome, setCProdutoNome] = useState('');
   const [cQtd, setCQtd] = useState(1);
