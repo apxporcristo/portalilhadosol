@@ -131,6 +131,8 @@ export default function PulseirasPage() {
       quantidade: baixaQtd,
       valor_unitario: maxQtd > 0 ? (baixaItem.valor_disponivel ?? 0) / maxQtd : 0,
       motivo: baixaMotivo || undefined,
+      usuario_id: userSession?.access?.user_id,
+      usuario_nome: userSession?.access?.nome || userSession?.user?.email || undefined,
     });
     if (ok) {
       setBaixaItem(null);
