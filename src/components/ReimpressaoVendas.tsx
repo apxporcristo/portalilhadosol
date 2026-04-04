@@ -286,6 +286,7 @@ export function ReimpressaoVendas() {
             ))}
           </div>
 
+          <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
             {loading ? (
               <div className="space-y-2 py-4">
                 <Skeleton className="h-16 w-full" />
