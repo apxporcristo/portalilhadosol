@@ -584,6 +584,32 @@ export default function FichasLista() {
     try {
       const success = await addItemsToPulseiraContext();
       if (success) {
+        // Also insert into fichas_impressas so sales appear in Reimpressão
+        try {
+          const sbClient = await getSupabaseClient();
+          const codigoVenda = generateCodigoVenda();
+          for (const ci of cart) {
+            const unitTotal = cartItemTotal(ci);
+            let produtoNome = ci.ficha.nome_produto;
+            if (ci.selectedItems.length > 0) {
+              produtoNome += ' | ' + ci.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
+            }
+            await sbClient.from('fichas_impressas' as any).insert({
+              produto_id: ci.ficha.id,
+              produto_nome: produtoNome,
+              categoria_id: ci.ficha.categoria_id,
+              categoria_nome: ci.ficha.categoria_nome,
+              quantidade: ci.quantidade,
+              valor_unitario: unitTotal,
+              valor_total: unitTotal * ci.quantidade,
+              nome_cliente: pulseiraContextNome || null,
+              nome_atendente: userName || null,
+              codigo_venda: codigoVenda,
+              pulseira_id: pulseiraContextId,
+              pulseira_numero: pulseiraContextNumero,
+            });
+          }
+        } catch (e) { console.warn('[Pulseira] fichas_impressas insert falhou:', e); }
         clearCart();
         toast({ title: 'Itens adicionados à pulseira!', description: `Pulseira #${pulseiraContextNumero}` });
         navigate('/pulseiras');
