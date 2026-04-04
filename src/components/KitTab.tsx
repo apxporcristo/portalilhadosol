@@ -115,12 +115,8 @@ export default function KitTab() {
     setShowModal(true);
   };
 
-  const addComponente = () => {
-    if (!compProdId) {
-      toast({ title: 'Selecione um produto componente.', variant: 'destructive' });
-      return;
-    }
-    if (componentes.some(c => c.produto_componente_id === compProdId)) {
+  const selectComponente = (prodId: string) => {
+    if (componentes.some(c => c.produto_componente_id === prodId)) {
       toast({ title: 'Este componente já foi adicionado.', variant: 'destructive' });
       return;
     }
@@ -129,9 +125,10 @@ export default function KitTab() {
       toast({ title: 'Quantidade deve ser maior que 0.', variant: 'destructive' });
       return;
     }
-    setComponentes(prev => [...prev, { produto_componente_id: compProdId, quantidade_baixa: qtd }]);
-    setCompProdId('');
+    setComponentes(prev => [...prev, { produto_componente_id: prodId, quantidade_baixa: qtd }]);
     setCompQtd('1');
+    setShowProdModal(false);
+    setProdSearch('');
   };
 
   const removeComponente = (idx: number) => {
