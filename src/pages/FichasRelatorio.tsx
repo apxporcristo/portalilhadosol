@@ -32,7 +32,7 @@ export default function FichasRelatorio() {
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [categoriaFilter, setCategoriaFilter] = useState('todas');
-  const [produtoFilter, setProdutoFilter] = useState('todos');
+  
 
   const fetchRegistros = useCallback(async () => {
     setLoading(true);
