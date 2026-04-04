@@ -46,6 +46,68 @@ interface VendaGroup {
   origemKey: string;
 }
 
+const toText = (value: unknown, fallback = ''): string => {
+  if (value === null || value === undefined) return fallback;
+  const text = String(value).trim();
+  return text || fallback;
+};
+
+const toNullableText = (value: unknown): string | null => {
+  const text = toText(value);
+  return text || null;
+};
+
+const toNumberValue = (value: unknown, fallback = 0): number => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : fallback;
+  }
+
+  if (typeof value === 'string') {
+    let normalized = value.trim();
+    if (!normalized) return fallback;
+
+    if (normalized.includes(',') && normalized.includes('.')) {
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    } else if (normalized.includes(',')) {
+      normalized = normalized.replace(',', '.');
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const normalizeVendaItem = (raw: any): VendaItem => {
+  const quantidade = toNumberValue(raw?.quantidade ?? raw?.quantidade_itens, 0);
+  const valorUnitario = toNumberValue(raw?.valor_unitario ?? raw?.valor, 0);
+  const valorTotalSource = raw?.valor_total ?? raw?.total;
+  const valorTotal = valorTotalSource === null || valorTotalSource === undefined || valorTotalSource === ''
+    ? valorUnitario * quantidade
+    : toNumberValue(valorTotalSource, valorUnitario * quantidade);
+
+  return {
+    id: toText(raw?.id, `${Date.now()}-${Math.random().toString(36).slice(2)}`),
+    produto_id: toText(raw?.produto_id),
+    produto_nome: toText(raw?.produto_nome ?? raw?.nome_produto ?? raw?.produto, 'Produto sem nome'),
+    categoria_nome: toText(raw?.categoria_nome ?? raw?.nome_categoria, 'Sem categoria'),
+    quantidade,
+    valor_unitario: valorUnitario,
+    valor_total: valorTotal,
+    nome_cliente: toNullableText(raw?.nome_cliente),
+    nome_atendente: toNullableText(raw?.nome_atendente),
+    codigo_venda: toText(raw?.codigo_venda ?? raw?.codigo ?? raw?.id),
+    data_venda: toText(raw?.data_venda ?? raw?.created_at, new Date().toISOString()),
+    origem_venda: toText(raw?.origem_venda, 'venda_unica'),
+    comanda_id: toNullableText(raw?.comanda_id),
+    comanda_numero: toNullableText(raw?.comanda_numero ?? raw?.numero_comanda),
+    pulseira_id: toNullableText(raw?.pulseira_id),
+    pulseira_numero: toNullableText(raw?.pulseira_numero ?? raw?.numero_pulseira),
+  };
+};
+
 export function ReimpressaoVendas() {
   const [vendas, setVendas] = useState<VendaGroup[]>([]);
   const [loading, setLoading] = useState(false);
@@ -78,7 +140,8 @@ export function ReimpressaoVendas() {
       if (error) throw error;
 
       const groups: Record<string, VendaGroup> = {};
-      for (const item of (data || []) as VendaItem[]) {
+      for (const rawItem of (data || []) as any[]) {
+        const item = normalizeVendaItem(rawItem);
         const key = item.codigo_venda || item.id;
         if (!groups[key]) {
           const createdAt = new Date(item.data_venda);
@@ -102,7 +165,7 @@ export function ReimpressaoVendas() {
           };
         }
         groups[key].items.push(item);
-        groups[key].total += Number(item.valor_total) || 0;
+        groups[key].total += item.valor_total;
       }
 
       const sorted = Object.values(groups).sort((a, b) =>
@@ -141,7 +204,7 @@ export function ReimpressaoVendas() {
         (v.atendente || '').toLowerCase().includes(q) ||
         v.origem.toLowerCase().includes(q) ||
         v.total.toFixed(2).includes(q) ||
-        v.items.some(i => i.produto_nome.toLowerCase().includes(q))
+        v.items.some(i => (i.produto_nome || '').toLowerCase().includes(q))
       );
     }
     return result;

@@ -20,8 +20,8 @@ export async function getSupabaseClient(): Promise<SupabaseClient> {
   try {
     const { data } = await (lovableSupabase
       .from('app_settings' as any)
-      .select('setting_key, value')
-      .eq('setting_key', 'default')
+      .select('key, value')
+      .eq('key', 'default')
       .maybeSingle() as any);
 
     if (data?.value) {
