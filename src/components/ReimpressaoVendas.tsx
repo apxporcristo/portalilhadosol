@@ -168,9 +168,9 @@ export function ReimpressaoVendas() {
       dataCmd, normalize('** REIMPRESSAO **'), '\n',
       titleCmd, normalize('Ficha de consumo'), '\n',
       subtitleCmd, normalize(`Categoria: ${item.categoria_nome}`), '\n',
-      numberCmd, normalize(item.produto_nome.split(' | ')[0]), '\n',
+      numberCmd, normalize((item.produto_nome || '').split(' | ')[0]), '\n',
     ];
-    const parts = item.produto_nome.split(' | ');
+    const parts = (item.produto_nome || '').split(' | ');
     if (parts.length > 1) {
       lines.push('\x1D\x21\x00', '- - - - - - - - - - - - - - - -\n');
       const comps = parts.slice(1).join(' | ').split(', ');
@@ -371,7 +371,7 @@ export function ReimpressaoVendas() {
                         }}
                       />
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm font-medium">{item.produto_nome.split(' | ')[0]}</span>
+                        <span className="text-sm font-medium">{(item.produto_nome || '').split(' | ')[0]}</span>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-muted-foreground">{item.quantidade}x R$ {Number(item.valor_unitario).toFixed(2).replace('.', ',')}</span>
                           {isPrintable && <Badge variant="secondary" className="text-[10px]">Imprimível</Badge>}
