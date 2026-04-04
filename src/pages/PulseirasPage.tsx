@@ -469,7 +469,7 @@ export default function PulseirasPage() {
         onOpenChange={setConfirmExcluir}
         title="Excluir Pulseira"
         description="Tem certeza que deseja excluir esta pulseira? Esta ação não pode ser desfeita."
-        onConfirm={async () => { if (detalhe) await excluirPulseira(detalhe.id); setConfirmExcluir(false); }}
+        onConfirm={async () => { if (detalhe) await excluirPulseira(detalhe.id, { usuario_id: userSession?.access?.user_id, usuario_nome: userSession?.access?.nome || userSession?.user?.email || undefined }); setConfirmExcluir(false); }}
         confirmText="Sim, excluir"
         cancelText="Cancelar"
       />

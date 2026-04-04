@@ -563,6 +563,8 @@ export default function FichasLista() {
           produto_nome: produtoNome,
           quantidade: ci.quantidade,
           valor_unitario: cartItemTotal(ci),
+          usuario_id: userSession?.access?.user_id || undefined,
+          usuario_nome: userName || undefined,
         });
         if (!success) return false;
       }
@@ -1456,6 +1458,8 @@ export default function FichasLista() {
                 produto_nome: produtoNome,
                 quantidade: ci.quantidade,
                 valor_unitario: cartItemTotal(ci),
+                usuario_id: userSession?.access?.user_id || undefined,
+                usuario_nome: userName || undefined,
               });
               if (!ok) { success = false; break; }
             }

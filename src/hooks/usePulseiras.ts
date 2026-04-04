@@ -199,7 +199,7 @@ export function usePulseiras() {
     }
   }, [listarAbertas]);
 
-  const registrarItem = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario: number; observacao?: string }) => {
+  const registrarItem = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario: number; observacao?: string; usuario_id?: string; usuario_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
       const { error } = await db.rpc('registrar_item_pulseira' as any, {
@@ -209,6 +209,8 @@ export function usePulseiras() {
         p_quantidade: params.quantidade,
         p_valor_unitario: params.valor_unitario,
         p_observacao: params.observacao || null,
+        p_usuario_id: params.usuario_id || null,
+        p_usuario_nome: params.usuario_nome || null,
       } as any);
       if (error) throw error;
       toast({ title: 'Item adicionado!' });
@@ -221,7 +223,7 @@ export function usePulseiras() {
     }
   }, [carregarDetalhe, listarAbertas]);
 
-  const registrarConsumo = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario?: number; observacao?: string }) => {
+  const registrarConsumo = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario?: number; observacao?: string; usuario_id?: string; usuario_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
       const { error } = await db.rpc('registrar_consumo_pulseira' as any, {
@@ -231,6 +233,8 @@ export function usePulseiras() {
         p_quantidade: params.quantidade,
         p_valor_unitario: params.valor_unitario ?? 0,
         p_observacao: params.observacao || null,
+        p_usuario_id: params.usuario_id || null,
+        p_usuario_nome: params.usuario_nome || null,
       } as any);
       if (error) throw error;
       toast({ title: 'Consumo registrado!' });
@@ -328,10 +332,14 @@ export function usePulseiras() {
     }
   }, [limpar, listarAbertas, listarFechadas]);
 
-  const excluirPulseira = useCallback(async (pulseiraId: string) => {
+  const excluirPulseira = useCallback(async (pulseiraId: string, params?: { usuario_id?: string; usuario_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
-      const { error } = await db.rpc('excluir_pulseira_completa' as any, { p_pulseira_id: pulseiraId } as any);
+      const { error } = await db.rpc('excluir_pulseira_completa' as any, {
+        p_pulseira_id: pulseiraId,
+        p_usuario_id: params?.usuario_id || null,
+        p_usuario_nome: params?.usuario_nome || null,
+      } as any);
       if (error) throw error;
       toast({ title: 'Pulseira excluída!' });
       limpar();
