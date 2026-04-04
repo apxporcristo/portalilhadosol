@@ -1560,6 +1560,7 @@ export default function FichasLista() {
                     },
                   });
                 }
+                logOrigemVenda({ pulseiraId: confirmPulseira.id, pulseiraNumero: confirmPulseira.numero }, codigoVenda);
               } catch (e) { console.warn('[Pulseira Modal] fichas_impressas insert falhou:', e); }
               clearCart();
               setConfirmPulseira(null);
