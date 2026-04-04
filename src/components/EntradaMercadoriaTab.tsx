@@ -53,6 +53,7 @@ interface EntradaItem {
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function EntradaMercadoriaTab() {
+  const { user, access } = useUserSession();
   const [produtos, setProdutos] = useState<ProdutoAtivo[]>([]);
   const [entradas, setEntradas] = useState<EntradaHeader[]>([]);
   const [loading, setLoading] = useState(true);
