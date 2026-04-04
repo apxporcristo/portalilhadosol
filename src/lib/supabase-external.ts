@@ -10,8 +10,8 @@ async function loadExternalConfig(): Promise<{ url: string; anonKey: string } | 
 
   const { data, error } = await (cloudSupabase
     .from('app_settings' as any)
-    .select('setting_key, value')
-    .eq('setting_key', 'default')
+    .select('key, value')
+    .eq('key', 'default')
     .maybeSingle() as any);
 
   if (error || !data?.value) return null;
