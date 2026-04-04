@@ -243,7 +243,7 @@ export function usePulseiras() {
     }
   }, [carregarDetalhe, listarAbertas]);
 
-  const registrarBaixa = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario?: number; motivo?: string }) => {
+  const registrarBaixa = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario?: number; motivo?: string; usuario_id?: string; usuario_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
       const { error } = await db.rpc('registrar_baixa_pulseira' as any, {
@@ -253,6 +253,8 @@ export function usePulseiras() {
         p_quantidade: params.quantidade,
         p_valor_unitario: params.valor_unitario ?? 0,
         p_motivo: params.motivo || null,
+        p_usuario_id: params.usuario_id || null,
+        p_usuario_nome: params.usuario_nome || null,
       } as any);
       if (error) throw error;
       toast({ title: 'Baixa registrada!' });
