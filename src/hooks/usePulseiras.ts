@@ -178,7 +178,7 @@ export function usePulseiras() {
 
   /* ── Ações via RPC ── */
 
-  const abrirPulseira = useCallback(async (params: { numero: string; nome_cliente: string; telefone?: string; cpf?: string; aberta_por?: string }) => {
+  const abrirPulseira = useCallback(async (params: { numero: string; nome_cliente: string; telefone?: string; cpf?: string; aberta_por?: string; aberta_por_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
       const { data, error } = await db.rpc('abrir_pulseira' as any, {
@@ -187,6 +187,7 @@ export function usePulseiras() {
         p_telefone: params.telefone || null,
         p_cpf: params.cpf || null,
         p_aberta_por: params.aberta_por || null,
+        p_aberta_por_nome: params.aberta_por_nome || null,
       } as any);
       if (error) throw error;
       toast({ title: 'Pulseira aberta com sucesso!' });
@@ -242,7 +243,7 @@ export function usePulseiras() {
     }
   }, [carregarDetalhe, listarAbertas]);
 
-  const registrarBaixa = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario?: number; motivo?: string }) => {
+  const registrarBaixa = useCallback(async (pulseiraId: string, params: { produto_id?: string; produto_nome: string; quantidade: number; valor_unitario?: number; motivo?: string; usuario_id?: string; usuario_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
       const { error } = await db.rpc('registrar_baixa_pulseira' as any, {
@@ -252,6 +253,8 @@ export function usePulseiras() {
         p_quantidade: params.quantidade,
         p_valor_unitario: params.valor_unitario ?? 0,
         p_motivo: params.motivo || null,
+        p_usuario_id: params.usuario_id || null,
+        p_usuario_nome: params.usuario_nome || null,
       } as any);
       if (error) throw error;
       toast({ title: 'Baixa registrada!' });
@@ -264,13 +267,15 @@ export function usePulseiras() {
     }
   }, [carregarDetalhe, listarAbertas]);
 
-  const registrarAbateCredito = useCallback(async (pulseiraId: string, params: { valor: number; descricao?: string }) => {
+  const registrarAbateCredito = useCallback(async (pulseiraId: string, params: { valor: number; descricao?: string; usuario_id?: string; usuario_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
       const { error } = await db.rpc('registrar_abate_credito_pulseira' as any, {
         p_pulseira_id: pulseiraId,
         p_valor: params.valor,
         p_descricao: params.descricao || null,
+        p_usuario_id: params.usuario_id || null,
+        p_usuario_nome: params.usuario_nome || null,
       } as any);
       if (error) throw error;
       toast({ title: 'Abate de crédito registrado!' });
@@ -283,10 +288,14 @@ export function usePulseiras() {
     }
   }, [carregarDetalhe, listarAbertas]);
 
-  const fecharPulseira = useCallback(async (pulseiraId: string) => {
+  const fecharPulseira = useCallback(async (pulseiraId: string, params?: { fechada_por?: string; fechada_por_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
-      const { error } = await db.rpc('fechar_pulseira' as any, { p_pulseira_id: pulseiraId } as any);
+      const { error } = await db.rpc('fechar_pulseira' as any, {
+        p_pulseira_id: pulseiraId,
+        p_fechada_por: params?.fechada_por || null,
+        p_fechada_por_nome: params?.fechada_por_nome || null,
+      } as any);
       if (error) throw error;
       toast({ title: 'Pulseira fechada com sucesso!' });
       limpar();
@@ -299,10 +308,14 @@ export function usePulseiras() {
     }
   }, [limpar, listarAbertas, listarFechadas]);
 
-  const reabrirPulseira = useCallback(async (pulseiraId: string) => {
+  const reabrirPulseira = useCallback(async (pulseiraId: string, params?: { reaberta_por?: string; reaberta_por_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
-      const { error } = await db.rpc('reabrir_pulseira' as any, { p_pulseira_id: pulseiraId } as any);
+      const { error } = await db.rpc('reabrir_pulseira' as any, {
+        p_pulseira_id: pulseiraId,
+        p_reaberta_por: params?.reaberta_por || null,
+        p_reaberta_por_nome: params?.reaberta_por_nome || null,
+      } as any);
       if (error) throw error;
       toast({ title: 'Pulseira reaberta!' });
       limpar();

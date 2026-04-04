@@ -102,12 +102,15 @@ export default function PulseirasPage() {
       toast({ title: 'Preencha número e nome.', variant: 'destructive' });
       return;
     }
+    const userId = userSession?.access?.user_id;
+    const userName = userSession?.access?.nome || userSession?.user?.email || undefined;
     const result = await abrirPulseira({
       numero: fNumero.trim(),
       nome_cliente: fNome.trim(),
       telefone: fTelefone.trim() || undefined,
       cpf: fCpf.trim() || undefined,
-      aberta_por: userSession?.access?.nome || userSession?.user?.email || undefined,
+      aberta_por: userId,
+      aberta_por_nome: userName,
     });
     if (result) {
       setAbrirModal(false);
@@ -128,6 +131,8 @@ export default function PulseirasPage() {
       quantidade: baixaQtd,
       valor_unitario: maxQtd > 0 ? (baixaItem.valor_disponivel ?? 0) / maxQtd : 0,
       motivo: baixaMotivo || undefined,
+      usuario_id: userSession?.access?.user_id,
+      usuario_nome: userSession?.access?.nome || userSession?.user?.email || undefined,
     });
     if (ok) {
       setBaixaItem(null);
@@ -138,7 +143,12 @@ export default function PulseirasPage() {
 
   const handleAbate = async () => {
     if (!detalhe || !aValor) return;
-    const ok = await registrarAbateCredito(detalhe.id, { valor: parseFloat(aValor), descricao: aDesc || undefined });
+    const ok = await registrarAbateCredito(detalhe.id, {
+      valor: parseFloat(aValor),
+      descricao: aDesc || undefined,
+      usuario_id: userSession?.access?.user_id,
+      usuario_nome: userSession?.access?.nome || userSession?.user?.email || undefined,
+    });
     if (ok) { setAbateModal(false); setAValor(''); setADesc(''); }
   };
 
@@ -303,7 +313,7 @@ export default function PulseirasPage() {
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => setAbateModal(true)}><DollarSign className="h-3.5 w-3.5 mr-1" /> Abate de Crédito</Button>
                       <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}><History className="h-3.5 w-3.5 mr-1" /> Histórico</Button>
-                      <Button size="sm" variant="destructive" onClick={() => fecharPulseira(detalhe.id)}>Fechar Pulseira</Button>
+                      <Button size="sm" variant="destructive" onClick={() => fecharPulseira(detalhe.id, { fechada_por: userSession?.access?.user_id, fechada_por_nome: userSession?.access?.nome || userSession?.user?.email || undefined })}>Fechar Pulseira</Button>
                       {!temItens && (
                         <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
                       )}
@@ -312,7 +322,7 @@ export default function PulseirasPage() {
                   {isFechada && (
                     <>
                       <Button size="sm" variant="outline" onClick={() => setHistoricoModal(true)}><History className="h-3.5 w-3.5 mr-1" /> Histórico</Button>
-                      {detalhe.pode_reabrir && <Button size="sm" variant="outline" onClick={() => reabrirPulseira(detalhe.id)}><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reabrir</Button>}
+                      {detalhe.pode_reabrir && <Button size="sm" variant="outline" onClick={() => reabrirPulseira(detalhe.id, { reaberta_por: userSession?.access?.user_id, reaberta_por_nome: userSession?.access?.nome || userSession?.user?.email || undefined })}><RotateCcw className="h-3.5 w-3.5 mr-1" /> Reabrir</Button>}
                       {!temItens && (
                         <Button size="sm" variant="ghost" className="text-destructive" onClick={() => setConfirmExcluir(true)}><Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir</Button>
                       )}
@@ -435,7 +445,7 @@ export default function PulseirasPage() {
                           <span className="text-muted-foreground text-xs">{formatDate(h.data_evento)}</span>
                         </div>
                         <p>{h.descricao_evento || '—'}</p>
-                        {h.usuario_nome && <p className="text-xs text-muted-foreground">por {h.usuario_nome}</p>}
+                        <p className="text-xs text-muted-foreground">por {h.usuario_nome || 'Usuário não informado'}</p>
                       </div>
                       <div className="text-right shrink-0">
                         {(h.quantidade ?? 0) > 0 && <span className="text-xs">Qtd: {h.quantidade}</span>}
