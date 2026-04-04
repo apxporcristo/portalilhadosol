@@ -872,8 +872,25 @@ export default function FichasAdmin() {
                 <Switch checked={prodForm.estoque_negativo} onCheckedChange={(v) => setProdForm(p => ({ ...p, estoque_negativo: v }))} />
                 <Label>Permitir estoque negativo</Label>
               </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={prodForm.kit} onCheckedChange={(v) => setProdForm(p => ({ ...p, kit: v, quantidade_a_baixar: v ? p.quantidade_a_baixar : '1' }))} />
+                <Label>Produto é kit</Label>
+              </div>
             </div>
             <p className="text-xs text-muted-foreground">Quando ativado, o produto poderá ser vendido mesmo com estoque zerado ou negativo.</p>
+            {prodForm.kit && (
+              <div className="space-y-2">
+                <Label>Quantidade a baixar *</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={prodForm.quantidade_a_baixar}
+                  onChange={(e) => setProdForm(p => ({ ...p, quantidade_a_baixar: e.target.value }))}
+                  placeholder="Ex: 5"
+                />
+                <p className="text-xs text-muted-foreground">Informe quantas unidades devem ser baixadas do estoque a cada unidade vendida.</p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Observação <span className="text-muted-foreground text-xs">(opcional, aparece na ficha)</span></Label>
               <Input value={prodForm.obs} onChange={(e) => setProdForm(p => ({ ...p, obs: e.target.value }))} placeholder="Ex: Acompanha arroz e salada" maxLength={100} />
