@@ -162,11 +162,10 @@ export function usePulseiras() {
   const listarFechadas = useCallback(async () => {
     try {
       const db = await getSupabaseClient();
-      // Try both possible status values: 'encerrada' and 'fechada'
       const { data, error } = await db
         .from('pulseiras' as any)
         .select('*')
-        .in('status', ['encerrada', 'fechada'])
+        .eq('status', 'fechada')
         .order('fechada_em', { ascending: false });
       if (error) throw error;
       setPulseirasFechadas((data || []) as any[]);
