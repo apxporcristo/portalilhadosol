@@ -22,6 +22,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { Lock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import EntradaMercadoriaTab from '@/components/EntradaMercadoriaTab';
+import EstoqueTab from '@/components/EstoqueTab';
 
 export default function FichasAdmin() {
   const navigate = useNavigate();
