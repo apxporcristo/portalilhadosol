@@ -102,7 +102,7 @@ export function ReimpressaoVendas() {
           };
         }
         groups[key].items.push(item);
-        groups[key].total += Number(item.valor_total);
+        groups[key].total += Number(item.valor_total) || 0;
       }
 
       const sorted = Object.values(groups).sort((a, b) =>
