@@ -146,17 +146,6 @@ export default function FichasRelatorio() {
                   {categorias.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
               </Select>
-            </div>
-            <div>
-              <Label className="text-xs">Produto</Label>
-              <Select value={produtoFilter} onValueChange={setProdutoFilter}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  {produtosUnicos.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </div>
 
