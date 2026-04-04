@@ -50,6 +50,7 @@ export function ReimpressaoVendas() {
   const [loading, setLoading] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
   const [search, setSearch] = useState('');
+  const [origemFilter, setOrigemFilter] = useState<string>('todas');
   const [selectedVenda, setSelectedVenda] = useState<VendaGroup | null>(null);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
   const [printing, setPrinting] = useState(false);
