@@ -19,7 +19,7 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useFormasPagamento, FormaPagamento } from '@/hooks/useFormasPagamento';
 import { useComandas } from '@/hooks/useComandas';
-import { usePulseiras, Pulseira } from '@/hooks/usePulseiras';
+import { usePulseiras, PulseiraResumo } from '@/hooks/usePulseiras';
 import { PagamentoDialog, PagamentoSelecionado } from '@/components/PagamentoDialog';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { PrintSelectionDialog, PrintSelectableItem } from '@/components/PrintSelectionDialog';
@@ -74,7 +74,7 @@ export default function FichasLista() {
   const userSession = useOptionalUserSession();
   const userName = userSession?.access?.nome || '';
   const { comandasAbertas, lancarItens, refetch: refetchComandas } = useComandas();
-  const { pulseirasAtivas, listarAtivas: listarPulseirasAtivas, adicionarItens: adicionarItensPulseira } = usePulseiras();
+  const { pulseirasAbertas: pulseirasAtivas, listarAbertas: listarPulseirasAtivas, registrarItem } = usePulseiras();
   const { getFreVouchersBatch, markVouchersPreReservado, stats: voucherStats } = useVouchers();
   const { ensureBluetoothConnected, writeToCharacteristic } = usePrinterContext();
   const balanca = useBalanca();
@@ -98,7 +98,7 @@ export default function FichasLista() {
   // Lançar na pulseira
   const [showPulseiraModal, setShowPulseiraModal] = useState(false);
   const [pulseiraSearch, setPulseiraSearch] = useState('');
-  const [confirmPulseira, setConfirmPulseira] = useState<Pulseira | null>(null);
+  const [confirmPulseira, setConfirmPulseira] = useState<PulseiraResumo | null>(null);
 
   // Load pulseiras when needed
   useEffect(() => {
@@ -556,22 +556,17 @@ export default function FichasLista() {
   const addItemsToPulseiraContext = async (): Promise<boolean> => {
     if (!hasPulseiraContext || !pulseiraContextId) return false;
     try {
-      const usuarioId = userSession?.user?.id;
-      if (!usuarioId) {
-        toast({ title: 'Erro', description: 'Não foi possível adicionar o produto à pulseira.', variant: 'destructive' });
-        return false;
+      for (const ci of cart) {
+        const produtoNome = ci.ficha.nome_produto + (ci.selectedItems.length > 0 ? ' | ' + ci.selectedItems.map(si => si.item.nome).join(', ') : '');
+        const success = await registrarItem(pulseiraContextId, {
+          produto_id: ci.ficha.id,
+          produto_nome: produtoNome,
+          quantidade: ci.quantidade,
+          valor_unitario: cartItemTotal(ci),
+        });
+        if (!success) return false;
       }
-
-      const itemsToAdd = cart.map(ci => ({
-        produto_id: ci.ficha.id,
-        produto_nome: ci.ficha.nome_produto + (ci.selectedItems.length > 0 ? ' | ' + ci.selectedItems.map(si => si.item.nome).join(', ') : ''),
-        quantidade: ci.quantidade,
-        valor_unitario: cartItemTotal(ci),
-        atendente_user_id: usuarioId,
-        atendente_nome: userName || undefined,
-      }));
-      const success = await adicionarItensPulseira(pulseiraContextId, itemsToAdd);
-      return !!success;
+      return true;
     } catch (err: any) {
       toast({ title: 'Erro', description: 'Não foi possível adicionar o produto à pulseira.', variant: 'destructive' });
       return false;
@@ -1431,7 +1426,7 @@ export default function FichasLista() {
                   <span className="font-bold">#{p.numero}</span>
                   <span className="text-sm text-muted-foreground ml-2">{p.nome_cliente}</span>
                 </div>
-                {p.telefone_cliente && <span className="text-xs text-muted-foreground">{p.telefone_cliente}</span>}
+                {p.telefone && <span className="text-xs text-muted-foreground">{p.telefone}</span>}
               </button>
             ))}
           </div>
@@ -1453,15 +1448,17 @@ export default function FichasLista() {
               return;
             }
 
-            const itemsToAdd = cart.map(ci => ({
-              produto_id: ci.ficha.id,
-              produto_nome: ci.ficha.nome_produto + (ci.selectedItems.length > 0 ? ' | ' + ci.selectedItems.map(si => si.item.nome).join(', ') : ''),
-              quantidade: ci.quantidade,
-              valor_unitario: cartItemTotal(ci),
-              atendente_user_id: usuarioId,
-              atendente_nome: userName || undefined,
-            }));
-            const success = await adicionarItensPulseira(confirmPulseira.id, itemsToAdd);
+            let success = true;
+            for (const ci of cart) {
+              const produtoNome = ci.ficha.nome_produto + (ci.selectedItems.length > 0 ? ' | ' + ci.selectedItems.map(si => si.item.nome).join(', ') : '');
+              const ok = await registrarItem(confirmPulseira.id, {
+                produto_id: ci.ficha.id,
+                produto_nome: produtoNome,
+                quantidade: ci.quantidade,
+                valor_unitario: cartItemTotal(ci),
+              });
+              if (!ok) { success = false; break; }
+            }
             if (success) {
               clearCart();
               setConfirmPulseira(null);
