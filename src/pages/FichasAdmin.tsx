@@ -187,6 +187,8 @@ export default function FichasAdmin() {
           imprimir_ficha: prodForm.imprimir_ficha,
           enviar_para_kds: prodForm.enviar_para_kds,
           estoque_negativo: prodForm.estoque_negativo,
+          kit: prodForm.kit,
+          quantidade_a_baixar: prodForm.kit ? (parseInt(prodForm.quantidade_a_baixar) || 1) : 1,
         };
         if (isPrinted(editProd.id) && !isNameSimilar(editProd.nome_produto, prodForm.nome_produto.trim())) {
           toast({ title: 'Nome não pode ser alterado', description: 'Este produto já foi impresso. Apenas correções pequenas são permitidas.', variant: 'destructive' });
