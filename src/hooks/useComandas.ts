@@ -182,7 +182,7 @@ export function useComandas() {
         p_origem: 'ficha',
         p_observacao: item.observacao || '',
         p_possui_complementos: !!(item.complementos && item.complementos.length > 0),
-        p_complementos_json: item.complementos ? JSON.stringify(item.complementos) : null,
+        p_complementos_json: item.complementos && item.complementos.length > 0 ? item.complementos : null,
         p_produto_nome: item.produto_nome,
         p_valor_total: item.valor_total,
         p_usuario_login: login,
