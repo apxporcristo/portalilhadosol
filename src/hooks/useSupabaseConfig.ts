@@ -32,8 +32,8 @@ export function useSupabaseConfig() {
       try {
         const { data, error } = await (cloudSupabase
           .from('app_settings' as any)
-          .select('setting_key, value')
-          .eq('setting_key', 'default')
+          .select('key, value')
+          .eq('key', 'default')
           .maybeSingle() as any);
 
         if (error) {
@@ -102,11 +102,11 @@ export function useSupabaseConfig() {
       try {
         const jsonValue = JSON.stringify({ supabase_url: url, supabase_anon_key: anonKey });
 
-        const { error } = await cloudSupabase
+          const { error } = await cloudSupabase
           .from('app_settings' as any)
           .upsert(
-            { setting_key: 'default', value: jsonValue } as any,
-            { onConflict: 'setting_key' }
+            { key: 'default', value: jsonValue } as any,
+            { onConflict: 'key' }
           );
 
         if (error) {
@@ -135,7 +135,7 @@ export function useSupabaseConfig() {
       await cloudSupabase
         .from('app_settings' as any)
         .delete()
-        .eq('setting_key', 'default');
+        .eq('key', 'default');
 
       localStorage.removeItem('voucher_supabase_config');
     } catch (e) {
