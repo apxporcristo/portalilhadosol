@@ -23,6 +23,7 @@ import { useOptionalUserSession } from '@/contexts/UserSessionContext';
 
 import { useFichasConsumo } from '@/hooks/useFichasConsumo';
 import { useComandas } from '@/hooks/useComandas';
+import { usePulseiras } from '@/hooks/usePulseiras';
 import { AuditoriaComandas } from '@/components/AuditoriaComandas';
 import { ReimpressaoVendas } from '@/components/ReimpressaoVendas';
 import { Skeleton } from '@/components/ui/skeleton';
