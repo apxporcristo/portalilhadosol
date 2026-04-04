@@ -284,6 +284,7 @@ export function ReimpressaoVendas() {
                       <Badge variant="outline" className="text-xs">{venda.hora}</Badge>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                      <Badge variant="secondary" className="text-[10px]">{venda.origem}</Badge>
                       {venda.cliente && <span>{venda.cliente}</span>}
                       <span>• {venda.items.length} item(ns)</span>
                     </div>
