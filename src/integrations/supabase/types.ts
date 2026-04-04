@@ -72,12 +72,17 @@ export type Database = {
         Row: {
           categoria_id: string
           categoria_nome: string
+          codigo_venda: string | null
+          comanda_id: string | null
+          comanda_numero: string | null
           created_at: string
           id: string
           nome_atendente: string | null
           nome_cliente: string | null
           produto_id: string
           produto_nome: string
+          pulseira_id: string | null
+          pulseira_numero: string | null
           quantidade: number
           telefone_cliente: string | null
           valor_total: number
@@ -86,12 +91,17 @@ export type Database = {
         Insert: {
           categoria_id: string
           categoria_nome: string
+          codigo_venda?: string | null
+          comanda_id?: string | null
+          comanda_numero?: string | null
           created_at?: string
           id?: string
           nome_atendente?: string | null
           nome_cliente?: string | null
           produto_id: string
           produto_nome: string
+          pulseira_id?: string | null
+          pulseira_numero?: string | null
           quantidade?: number
           telefone_cliente?: string | null
           valor_total?: number
@@ -100,12 +110,17 @@ export type Database = {
         Update: {
           categoria_id?: string
           categoria_nome?: string
+          codigo_venda?: string | null
+          comanda_id?: string | null
+          comanda_numero?: string | null
           created_at?: string
           id?: string
           nome_atendente?: string | null
           nome_cliente?: string | null
           produto_id?: string
           produto_nome?: string
+          pulseira_id?: string | null
+          pulseira_numero?: string | null
           quantidade?: number
           telefone_cliente?: string | null
           valor_total?: number
@@ -499,6 +514,81 @@ export type Database = {
           user_id: string | null
         }
         Relationships: []
+      }
+      vw_reimpressao_vendas: {
+        Row: {
+          categoria_id: string | null
+          categoria_nome: string | null
+          codigo_venda: string | null
+          comanda_id: string | null
+          comanda_numero: string | null
+          data_venda: string | null
+          id: string | null
+          nome_atendente: string | null
+          nome_cliente: string | null
+          origem_venda: string | null
+          produto_id: string | null
+          produto_nome: string | null
+          pulseira_id: string | null
+          pulseira_numero: string | null
+          quantidade: number | null
+          valor_total: number | null
+          valor_unitario: number | null
+        }
+        Insert: {
+          categoria_id?: string | null
+          categoria_nome?: string | null
+          codigo_venda?: never
+          comanda_id?: string | null
+          comanda_numero?: string | null
+          data_venda?: string | null
+          id?: string | null
+          nome_atendente?: string | null
+          nome_cliente?: string | null
+          origem_venda?: never
+          produto_id?: string | null
+          produto_nome?: string | null
+          pulseira_id?: string | null
+          pulseira_numero?: string | null
+          quantidade?: number | null
+          valor_total?: number | null
+          valor_unitario?: number | null
+        }
+        Update: {
+          categoria_id?: string | null
+          categoria_nome?: string | null
+          codigo_venda?: never
+          comanda_id?: string | null
+          comanda_numero?: string | null
+          data_venda?: string | null
+          id?: string | null
+          nome_atendente?: string | null
+          nome_cliente?: string | null
+          origem_venda?: never
+          produto_id?: string | null
+          produto_nome?: string | null
+          pulseira_id?: string | null
+          pulseira_numero?: string | null
+          quantidade?: number | null
+          valor_total?: number | null
+          valor_unitario?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fichas_impressas_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "fichas_produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fichas_impressas_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "vw_fichas_ativas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
