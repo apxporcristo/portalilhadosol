@@ -58,7 +58,12 @@ export default function EstoqueTab() {
       const q = searchText.toLowerCase();
       list = list.filter(i => i.nome_produto.toLowerCase().includes(q) || i.nome_categoria.toLowerCase().includes(q));
     }
-    return list.sort((a, b) => a.nome_categoria.localeCompare(b.nome_categoria) || a.nome_produto.localeCompare(b.nome_produto));
+    return list.sort((a, b) => {
+      const aPos = a.estoque_atual > 0 ? 0 : 1;
+      const bPos = b.estoque_atual > 0 ? 0 : 1;
+      if (aPos !== bPos) return aPos - bPos;
+      return a.nome_produto.localeCompare(b.nome_produto);
+    });
   }, [items, filterCategoria, searchText]);
 
   const clearFilters = () => {
