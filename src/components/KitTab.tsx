@@ -205,10 +205,10 @@ export default function KitTab() {
     fetchData();
   };
 
-  // Filter products for selects
-  const filteredProdutos = searchProd.trim()
-    ? produtos.filter(p => p.nome_produto.toLowerCase().includes(searchProd.toLowerCase()))
-    : produtos;
+  const availableProducts = produtos.filter(p => !componentes.some(c => c.produto_componente_id === p.id));
+  const filteredModalProducts = prodSearch.trim()
+    ? availableProducts.filter(p => p.nome_produto.toLowerCase().includes(prodSearch.toLowerCase()))
+    : availableProducts;
 
   if (loading) return <div className="text-center py-8 text-muted-foreground">Carregando kits...</div>;
 
