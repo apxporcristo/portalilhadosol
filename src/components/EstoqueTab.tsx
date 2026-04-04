@@ -103,7 +103,7 @@ export default function EstoqueTab() {
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
             ) : (
               filtered.map(item => {
                 const semEstoque = item.estoque_atual <= 0 && !item.estoque_negativo;
