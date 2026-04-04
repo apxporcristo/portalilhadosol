@@ -24,6 +24,7 @@ import { Lock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import EntradaMercadoriaTab from '@/components/EntradaMercadoriaTab';
 import EstoqueTab from '@/components/EstoqueTab';
+import KitTab from '@/components/KitTab';
 
 export default function FichasAdmin() {
   const navigate = useNavigate();
