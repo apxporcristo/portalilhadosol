@@ -93,7 +93,7 @@ export default function EstoqueTab() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Categoria</TableHead>
+              
               <TableHead>Produto</TableHead>
               <TableHead className="text-center">Comprado</TableHead>
               <TableHead className="text-center">Vendido</TableHead>
@@ -103,14 +103,14 @@ export default function EstoqueTab() {
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhum item encontrado.</TableCell></TableRow>
             ) : (
               filtered.map(item => {
                 const semEstoque = item.estoque_atual <= 0 && !item.estoque_negativo;
                 const negativo = item.estoque_atual < 0;
                 return (
                   <TableRow key={item.produto_id} className={semEstoque ? 'bg-destructive/5' : negativo ? 'bg-yellow-50 dark:bg-yellow-950/20' : ''}>
-                    <TableCell>{item.nome_categoria}</TableCell>
+                    
                     <TableCell className="font-medium">
                       {item.nome_produto}
                       {semEstoque && <Badge variant="destructive" className="ml-2 text-xs">Sem estoque</Badge>}
