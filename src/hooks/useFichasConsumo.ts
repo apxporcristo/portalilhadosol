@@ -63,10 +63,15 @@ export function useFichasConsumo() {
 
   const fetchFichasAtivas = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    // Use unified view that includes products AND kits
-    const { data } = await supabase.from('vw_fichas_itens_venda' as any).select('*');
-    if (data) {
-      setFichasAtivas((data as any[])
+    
+    // Try unified view first
+    const { data: unifiedData, error: unifiedError } = await supabase.from('vw_fichas_itens_venda' as any).select('*');
+    
+    // Check if unified view worked and has product data
+    const hasProducts = unifiedData && unifiedData.length > 0 && (unifiedData as any[]).some((d: any) => d.tipo_item === 'produto');
+    
+    if (hasProducts) {
+      setFichasAtivas((unifiedData as any[])
         .filter((d: any) => {
           if ('ativo' in d) return d.ativo === true;
           return true;
@@ -79,7 +84,49 @@ export function useFichasConsumo() {
           produto_principal_id: d.produto_principal_id || null,
           obs: d.observacao ?? d.obs ?? null,
         })) as unknown as FichaAtiva[]);
+      return;
     }
+
+    // Fallback: load products from vw_fichas_ativas + kits from fichas_kits separately
+    const { data: prodData } = await supabase.from('vw_fichas_ativas' as any).select('*');
+    const { data: kitData } = await supabase.from('fichas_kits' as any).select('*, fichas_categorias:categoria_id(nome_categoria, exigir_dados_cliente, exigir_dados_atendente)').eq('ativo', true);
+
+    const items: any[] = [];
+
+    if (prodData) {
+      for (const d of prodData as any[]) {
+        if ('ativo' in d && d.ativo !== true) continue;
+        if ('produto_ativo' in d && d.produto_ativo !== true) continue;
+        items.push({
+          ...d,
+          nome_produto: d.nome_produto ?? d.nome ?? '',
+          categoria_nome: d.categoria_nome ?? d.nome_categoria ?? 'Sem categoria',
+          tipo_item: 'produto',
+        });
+      }
+    }
+
+    if (kitData) {
+      for (const k of kitData as any[]) {
+        const cat = k.fichas_categorias;
+        if (!cat) continue;
+        items.push({
+          id: k.id,
+          categoria_id: k.categoria_id,
+          nome_produto: k.nome_kit || '',
+          categoria_nome: cat.nome_categoria || 'Sem categoria',
+          exigir_dados_cliente: cat.exigir_dados_cliente || false,
+          exigir_dados_atendente: cat.exigir_dados_atendente || false,
+          valor: 0,
+          tipo_item: 'kit',
+          produto_principal_id: k.produto_principal_id || null,
+          obs: k.observacao || null,
+          created_at: k.created_at,
+        });
+      }
+    }
+
+    setFichasAtivas(items as unknown as FichaAtiva[]);
   }, []);
 
   const fetchCategorias = useCallback(async () => {
