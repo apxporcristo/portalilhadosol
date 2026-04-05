@@ -761,6 +761,12 @@ export default function FichasLista() {
   // Direct pulseira flow — no payment, no print modal
   const handleAddToPulseiraDirectly = async () => {
     if (!hasPulseiraContext || !pulseiraContextId || cart.length === 0) return;
+    // Validate stock before proceeding
+    const stockCheck = await validateCartStock();
+    if (!stockCheck.ok) {
+      toast({ title: 'Estoque insuficiente', description: stockCheck.erros.join('\n'), variant: 'destructive' });
+      return;
+    }
     setPrinting(true);
     try {
       const success = await addItemsToPulseiraContext();
