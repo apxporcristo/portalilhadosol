@@ -501,11 +501,8 @@ export default function FichasLista() {
       produtoNome += ' | ' + item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
     }
 
-    // For kits, use produto_principal_id to satisfy FK to fichas_produtos
-    const isKit = item.ficha.tipo_item === 'kit';
-    const produtoId = isKit && item.ficha.produto_principal_id
-      ? item.ficha.produto_principal_id
-      : item.ficha.id;
+    // Use the item's own id (works for both products and kits)
+    const produtoId = item.ficha.id;
 
     await sbClient.from('fichas_impressas' as any).insert({
       produto_id: produtoId,
