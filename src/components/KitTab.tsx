@@ -306,16 +306,16 @@ export default function KitTab() {
             <div className="space-y-2">
               <Label className="text-base font-semibold">Componentes do Kit</Label>
               <div className="flex gap-2 items-end">
+                <div className="w-20 space-y-1">
+                  <Label className="text-xs">Qtd baixa</Label>
+                  <Input type="number" min="0" value={compQtd} onChange={e => setCompQtd(e.target.value)} />
+                </div>
                 <div className="flex-1 space-y-1">
                   <Label className="text-xs">Produto componente</Label>
                   <Button variant="outline" className="w-full justify-start font-normal" onClick={() => { setProdSearch(''); setShowProdModal(true); }}>
                     <Search className="h-4 w-4 mr-2 text-muted-foreground" />
                     Selecione...
                   </Button>
-                </div>
-                <div className="w-20 space-y-1">
-                  <Label className="text-xs">Qtd baixa</Label>
-                  <Input type="number" min="1" value={compQtd} onChange={e => setCompQtd(e.target.value)} />
                 </div>
               </div>
 
