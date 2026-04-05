@@ -102,7 +102,7 @@ export default function KitTab() {
 
   const openEdit = (kit: Kit) => {
     setEditKit(kit);
-    setForm({ nome_kit: kit.nome_kit || '', categoria_id: kit.categoria_id || '', observacao: kit.observacao || '', ativo: kit.ativo });
+    setForm({ nome_kit: kit.nome_kit || '', categoria_id: kit.categoria_id || '', observacao: kit.observacao || '', ativo: kit.ativo, valor: kit.valor?.toString() || '0' });
     setComponentes((kit.itens || []).map(i => ({ produto_componente_id: i.produto_componente_id, quantidade_baixa: i.quantidade_baixa })));
     setShowModal(true);
   };
