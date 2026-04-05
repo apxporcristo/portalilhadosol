@@ -346,13 +346,13 @@ export default function KitTab() {
                 </div>
               )}
               {componentes.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nenhum componente adicionado.</p>
+                <p className="text-sm text-destructive">Adicione pelo menos 1 componente ao kit antes de salvar.</p>
               )}
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowModal(false); setEditKit(null); }}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving || componentes.length === 0}>
               <Save className="h-4 w-4 mr-2" />
               {editKit ? 'Salvar alterações' : 'Cadastrar kit'}
             </Button>
