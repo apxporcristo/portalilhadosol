@@ -1599,6 +1599,12 @@ export default function FichasLista() {
         description={`Deseja incluir ${totalItems} item(ns) na comanda #${confirmComanda?.numero || ''}?`}
         onConfirm={async () => {
           if (!confirmComanda) return;
+          // Validate stock before proceeding
+          const stockCheck = await validateCartStock();
+          if (!stockCheck.ok) {
+            toast({ title: 'Estoque insuficiente', description: stockCheck.erros.join('\n'), variant: 'destructive' });
+            return;
+          }
           try {
             const itemsToLaunch = cart.map(ci => ({
               produto_id: ci.ficha.id,
