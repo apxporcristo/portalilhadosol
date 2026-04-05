@@ -936,6 +936,18 @@ export type Database = {
         Args: { p_descricao?: string; p_usuario_id: string; p_valor: number }
         Returns: string
       }
+      salvar_kit_com_componentes: {
+        Args: {
+          p_ativo?: boolean
+          p_categoria_id?: string
+          p_componentes?: Json
+          p_kit_id?: string
+          p_nome_kit?: string
+          p_observacao?: string
+          p_valor?: number
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
