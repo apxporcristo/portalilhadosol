@@ -826,14 +826,10 @@ export default function FichasLista() {
     try {
       const success = await addItemsToPulseiraContext();
       if (success) {
-        // Decrement kit component stock for pulseira sales
         try {
           const sbClient = await getSupabaseClient();
           const codigoVenda = generateCodigoVenda();
           for (const ci of cart) {
-            if (ci.ficha.tipo_item === 'kit') {
-              await decrementKitComponentStock(sbClient, ci.ficha.id, ci.quantidade);
-            }
             await insertFichaImpressa(sbClient, ci, codigoVenda, {
               nomeCliente: pulseiraContextNome || null,
               nomeAtendente: userName || null,
