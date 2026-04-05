@@ -536,9 +536,13 @@ export default function FichasLista() {
     if (isKit) {
       const kitValorTotal = Number(item.ficha.valor) * item.quantidade;
 
-      // Insert single row for the kit sale
-      await sbClient.from('fichas_impressas' as any).insert({
-        produto_id: item.ficha.id,
+      // Get components first (needed for stock decrement and produto_id reference)
+      const components = await getKitComponents(sbClient, item.ficha.id);
+      const refProdutoId = components.length > 0 ? components[0].produto_componente_id : item.ficha.id;
+
+      // Insert single row for the kit sale (use first component as produto_id reference for FK)
+      const { error: insertError } = await sbClient.from('fichas_impressas' as any).insert({
+        produto_id: refProdutoId,
         produto_nome: item.ficha.nome_produto,
         categoria_id: item.ficha.categoria_id,
         categoria_nome: item.ficha.categoria_nome,
@@ -552,8 +556,11 @@ export default function FichasLista() {
         ...buildVendaOrigem(extras?.origem),
       });
 
+      if (insertError) {
+        console.error('[Kit] Erro ao inserir fichas_impressas:', insertError);
+      }
+
       // Decrement stock for each component via fichas_impressoes
-      const components = await getKitComponents(sbClient, item.ficha.id);
       for (const comp of components) {
         const qtdBaixa = comp.quantidade_baixa * item.quantidade;
         await sbClient.from('fichas_impressoes' as any).insert({
