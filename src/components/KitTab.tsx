@@ -244,6 +244,7 @@ export default function KitTab() {
                 <TableRow key={kit.id}>
                   <TableCell className="font-medium">{kit.nome_kit || '—'}</TableCell>
                   <TableCell>{kit.categoria_nome || '—'}</TableCell>
+                  <TableCell className="text-right">R$ {(kit.valor || 0).toFixed(2).replace('.', ',')}</TableCell>
                   <TableCell className="text-center">{kit.itens?.length || 0}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{kit.observacao || '—'}</TableCell>
                   <TableCell>
