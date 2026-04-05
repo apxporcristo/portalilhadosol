@@ -686,11 +686,14 @@ export default function FichasLista() {
     try {
       const success = await addItemsToPulseiraContext();
       if (success) {
-        // Also insert into fichas_impressas so sales appear in Reimpressão
+        // Decrement kit component stock for pulseira sales
         try {
           const sbClient = await getSupabaseClient();
           const codigoVenda = generateCodigoVenda();
           for (const ci of cart) {
+            if (ci.ficha.tipo_item === 'kit') {
+              await decrementKitComponentStock(sbClient, ci.ficha.id, ci.quantidade);
+            }
             await insertFichaImpressa(sbClient, ci, codigoVenda, {
               nomeCliente: pulseiraContextNome || null,
               nomeAtendente: userName || null,
@@ -701,7 +704,7 @@ export default function FichasLista() {
             });
           }
           logOrigemVenda({ pulseiraId: pulseiraContextId, pulseiraNumero: pulseiraContextNumero }, codigoVenda);
-        } catch (e) { console.warn('[Pulseira] fichas_impressas insert falhou:', e); }
+        } catch (e) { console.warn('[Pulseira] fichas_impressas/kit stock falhou:', e); }
         clearCart();
         toast({ title: 'Itens adicionados à pulseira!', description: `Pulseira #${pulseiraContextNumero}` });
         navigate('/pulseiras');
