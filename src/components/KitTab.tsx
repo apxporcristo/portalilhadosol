@@ -55,7 +55,7 @@ export default function KitTab() {
   const [componentes, setComponentes] = useState<{ produto_componente_id: string; quantidade_baixa: number }[]>([]);
   const [deleteKitId, setDeleteKitId] = useState<string | null>(null);
 
-  const [compQtd, setCompQtd] = useState('1');
+  const [compQtd, setCompQtd] = useState('0');
   const [showProdModal, setShowProdModal] = useState(false);
   const [prodSearch, setProdSearch] = useState('');
 
@@ -112,13 +112,13 @@ export default function KitTab() {
       toast({ title: 'Este componente já foi adicionado.', variant: 'destructive' });
       return;
     }
-    const qtd = parseInt(compQtd) || 1;
+    const qtd = parseInt(compQtd) || 0;
     if (qtd <= 0) {
       toast({ title: 'Quantidade deve ser maior que 0.', variant: 'destructive' });
       return;
     }
     setComponentes(prev => [...prev, { produto_componente_id: prodId, quantidade_baixa: qtd }]);
-    setCompQtd('1');
+    setCompQtd('0');
     setShowProdModal(false);
     setProdSearch('');
   };
@@ -306,16 +306,16 @@ export default function KitTab() {
             <div className="space-y-2">
               <Label className="text-base font-semibold">Componentes do Kit</Label>
               <div className="flex gap-2 items-end">
+                <div className="w-20 space-y-1">
+                  <Label className="text-xs">Qtd baixa</Label>
+                  <Input type="number" min="0" value={compQtd} onChange={e => setCompQtd(e.target.value)} />
+                </div>
                 <div className="flex-1 space-y-1">
                   <Label className="text-xs">Produto componente</Label>
                   <Button variant="outline" className="w-full justify-start font-normal" onClick={() => { setProdSearch(''); setShowProdModal(true); }}>
                     <Search className="h-4 w-4 mr-2 text-muted-foreground" />
                     Selecione...
                   </Button>
-                </div>
-                <div className="w-20 space-y-1">
-                  <Label className="text-xs">Qtd baixa</Label>
-                  <Input type="number" min="1" value={compQtd} onChange={e => setCompQtd(e.target.value)} />
                 </div>
               </div>
 
