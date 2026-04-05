@@ -593,33 +593,33 @@ export default function FichasLista() {
     return { ok: allErros.length === 0, erros: allErros };
   };
 
-  // Decrement stock for kit components via fichas_impressoes inserts
-  const decrementKitComponentStock = async (sbClient: any, kitId: string, qtdVendida: number) => {
-    try {
-      const { data: components } = await sbClient
-        .from('fichas_kit_itens' as any)
-        .select('produto_componente_id, quantidade_baixa')
-        .eq('kit_id', kitId);
-
-      if (!components || components.length === 0) {
-        console.warn('[Kit] Nenhum componente encontrado para kit:', kitId);
-        return;
+  // Get kit components for stock operations
+  const getKitComponents = async (sbClient: any, kitId: string) => {
+    const { data: components } = await sbClient
+      .from('fichas_kit_itens' as any)
+      .select('produto_componente_id, quantidade_baixa')
+      .eq('kit_id', kitId);
+    if (!components || components.length === 0) return [];
+    
+    // Get product names for each component
+    const componentIds = (components as any[]).map((c: any) => c.produto_componente_id);
+    const { data: produtosData } = await sbClient
+      .from('fichas_produtos' as any)
+      .select('id, nome_produto, categoria_id, valor')
+      .in('id', componentIds);
+    
+    const produtoMap = new Map<string, any>();
+    if (produtosData) {
+      for (const p of produtosData as any[]) {
+        produtoMap.set(p.id, p);
       }
-
-      for (const comp of components as any[]) {
-        const qtdBaixa = (comp.quantidade_baixa || 1) * qtdVendida;
-        // Insert into fichas_impressoes to register stock consumption
-        await sbClient.from('fichas_impressoes' as any).insert({
-          produto_id: comp.produto_componente_id,
-          quantidade: qtdBaixa,
-          valor_unitario: 0,
-          valor_total: 0,
-        });
-      }
-      console.info(`[Kit] Baixa de estoque registrada: kit=${kitId}, qtd=${qtdVendida}, componentes=${components.length}`);
-    } catch (err) {
-      console.error('[Kit] Erro ao dar baixa no estoque dos componentes:', err);
     }
+    
+    return (components as any[]).map((c: any) => ({
+      produto_componente_id: c.produto_componente_id,
+      quantidade_baixa: c.quantidade_baixa || 1,
+      produto: produtoMap.get(c.produto_componente_id) || null,
+    }));
   };
 
   // Save all cart items to DB (payment registration) without printing
