@@ -37,6 +37,7 @@ interface Kit {
   categoria_id: string | null;
   observacao: string | null;
   ativo: boolean;
+  valor: number;
   categoria_nome?: string;
   itens?: KitItem[];
 }
