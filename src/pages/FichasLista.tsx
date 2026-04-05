@@ -908,6 +908,7 @@ export default function FichasLista() {
       const sbClient = await getSupabaseClient();
       for (const item of cart) {
         const unitTotal = cartItemTotal(item);
+        const isKit = item.ficha.tipo_item === 'kit';
         const dadosExtras: any = {};
         if (item.ficha.exigir_dados_cliente && nomeCliente.trim()) {
           dadosExtras.nome_cliente = nomeCliente.trim();
@@ -916,10 +917,19 @@ export default function FichasLista() {
         if (item.ficha.exigir_dados_atendente && nomeAtendente.trim()) {
           dadosExtras.nome_atendente = nomeAtendente.trim();
         }
-        try {
-          await registrarImpressao(item.ficha.id, item.quantidade, unitTotal, dadosExtras);
-        } catch (regErr) {
-          console.warn('[Ficha Print] registrarImpressao falhou (continuando):', regErr);
+
+        if (isKit) {
+          try {
+            await decrementKitComponentStock(sbClient, item.ficha.id, item.quantidade);
+          } catch (regErr) {
+            console.warn('[Ficha Print] decrementKitComponentStock falhou (continuando):', regErr);
+          }
+        } else {
+          try {
+            await registrarImpressao(item.ficha.id, item.quantidade, unitTotal, dadosExtras);
+          } catch (regErr) {
+            console.warn('[Ficha Print] registrarImpressao falhou (continuando):', regErr);
+          }
         }
 
         try {
@@ -939,26 +949,28 @@ export default function FichasLista() {
           console.warn('[Ficha Print] fichas_impressas insert falhou (continuando):', insErr);
         }
 
-        // Send to KDS if product is marked
-        const produto = produtos.find(p => p.id === item.ficha.id);
-        if ((produto as any)?.enviar_para_kds) {
-          try {
-            await sbClient.from('kds_orders' as any).insert({
-              produto_id: item.ficha.id,
-              produto_nome: item.ficha.nome_produto,
-              categoria_nome: item.ficha.categoria_nome || '',
-              quantidade: item.quantidade,
-              valor_unitario: unitTotal,
-              valor_total: unitTotal * item.quantidade,
-              nome_cliente: nomeCliente.trim() || null,
-              telefone_cliente: telefoneCliente.trim() || null,
-              nome_atendente: nomeAtendente.trim() || null,
-              atendente_user_id: userSession?.user?.id || null,
-              complementos: item.selectedItems.length > 0 ? item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ') : null,
-              observacao: item.observacao || (produto as any)?.obs || null,
-              kds_status: 'novo',
-            });
-          } catch (e) { console.warn('[Ficha Print] kds_orders insert falhou:', e); }
+        // Send to KDS if product is marked (only for regular products)
+        if (!isKit) {
+          const produto = produtos.find(p => p.id === item.ficha.id);
+          if ((produto as any)?.enviar_para_kds) {
+            try {
+              await sbClient.from('kds_orders' as any).insert({
+                produto_id: item.ficha.id,
+                produto_nome: item.ficha.nome_produto,
+                categoria_nome: item.ficha.categoria_nome || '',
+                quantidade: item.quantidade,
+                valor_unitario: unitTotal,
+                valor_total: unitTotal * item.quantidade,
+                nome_cliente: nomeCliente.trim() || null,
+                telefone_cliente: telefoneCliente.trim() || null,
+                nome_atendente: nomeAtendente.trim() || null,
+                atendente_user_id: userSession?.user?.id || null,
+                complementos: item.selectedItems.length > 0 ? item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ') : null,
+                observacao: item.observacao || (produto as any)?.obs || null,
+                kds_status: 'novo',
+              });
+            } catch (e) { console.warn('[Ficha Print] kds_orders insert falhou:', e); }
+          }
         }
       }
 
