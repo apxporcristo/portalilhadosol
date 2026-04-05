@@ -95,7 +95,7 @@ export default function KitTab() {
 
   const openNew = () => {
     setEditKit(null);
-    setForm({ nome_kit: '', categoria_id: '', observacao: '', ativo: true });
+    setForm({ nome_kit: '', categoria_id: '', observacao: '', ativo: true, valor: '' });
     setComponentes([]);
     setShowModal(true);
   };
