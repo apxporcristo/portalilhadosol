@@ -51,7 +51,7 @@ export default function KitTab() {
 
   const [showModal, setShowModal] = useState(false);
   const [editKit, setEditKit] = useState<Kit | null>(null);
-  const [form, setForm] = useState({ nome_kit: '', categoria_id: '', observacao: '', ativo: true });
+  const [form, setForm] = useState({ nome_kit: '', categoria_id: '', observacao: '', ativo: true, valor: '' });
   const [componentes, setComponentes] = useState<{ produto_componente_id: string; quantidade_baixa: number }[]>([]);
   const [deleteKitId, setDeleteKitId] = useState<string | null>(null);
 
