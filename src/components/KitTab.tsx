@@ -147,11 +147,18 @@ export default function KitTab() {
     setSaving(true);
     try {
       const supabase = await getSupabaseClient();
+      const valorNum = parseFloat(form.valor.replace(',', '.')) || 0;
+      if (valorNum < 0) {
+        toast({ title: 'Valor de venda inválido.', variant: 'destructive' });
+        setSaving(false);
+        return;
+      }
       const kitData = {
         nome_kit: form.nome_kit.trim(),
         categoria_id: form.categoria_id,
         observacao: form.observacao.trim() || null,
         ativo: form.ativo,
+        valor: valorNum,
       };
 
       if (editKit) {
