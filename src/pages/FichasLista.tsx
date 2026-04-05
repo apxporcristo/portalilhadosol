@@ -230,6 +230,46 @@ export default function FichasLista() {
   const needsAtendente = useMemo(() => cart.some(item => item.ficha.exigir_dados_atendente), [cart]);
 
   const addToCart = async (ficha: FichaAtiva) => {
+    // If it's a kit, validate component stock BEFORE adding to cart
+    if (ficha.tipo_item === 'kit') {
+      const sbClient = await getSupabaseClient();
+      // Calculate how many of this kit are already in the cart
+      const existingInCart = cart.filter(c => c.ficha.id === ficha.id).reduce((sum, c) => sum + c.quantidade, 0);
+      const totalQtd = existingInCart + 1;
+      const stockResult = await validateKitStock(sbClient, ficha.id, totalQtd);
+      if (!stockResult.ok) {
+        toast({
+          title: 'Estoque insuficiente',
+          description: `Kit "${ficha.nome_produto}":\n${stockResult.erros.join('\n')}`,
+          variant: 'destructive',
+        });
+        return;
+      }
+    } else {
+      // For regular products, validate stock before adding
+      const produto = produtos.find(p => p.id === ficha.id);
+      if (produto && !produto.estoque_negativo) {
+        const sbClient = await getSupabaseClient();
+        const { data: estoqueData } = await sbClient
+          .from('vw_estoque' as any)
+          .select('estoque_atual, estoque_negativo')
+          .eq('produto_id', ficha.id)
+          .maybeSingle();
+        if (estoqueData && !(estoqueData as any).estoque_negativo) {
+          const estoqueAtual = (estoqueData as any).estoque_atual || 0;
+          const existingInCart = cart.filter(c => c.ficha.id === ficha.id).reduce((sum, c) => sum + c.quantidade, 0);
+          if (estoqueAtual < existingInCart + 1) {
+            toast({
+              title: 'Estoque insuficiente',
+              description: `"${ficha.nome_produto}": estoque disponível ${estoqueAtual}`,
+              variant: 'destructive',
+            });
+            return;
+          }
+        }
+      }
+    }
+
     // Check if product is by weight
     const produto = produtos.find(p => p.id === ficha.id);
     const isPorPeso = produto?.forma_venda === 'por_peso' || (ficha as any).forma_venda === 'por_peso';
