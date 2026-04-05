@@ -346,7 +346,7 @@ export default function KitTab() {
                 </div>
               )}
               {componentes.length === 0 && (
-                <p className="text-sm text-muted-foreground">Nenhum componente adicionado.</p>
+                <p className="text-sm text-destructive">Adicione pelo menos 1 componente ao kit antes de salvar.</p>
               )}
             </div>
           </div>
