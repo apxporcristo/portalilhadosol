@@ -117,7 +117,7 @@ export function useFichasConsumo() {
           categoria_nome: cat.nome_categoria || 'Sem categoria',
           exigir_dados_cliente: cat.exigir_dados_cliente || false,
           exigir_dados_atendente: cat.exigir_dados_atendente || false,
-          valor: 0,
+          valor: k.valor || 0,
           tipo_item: 'kit',
           produto_principal_id: k.produto_principal_id || null,
           obs: k.observacao || null,

@@ -37,6 +37,7 @@ interface Kit {
   categoria_id: string | null;
   observacao: string | null;
   ativo: boolean;
+  valor: number;
   categoria_nome?: string;
   itens?: KitItem[];
 }
@@ -50,7 +51,7 @@ export default function KitTab() {
 
   const [showModal, setShowModal] = useState(false);
   const [editKit, setEditKit] = useState<Kit | null>(null);
-  const [form, setForm] = useState({ nome_kit: '', categoria_id: '', observacao: '', ativo: true });
+  const [form, setForm] = useState({ nome_kit: '', categoria_id: '', observacao: '', ativo: true, valor: '' });
   const [componentes, setComponentes] = useState<{ produto_componente_id: string; quantidade_baixa: number }[]>([]);
   const [deleteKitId, setDeleteKitId] = useState<string | null>(null);
 
@@ -62,7 +63,7 @@ export default function KitTab() {
     const supabase = await getSupabaseClient();
     const [prodRes, kitRes, catRes] = await Promise.all([
       supabase.from('fichas_produtos' as any).select('id, nome_produto, categoria_id').eq('ativo', true).order('nome_produto'),
-      supabase.from('fichas_kits' as any).select('id, nome_kit, categoria_id, observacao, ativo, created_at').order('created_at', { ascending: false }),
+      supabase.from('fichas_kits' as any).select('id, nome_kit, categoria_id, observacao, ativo, valor, created_at').order('created_at', { ascending: false }),
       supabase.from('fichas_categorias' as any).select('id, nome_categoria').eq('ativo', true).order('nome_categoria'),
     ]);
 
@@ -94,14 +95,14 @@ export default function KitTab() {
 
   const openNew = () => {
     setEditKit(null);
-    setForm({ nome_kit: '', categoria_id: '', observacao: '', ativo: true });
+    setForm({ nome_kit: '', categoria_id: '', observacao: '', ativo: true, valor: '' });
     setComponentes([]);
     setShowModal(true);
   };
 
   const openEdit = (kit: Kit) => {
     setEditKit(kit);
-    setForm({ nome_kit: kit.nome_kit || '', categoria_id: kit.categoria_id || '', observacao: kit.observacao || '', ativo: kit.ativo });
+    setForm({ nome_kit: kit.nome_kit || '', categoria_id: kit.categoria_id || '', observacao: kit.observacao || '', ativo: kit.ativo, valor: kit.valor?.toString() || '0' });
     setComponentes((kit.itens || []).map(i => ({ produto_componente_id: i.produto_componente_id, quantidade_baixa: i.quantidade_baixa })));
     setShowModal(true);
   };
@@ -146,11 +147,18 @@ export default function KitTab() {
     setSaving(true);
     try {
       const supabase = await getSupabaseClient();
+      const valorNum = parseFloat(form.valor.replace(',', '.')) || 0;
+      if (valorNum < 0) {
+        toast({ title: 'Valor de venda inválido.', variant: 'destructive' });
+        setSaving(false);
+        return;
+      }
       const kitData = {
         nome_kit: form.nome_kit.trim(),
         categoria_id: form.categoria_id,
         observacao: form.observacao.trim() || null,
         ativo: form.ativo,
+        valor: valorNum,
       };
 
       if (editKit) {
@@ -221,6 +229,7 @@ export default function KitTab() {
             <TableRow>
               <TableHead>Nome do Kit</TableHead>
               <TableHead>Categoria</TableHead>
+              <TableHead className="text-right">Valor</TableHead>
               <TableHead className="text-center">Componentes</TableHead>
               <TableHead>Observação</TableHead>
               <TableHead>Status</TableHead>
@@ -229,12 +238,13 @@ export default function KitTab() {
           </TableHeader>
           <TableBody>
             {kits.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
             ) : (
               kits.map(kit => (
                 <TableRow key={kit.id}>
                   <TableCell className="font-medium">{kit.nome_kit || '—'}</TableCell>
                   <TableCell>{kit.categoria_nome || '—'}</TableCell>
+                  <TableCell className="text-right">R$ {(kit.valor || 0).toFixed(2).replace('.', ',')}</TableCell>
                   <TableCell className="text-center">{kit.itens?.length || 0}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">{kit.observacao || '—'}</TableCell>
                   <TableCell>
@@ -275,6 +285,11 @@ export default function KitTab() {
             <div className="space-y-2">
               <Label>Nome do Kit *</Label>
               <Input value={form.nome_kit} onChange={e => setForm(p => ({ ...p, nome_kit: e.target.value }))} placeholder="Ex: Balde Antartica 600ml" maxLength={100} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Valor de venda *</Label>
+              <Input type="text" inputMode="decimal" value={form.valor} onChange={e => setForm(p => ({ ...p, valor: e.target.value }))} placeholder="Ex: 25,00" />
             </div>
 
             <div className="space-y-2">

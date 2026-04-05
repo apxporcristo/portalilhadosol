@@ -426,6 +426,7 @@ export type Database = {
           observacao: string | null
           produto_principal_id: string | null
           updated_at: string
+          valor: number
         }
         Insert: {
           ativo?: boolean
@@ -436,6 +437,7 @@ export type Database = {
           observacao?: string | null
           produto_principal_id?: string | null
           updated_at?: string
+          valor?: number
         }
         Update: {
           ativo?: boolean
@@ -446,6 +448,7 @@ export type Database = {
           observacao?: string | null
           produto_principal_id?: string | null
           updated_at?: string
+          valor?: number
         }
         Relationships: []
       }
