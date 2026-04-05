@@ -153,29 +153,22 @@ export default function KitTab() {
         setSaving(false);
         return;
       }
-      const kitData = {
-        nome_kit: form.nome_kit.trim(),
-        categoria_id: form.categoria_id,
-        observacao: form.observacao.trim() || null,
-        ativo: form.ativo,
-        valor: valorNum,
-      };
 
-      if (editKit) {
-        await supabase.from('fichas_kits' as any).update(kitData as any).eq('id', editKit.id);
-        await supabase.from('fichas_kit_itens' as any).delete().eq('kit_id', editKit.id);
-        await supabase.from('fichas_kit_itens' as any).insert(
-          componentes.map(c => ({ kit_id: editKit.id, produto_componente_id: c.produto_componente_id, quantidade_baixa: c.quantidade_baixa })) as any
-        );
-        toast({ title: 'Kit atualizado!' });
-      } else {
-        const { data: newKit, error } = await supabase.from('fichas_kits' as any).insert(kitData as any).select('id').single();
-        if (error || !newKit) throw error || new Error('Erro ao criar kit');
-        await supabase.from('fichas_kit_itens' as any).insert(
-          componentes.map(c => ({ kit_id: (newKit as any).id, produto_componente_id: c.produto_componente_id, quantidade_baixa: c.quantidade_baixa })) as any
-        );
-        toast({ title: 'Kit cadastrado!' });
-      }
+      const { data, error } = await supabase.rpc('salvar_kit_com_componentes', {
+        p_kit_id: editKit?.id || null,
+        p_nome_kit: form.nome_kit.trim(),
+        p_categoria_id: form.categoria_id,
+        p_valor: valorNum,
+        p_observacao: form.observacao.trim() || null,
+        p_ativo: form.ativo,
+        p_componentes: componentes.map(c => ({
+          produto_componente_id: c.produto_componente_id,
+          quantidade_baixa: c.quantidade_baixa,
+        })),
+      });
+
+      if (error) throw error;
+      toast({ title: editKit ? 'Kit atualizado!' : 'Kit cadastrado!' });
       setShowModal(false);
       fetchData();
     } catch (err: any) {
