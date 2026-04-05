@@ -632,37 +632,45 @@ export default function FichasLista() {
       }
 
       const componentIds = (components as any[]).map((c: any) => c.produto_componente_id);
-      const { data: estoqueData } = await sbClient
-        .from('vw_estoque' as any)
-        .select('produto_id, nome_produto, estoque_atual, estoque_negativo')
-        .in('produto_id', componentIds);
+
+      // Fetch stock data AND product config in parallel
+      const [estoqueRes, produtosRes] = await Promise.all([
+        sbClient.from('vw_estoque' as any).select('produto_id, nome_produto, estoque_atual').in('produto_id', componentIds),
+        sbClient.from('fichas_produtos' as any).select('id, nome_produto, estoque_negativo').in('id', componentIds),
+      ]);
 
       const estoqueMap = new Map<string, any>();
-      if (estoqueData) {
-        for (const e of estoqueData as any[]) {
+      if (estoqueRes.data) {
+        for (const e of estoqueRes.data as any[]) {
           estoqueMap.set(e.produto_id, e);
         }
       }
 
-      console.log('[Kit Stock Debug] components:', JSON.stringify(components));
-      console.log('[Kit Stock Debug] estoqueData:', JSON.stringify(estoqueData));
+      const produtoMap = new Map<string, any>();
+      if (produtosRes.data) {
+        for (const p of produtosRes.data as any[]) {
+          produtoMap.set(p.id, p);
+        }
+      }
 
       const erros: string[] = [];
       for (const comp of components as any[]) {
         const qtdNecessaria = (comp.quantidade_baixa || 1) * qtdVendida;
+        const produto = produtoMap.get(comp.produto_componente_id);
+        // If product allows negative stock, skip validation
+        if (produto && produto.estoque_negativo) continue;
         const estoque = estoqueMap.get(comp.produto_componente_id);
-        console.log('[Kit Stock Debug] comp:', comp.produto_componente_id, 'estoque:', estoque, 'estoque_negativo:', estoque?.estoque_negativo, 'tipo:', typeof estoque?.estoque_negativo);
         if (!estoque) continue;
-        if (estoque.estoque_negativo === true || estoque.estoque_negativo === 'true') continue;
         if ((estoque.estoque_atual || 0) < qtdNecessaria) {
-          erros.push(`${estoque.nome_produto}: precisa ${qtdNecessaria}, tem ${estoque.estoque_atual || 0}`);
+          const nome = estoque.nome_produto || produto?.nome_produto || 'Produto';
+          erros.push(`${nome}: precisa ${qtdNecessaria}, tem ${estoque.estoque_atual || 0}`);
         }
       }
 
       return { ok: erros.length === 0, erros };
     } catch (err) {
       console.warn('[Kit] Erro ao validar estoque:', err);
-      return { ok: true, erros: [] }; // don't block on validation error
+      return { ok: true, erros: [] };
     }
   };
 
