@@ -80,7 +80,6 @@ export function useFichasConsumo() {
           nome_produto: d.nome_item ?? d.nome_produto ?? d.nome ?? '',
           categoria_nome: d.nome_categoria ?? d.categoria_nome ?? 'Sem categoria',
           tipo_item: d.tipo_item || 'produto',
-          produto_principal_id: d.produto_principal_id || null,
           obs: d.observacao ?? d.obs ?? null,
         })) as unknown as FichaAtiva[]);
       return;
