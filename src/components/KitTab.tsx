@@ -238,7 +238,7 @@ export default function KitTab() {
           </TableHeader>
           <TableBody>
             {kits.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
             ) : (
               kits.map(kit => (
                 <TableRow key={kit.id}>
