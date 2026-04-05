@@ -979,6 +979,12 @@ export default function FichasLista() {
   };
 
   const executePrint = async (printableItems: CartItem[], isConference: boolean = false) => {
+    // Validate stock before proceeding
+    const stockCheck = await validateCartStock();
+    if (!stockCheck.ok) {
+      toast({ title: 'Estoque insuficiente', description: stockCheck.erros.join('\n'), variant: 'destructive' });
+      return;
+    }
     setPrinting(true);
     try {
       const now = new Date();
