@@ -627,6 +627,12 @@ export default function FichasLista() {
 
   // Save all cart items to DB (payment registration) without printing
   const saveAllToDB = async (): Promise<string | null> => {
+    // Validate stock before proceeding
+    const stockCheck = await validateCartStock();
+    if (!stockCheck.ok) {
+      toast({ title: 'Estoque insuficiente', description: stockCheck.erros.join('\n'), variant: 'destructive' });
+      return null;
+    }
     const codigoVenda = generateCodigoVenda();
     const sbClient = await getSupabaseClient();
     for (const item of cart) {
