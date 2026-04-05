@@ -501,8 +501,14 @@ export default function FichasLista() {
       produtoNome += ' | ' + item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ');
     }
 
+    // For kits, use produto_principal_id to satisfy FK to fichas_produtos
+    const isKit = item.ficha.tipo_item === 'kit';
+    const produtoId = isKit && item.ficha.produto_principal_id
+      ? item.ficha.produto_principal_id
+      : item.ficha.id;
+
     await sbClient.from('fichas_impressas' as any).insert({
-      produto_id: item.ficha.id,
+      produto_id: produtoId,
       produto_nome: produtoNome,
       categoria_id: item.ficha.categoria_id,
       categoria_nome: item.ficha.categoria_nome,
@@ -517,12 +523,42 @@ export default function FichasLista() {
     });
   };
 
+  // Decrement stock for kit components via fichas_impressoes inserts
+  const decrementKitComponentStock = async (sbClient: any, kitId: string, qtdVendida: number) => {
+    try {
+      const { data: components } = await sbClient
+        .from('fichas_kit_itens' as any)
+        .select('produto_componente_id, quantidade_baixa')
+        .eq('kit_id', kitId);
+
+      if (!components || components.length === 0) {
+        console.warn('[Kit] Nenhum componente encontrado para kit:', kitId);
+        return;
+      }
+
+      for (const comp of components as any[]) {
+        const qtdBaixa = (comp.quantidade_baixa || 1) * qtdVendida;
+        // Insert into fichas_impressoes to register stock consumption
+        await sbClient.from('fichas_impressoes' as any).insert({
+          produto_id: comp.produto_componente_id,
+          quantidade: qtdBaixa,
+          valor_unitario: 0,
+          valor_total: 0,
+        });
+      }
+      console.info(`[Kit] Baixa de estoque registrada: kit=${kitId}, qtd=${qtdVendida}, componentes=${components.length}`);
+    } catch (err) {
+      console.error('[Kit] Erro ao dar baixa no estoque dos componentes:', err);
+    }
+  };
+
   // Save all cart items to DB (payment registration) without printing
   const saveAllToDB = async (): Promise<string | null> => {
     const codigoVenda = generateCodigoVenda();
     const sbClient = await getSupabaseClient();
     for (const item of cart) {
       const unitTotal = cartItemTotal(item);
+      const isKit = item.ficha.tipo_item === 'kit';
       const dadosExtras: any = {};
       if (item.ficha.exigir_dados_cliente && nomeCliente.trim()) {
         dadosExtras.nome_cliente = nomeCliente.trim();
@@ -531,9 +567,18 @@ export default function FichasLista() {
       if (item.ficha.exigir_dados_atendente && nomeAtendente.trim()) {
         dadosExtras.nome_atendente = nomeAtendente.trim();
       }
-      try {
-        await registrarImpressao(item.ficha.id, item.quantidade, unitTotal, dadosExtras);
-      } catch (e) { console.warn('[Ficha] registrarImpressao falhou:', e); }
+
+      if (isKit) {
+        // For kits: decrement component stock instead of using registrarImpressao
+        try {
+          await decrementKitComponentStock(sbClient, item.ficha.id, item.quantidade);
+        } catch (e) { console.warn('[Kit] decrementKitComponentStock falhou:', e); }
+      } else {
+        // For regular products: use normal RPC
+        try {
+          await registrarImpressao(item.ficha.id, item.quantidade, unitTotal, dadosExtras);
+        } catch (e) { console.warn('[Ficha] registrarImpressao falhou:', e); }
+      }
 
       try {
         await insertFichaImpressa(sbClient, item, codigoVenda, {
@@ -551,25 +596,27 @@ export default function FichasLista() {
       } catch (e) { console.warn('[Ficha] fichas_impressas insert falhou:', e); }
 
       // Send to KDS if product is marked
-      const produto = produtos.find(p => p.id === item.ficha.id);
-      if ((produto as any)?.enviar_para_kds) {
-        try {
-          await sbClient.from('kds_orders' as any).insert({
-            produto_id: item.ficha.id,
-            produto_nome: item.ficha.nome_produto,
-            categoria_nome: item.ficha.categoria_nome || '',
-            quantidade: item.quantidade,
-            valor_unitario: unitTotal,
-            valor_total: unitTotal * item.quantidade,
-            nome_cliente: nomeCliente.trim() || null,
-            telefone_cliente: telefoneCliente.trim() || null,
-            nome_atendente: nomeAtendente.trim() || null,
-            atendente_user_id: userSession?.user?.id || null,
-            complementos: item.selectedItems.length > 0 ? item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ') : null,
-            observacao: item.observacao || (produto as any)?.obs || null,
-            kds_status: 'novo',
-          });
-        } catch (e) { console.warn('[Ficha] kds_orders insert falhou:', e); }
+      if (!isKit) {
+        const produto = produtos.find(p => p.id === item.ficha.id);
+        if ((produto as any)?.enviar_para_kds) {
+          try {
+            await sbClient.from('kds_orders' as any).insert({
+              produto_id: item.ficha.id,
+              produto_nome: item.ficha.nome_produto,
+              categoria_nome: item.ficha.categoria_nome || '',
+              quantidade: item.quantidade,
+              valor_unitario: unitTotal,
+              valor_total: unitTotal * item.quantidade,
+              nome_cliente: nomeCliente.trim() || null,
+              telefone_cliente: telefoneCliente.trim() || null,
+              nome_atendente: nomeAtendente.trim() || null,
+              atendente_user_id: userSession?.user?.id || null,
+              complementos: item.selectedItems.length > 0 ? item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ') : null,
+              observacao: item.observacao || (produto as any)?.obs || null,
+              kds_status: 'novo',
+            });
+          } catch (e) { console.warn('[Ficha] kds_orders insert falhou:', e); }
+        }
       }
     }
     return codigoVenda;
@@ -639,11 +686,14 @@ export default function FichasLista() {
     try {
       const success = await addItemsToPulseiraContext();
       if (success) {
-        // Also insert into fichas_impressas so sales appear in Reimpressão
+        // Decrement kit component stock for pulseira sales
         try {
           const sbClient = await getSupabaseClient();
           const codigoVenda = generateCodigoVenda();
           for (const ci of cart) {
+            if (ci.ficha.tipo_item === 'kit') {
+              await decrementKitComponentStock(sbClient, ci.ficha.id, ci.quantidade);
+            }
             await insertFichaImpressa(sbClient, ci, codigoVenda, {
               nomeCliente: pulseiraContextNome || null,
               nomeAtendente: userName || null,
@@ -654,7 +704,7 @@ export default function FichasLista() {
             });
           }
           logOrigemVenda({ pulseiraId: pulseiraContextId, pulseiraNumero: pulseiraContextNumero }, codigoVenda);
-        } catch (e) { console.warn('[Pulseira] fichas_impressas insert falhou:', e); }
+        } catch (e) { console.warn('[Pulseira] fichas_impressas/kit stock falhou:', e); }
         clearCart();
         toast({ title: 'Itens adicionados à pulseira!', description: `Pulseira #${pulseiraContextNumero}` });
         navigate('/pulseiras');
@@ -861,6 +911,7 @@ export default function FichasLista() {
       const sbClient = await getSupabaseClient();
       for (const item of cart) {
         const unitTotal = cartItemTotal(item);
+        const isKit = item.ficha.tipo_item === 'kit';
         const dadosExtras: any = {};
         if (item.ficha.exigir_dados_cliente && nomeCliente.trim()) {
           dadosExtras.nome_cliente = nomeCliente.trim();
@@ -869,10 +920,19 @@ export default function FichasLista() {
         if (item.ficha.exigir_dados_atendente && nomeAtendente.trim()) {
           dadosExtras.nome_atendente = nomeAtendente.trim();
         }
-        try {
-          await registrarImpressao(item.ficha.id, item.quantidade, unitTotal, dadosExtras);
-        } catch (regErr) {
-          console.warn('[Ficha Print] registrarImpressao falhou (continuando):', regErr);
+
+        if (isKit) {
+          try {
+            await decrementKitComponentStock(sbClient, item.ficha.id, item.quantidade);
+          } catch (regErr) {
+            console.warn('[Ficha Print] decrementKitComponentStock falhou (continuando):', regErr);
+          }
+        } else {
+          try {
+            await registrarImpressao(item.ficha.id, item.quantidade, unitTotal, dadosExtras);
+          } catch (regErr) {
+            console.warn('[Ficha Print] registrarImpressao falhou (continuando):', regErr);
+          }
         }
 
         try {
@@ -892,26 +952,28 @@ export default function FichasLista() {
           console.warn('[Ficha Print] fichas_impressas insert falhou (continuando):', insErr);
         }
 
-        // Send to KDS if product is marked
-        const produto = produtos.find(p => p.id === item.ficha.id);
-        if ((produto as any)?.enviar_para_kds) {
-          try {
-            await sbClient.from('kds_orders' as any).insert({
-              produto_id: item.ficha.id,
-              produto_nome: item.ficha.nome_produto,
-              categoria_nome: item.ficha.categoria_nome || '',
-              quantidade: item.quantidade,
-              valor_unitario: unitTotal,
-              valor_total: unitTotal * item.quantidade,
-              nome_cliente: nomeCliente.trim() || null,
-              telefone_cliente: telefoneCliente.trim() || null,
-              nome_atendente: nomeAtendente.trim() || null,
-              atendente_user_id: userSession?.user?.id || null,
-              complementos: item.selectedItems.length > 0 ? item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ') : null,
-              observacao: item.observacao || (produto as any)?.obs || null,
-              kds_status: 'novo',
-            });
-          } catch (e) { console.warn('[Ficha Print] kds_orders insert falhou:', e); }
+        // Send to KDS if product is marked (only for regular products)
+        if (!isKit) {
+          const produto = produtos.find(p => p.id === item.ficha.id);
+          if ((produto as any)?.enviar_para_kds) {
+            try {
+              await sbClient.from('kds_orders' as any).insert({
+                produto_id: item.ficha.id,
+                produto_nome: item.ficha.nome_produto,
+                categoria_nome: item.ficha.categoria_nome || '',
+                quantidade: item.quantidade,
+                valor_unitario: unitTotal,
+                valor_total: unitTotal * item.quantidade,
+                nome_cliente: nomeCliente.trim() || null,
+                telefone_cliente: telefoneCliente.trim() || null,
+                nome_atendente: nomeAtendente.trim() || null,
+                atendente_user_id: userSession?.user?.id || null,
+                complementos: item.selectedItems.length > 0 ? item.selectedItems.map(si => `${si.categoria}: ${si.item.nome}`).join(', ') : null,
+                observacao: item.observacao || (produto as any)?.obs || null,
+                kds_status: 'novo',
+              });
+            } catch (e) { console.warn('[Ficha Print] kds_orders insert falhou:', e); }
+          }
         }
       }
 
@@ -1458,9 +1520,17 @@ export default function FichasLista() {
               printer_id: (ci.ficha as any).printer_id || null,
             }));
             await lancarItens(confirmComanda.id, itemsToLaunch, userName || undefined);
+            // Decrement kit component stock
+            const sbClient = await getSupabaseClient();
+            for (const ci of cart) {
+              if (ci.ficha.tipo_item === 'kit') {
+                try {
+                  await decrementKitComponentStock(sbClient, ci.ficha.id, ci.quantidade);
+                } catch (e) { console.warn('[Comanda] kit stock decrement falhou:', e); }
+              }
+            }
             // Also insert into fichas_impressas so sales appear in Reimpressão
             try {
-              const sbClient = await getSupabaseClient();
               const codigoVenda = generateCodigoVenda();
               for (const ci of cart) {
                 await insertFichaImpressa(sbClient, ci, codigoVenda, {
