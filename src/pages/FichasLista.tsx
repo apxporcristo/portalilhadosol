@@ -644,12 +644,16 @@ export default function FichasLista() {
         }
       }
 
+      console.log('[Kit Stock Debug] components:', JSON.stringify(components));
+      console.log('[Kit Stock Debug] estoqueData:', JSON.stringify(estoqueData));
+
       const erros: string[] = [];
       for (const comp of components as any[]) {
         const qtdNecessaria = (comp.quantidade_baixa || 1) * qtdVendida;
         const estoque = estoqueMap.get(comp.produto_componente_id);
-        if (!estoque) continue; // product not in stock view, skip validation
-        if (estoque.estoque_negativo) continue; // allows negative stock
+        console.log('[Kit Stock Debug] comp:', comp.produto_componente_id, 'estoque:', estoque, 'estoque_negativo:', estoque?.estoque_negativo, 'tipo:', typeof estoque?.estoque_negativo);
+        if (!estoque) continue;
+        if (estoque.estoque_negativo === true || estoque.estoque_negativo === 'true') continue;
         if ((estoque.estoque_atual || 0) < qtdNecessaria) {
           erros.push(`${estoque.nome_produto}: precisa ${qtdNecessaria}, tem ${estoque.estoque_atual || 0}`);
         }
