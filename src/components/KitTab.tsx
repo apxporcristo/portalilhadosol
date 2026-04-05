@@ -352,7 +352,7 @@ export default function KitTab() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setShowModal(false); setEditKit(null); }}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving || componentes.length === 0}>
               <Save className="h-4 w-4 mr-2" />
               {editKit ? 'Salvar alterações' : 'Cadastrar kit'}
             </Button>
