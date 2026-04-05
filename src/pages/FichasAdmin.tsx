@@ -528,17 +528,9 @@ export default function FichasAdmin() {
               <Package className="h-4 w-4" />
               Produtos
             </TabsTrigger>
-            <TabsTrigger value="complementos" className="flex items-center gap-1">
-              <Layers className="h-4 w-4" />
-              Complementos
-            </TabsTrigger>
-            <TabsTrigger value="comandas" className="flex items-center gap-1">
-              <ClipboardList className="h-4 w-4" />
-              Comandas
-            </TabsTrigger>
-            <TabsTrigger value="relatorio" className="flex items-center gap-1">
-              <BarChart3 className="h-4 w-4" />
-              Relatório
+            <TabsTrigger value="kits" className="flex items-center gap-1">
+              <Package className="h-4 w-4" />
+              Kit
             </TabsTrigger>
             <TabsTrigger value="entradas" className="flex items-center gap-1">
               <Truck className="h-4 w-4" />
@@ -548,9 +540,17 @@ export default function FichasAdmin() {
               <Warehouse className="h-4 w-4" />
               Estoque
             </TabsTrigger>
-            <TabsTrigger value="kits" className="flex items-center gap-1">
-              <Package className="h-4 w-4" />
-              Kit
+            <TabsTrigger value="comandas" className="flex items-center gap-1">
+              <ClipboardList className="h-4 w-4" />
+              Comandas
+            </TabsTrigger>
+            <TabsTrigger value="complementos" className="flex items-center gap-1">
+              <Layers className="h-4 w-4" />
+              Complementos
+            </TabsTrigger>
+            <TabsTrigger value="relatorio" className="flex items-center gap-1">
+              <BarChart3 className="h-4 w-4" />
+              Relatório
             </TabsTrigger>
           </TabsList>
 
