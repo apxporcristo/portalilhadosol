@@ -63,7 +63,7 @@ export default function KitTab() {
     const supabase = await getSupabaseClient();
     const [prodRes, kitRes, catRes] = await Promise.all([
       supabase.from('fichas_produtos' as any).select('id, nome_produto, categoria_id').eq('ativo', true).order('nome_produto'),
-      supabase.from('fichas_kits' as any).select('id, nome_kit, categoria_id, observacao, ativo, created_at').order('created_at', { ascending: false }),
+      supabase.from('fichas_kits' as any).select('id, nome_kit, categoria_id, observacao, ativo, valor, created_at').order('created_at', { ascending: false }),
       supabase.from('fichas_categorias' as any).select('id, nome_categoria').eq('ativo', true).order('nome_categoria'),
     ]);
 
