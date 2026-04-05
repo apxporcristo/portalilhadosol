@@ -183,7 +183,8 @@ export default function FichasLista() {
         .map(produto => produto.id)
     );
 
-    return fichasAtivas.filter(ficha => activeProductIds.has(ficha.id));
+    // Include products that exist in produtos table + all kits (kits come from fichas_kits, not fichas_produtos)
+    return fichasAtivas.filter(ficha => ficha.tipo_item === 'kit' || activeProductIds.has(ficha.id));
   }, [fichasAtivas, produtos]);
 
   const categoriasList = useMemo(() => {

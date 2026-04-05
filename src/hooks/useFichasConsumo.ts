@@ -35,6 +35,8 @@ export interface FichaAtiva {
   valor_por_kg?: number;
   printer_id?: string | null;
   obs?: string | null;
+  tipo_item?: 'produto' | 'kit';
+  produto_principal_id?: string | null;
   created_at: string;
 }
 
@@ -61,20 +63,21 @@ export function useFichasConsumo() {
 
   const fetchFichasAtivas = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    // Try the view first, then fallback to direct query
-    const { data } = await supabase.from('vw_fichas_ativas' as any).select('*');
+    // Use unified view that includes products AND kits
+    const { data } = await supabase.from('vw_fichas_itens_venda' as any).select('*');
     if (data) {
       setFichasAtivas((data as any[])
         .filter((d: any) => {
-          // Strictly filter: only show if ativo is explicitly true or field doesn't exist in view
           if ('ativo' in d) return d.ativo === true;
-          if ('produto_ativo' in d) return d.produto_ativo === true;
-          return true; // view presumably already filters
+          return true;
         })
         .map((d: any) => ({
           ...d,
-          nome_produto: d.nome_produto ?? d.nome ?? '',
-          categoria_nome: d.categoria_nome ?? d.nome_categoria ?? 'Sem categoria',
+          nome_produto: d.nome_item ?? d.nome_produto ?? d.nome ?? '',
+          categoria_nome: d.nome_categoria ?? d.categoria_nome ?? 'Sem categoria',
+          tipo_item: d.tipo_item || 'produto',
+          produto_principal_id: d.produto_principal_id || null,
+          obs: d.observacao ?? d.obs ?? null,
         })) as unknown as FichaAtiva[]);
     }
   }, []);

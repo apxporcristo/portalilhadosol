@@ -777,6 +777,27 @@ export type Database = {
           },
         ]
       }
+      vw_fichas_itens_venda: {
+        Row: {
+          ativo: boolean | null
+          categoria_id: string | null
+          created_at: string | null
+          exigir_dados_atendente: boolean | null
+          exigir_dados_cliente: boolean | null
+          forma_venda: string | null
+          id: string | null
+          nome_categoria: string | null
+          nome_item: string | null
+          observacao: string | null
+          printer_id: string | null
+          produto_principal_id: string | null
+          tipo_item: string | null
+          updated_at: string | null
+          valor: number | null
+          valor_por_kg: number | null
+        }
+        Relationships: []
+      }
       vw_meu_acesso: {
         Row: {
           acesso_cadastrar_produto: boolean | null
