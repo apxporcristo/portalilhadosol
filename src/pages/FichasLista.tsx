@@ -706,17 +706,13 @@ export default function FichasLista() {
         dadosExtras.nome_atendente = nomeAtendente.trim();
       }
 
-      if (isKit) {
-        // For kits: decrement component stock instead of using registrarImpressao
-        try {
-          await decrementKitComponentStock(sbClient, item.ficha.id, item.quantidade);
-        } catch (e) { console.warn('[Kit] decrementKitComponentStock falhou:', e); }
-      } else {
-        // For regular products: use normal RPC
+      if (!isKit) {
+        // For regular products: use normal RPC for stock
         try {
           await registrarImpressao(item.ficha.id, item.quantidade, unitTotal, dadosExtras);
         } catch (e) { console.warn('[Ficha] registrarImpressao falhou:', e); }
       }
+      // Kit stock decrement is handled inside insertFichaImpressa
 
       try {
         await insertFichaImpressa(sbClient, item, codigoVenda, {
