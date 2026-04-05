@@ -247,25 +247,22 @@ export default function FichasLista() {
       }
     } else {
       // For regular products, validate stock before adding
-      const produto = produtos.find(p => p.id === ficha.id);
-      if (produto && !produto.estoque_negativo) {
-        const sbClient = await getSupabaseClient();
-        const { data: estoqueData } = await sbClient
-          .from('vw_estoque' as any)
-          .select('estoque_atual, estoque_negativo')
-          .eq('produto_id', ficha.id)
-          .maybeSingle();
-        if (estoqueData && !(estoqueData as any).estoque_negativo) {
-          const estoqueAtual = (estoqueData as any).estoque_atual || 0;
-          const existingInCart = cart.filter(c => c.ficha.id === ficha.id).reduce((sum, c) => sum + c.quantidade, 0);
-          if (estoqueAtual < existingInCart + 1) {
-            toast({
-              title: 'Estoque insuficiente',
-              description: `"${ficha.nome_produto}": estoque disponível ${estoqueAtual}`,
-              variant: 'destructive',
-            });
-            return;
-          }
+      const sbClient = await getSupabaseClient();
+      const { data: estoqueData } = await sbClient
+        .from('vw_estoque' as any)
+        .select('estoque_atual, estoque_negativo')
+        .eq('produto_id', ficha.id)
+        .maybeSingle();
+      if (estoqueData && !(estoqueData as any).estoque_negativo) {
+        const estoqueAtual = (estoqueData as any).estoque_atual || 0;
+        const existingInCart = cart.filter(c => c.ficha.id === ficha.id).reduce((sum, c) => sum + c.quantidade, 0);
+        if (estoqueAtual < existingInCart + 1) {
+          toast({
+            title: 'Estoque insuficiente',
+            description: `"${ficha.nome_produto}": estoque disponível ${estoqueAtual}`,
+            variant: 'destructive',
+          });
+          return;
         }
       }
     }
