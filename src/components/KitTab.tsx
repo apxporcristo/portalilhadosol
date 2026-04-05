@@ -221,10 +221,8 @@ export default function KitTab() {
           <TableHeader>
             <TableRow>
               <TableHead>Nome do Kit</TableHead>
-              <TableHead>Categoria</TableHead>
               <TableHead className="text-right">Valor</TableHead>
               <TableHead className="text-center">Componentes</TableHead>
-              <TableHead>Observação</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
