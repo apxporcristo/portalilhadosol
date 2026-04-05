@@ -36,7 +36,6 @@ export interface FichaAtiva {
   printer_id?: string | null;
   obs?: string | null;
   tipo_item?: 'produto' | 'kit';
-  produto_principal_id?: string | null;
   created_at: string;
 }
 
