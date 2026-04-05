@@ -523,6 +523,79 @@ export default function FichasLista() {
     });
   };
 
+  // Validate kit component stock before sale
+  const validateKitStock = async (sbClient: any, kitId: string, qtdVendida: number): Promise<{ ok: boolean; erros: string[] }> => {
+    try {
+      const { data: components } = await sbClient
+        .from('fichas_kit_itens' as any)
+        .select('produto_componente_id, quantidade_baixa')
+        .eq('kit_id', kitId);
+
+      if (!components || components.length === 0) {
+        return { ok: false, erros: ['Kit sem componentes cadastrados'] };
+      }
+
+      const componentIds = (components as any[]).map((c: any) => c.produto_componente_id);
+      const { data: estoqueData } = await sbClient
+        .from('vw_estoque' as any)
+        .select('produto_id, nome_produto, estoque_atual, estoque_negativo')
+        .in('produto_id', componentIds);
+
+      const estoqueMap = new Map<string, any>();
+      if (estoqueData) {
+        for (const e of estoqueData as any[]) {
+          estoqueMap.set(e.produto_id, e);
+        }
+      }
+
+      const erros: string[] = [];
+      for (const comp of components as any[]) {
+        const qtdNecessaria = (comp.quantidade_baixa || 1) * qtdVendida;
+        const estoque = estoqueMap.get(comp.produto_componente_id);
+        if (!estoque) continue; // product not in stock view, skip validation
+        if (estoque.estoque_negativo) continue; // allows negative stock
+        if ((estoque.estoque_atual || 0) < qtdNecessaria) {
+          erros.push(`${estoque.nome_produto}: precisa ${qtdNecessaria}, tem ${estoque.estoque_atual || 0}`);
+        }
+      }
+
+      return { ok: erros.length === 0, erros };
+    } catch (err) {
+      console.warn('[Kit] Erro ao validar estoque:', err);
+      return { ok: true, erros: [] }; // don't block on validation error
+    }
+  };
+
+  // Validate stock for all cart items (products + kits)
+  const validateCartStock = async (): Promise<{ ok: boolean; erros: string[] }> => {
+    const sbClient = await getSupabaseClient();
+    const allErros: string[] = [];
+
+    for (const item of cart) {
+      if (item.ficha.tipo_item === 'kit') {
+        const result = await validateKitStock(sbClient, item.ficha.id, item.quantidade);
+        if (!result.ok) {
+          allErros.push(`Kit "${item.ficha.nome_produto}":`, ...result.erros.map(e => `  - ${e}`));
+        }
+      } else {
+        // Validate regular product stock
+        const { data: estoqueData } = await sbClient
+          .from('vw_estoque' as any)
+          .select('estoque_atual, estoque_negativo')
+          .eq('produto_id', item.ficha.id)
+          .maybeSingle();
+        if (estoqueData && !(estoqueData as any).estoque_negativo) {
+          const estoqueAtual = (estoqueData as any).estoque_atual || 0;
+          if (estoqueAtual < item.quantidade) {
+            allErros.push(`"${item.ficha.nome_produto}": precisa ${item.quantidade}, tem ${estoqueAtual}`);
+          }
+        }
+      }
+    }
+
+    return { ok: allErros.length === 0, erros: allErros };
+  };
+
   // Decrement stock for kit components via fichas_impressoes inserts
   const decrementKitComponentStock = async (sbClient: any, kitId: string, qtdVendida: number) => {
     try {
