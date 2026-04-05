@@ -112,13 +112,13 @@ export default function KitTab() {
       toast({ title: 'Este componente já foi adicionado.', variant: 'destructive' });
       return;
     }
-    const qtd = parseInt(compQtd) || 1;
+    const qtd = parseInt(compQtd) || 0;
     if (qtd <= 0) {
       toast({ title: 'Quantidade deve ser maior que 0.', variant: 'destructive' });
       return;
     }
     setComponentes(prev => [...prev, { produto_componente_id: prodId, quantidade_baixa: qtd }]);
-    setCompQtd('1');
+    setCompQtd('0');
     setShowProdModal(false);
     setProdSearch('');
   };
