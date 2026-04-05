@@ -1063,13 +1063,7 @@ export default function FichasLista() {
           dadosExtras.nome_atendente = nomeAtendente.trim();
         }
 
-        if (isKit) {
-          try {
-            await decrementKitComponentStock(sbClient, item.ficha.id, item.quantidade);
-          } catch (regErr) {
-            console.warn('[Ficha Print] decrementKitComponentStock falhou (continuando):', regErr);
-          }
-        } else {
+        if (!isKit) {
           try {
             await registrarImpressao(item.ficha.id, item.quantidade, unitTotal, dadosExtras);
           } catch (regErr) {
