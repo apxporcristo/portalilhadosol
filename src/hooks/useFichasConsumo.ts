@@ -36,7 +36,6 @@ export interface FichaAtiva {
   printer_id?: string | null;
   obs?: string | null;
   tipo_item?: 'produto' | 'kit';
-  produto_principal_id?: string | null;
   created_at: string;
 }
 
@@ -81,7 +80,6 @@ export function useFichasConsumo() {
           nome_produto: d.nome_item ?? d.nome_produto ?? d.nome ?? '',
           categoria_nome: d.nome_categoria ?? d.categoria_nome ?? 'Sem categoria',
           tipo_item: d.tipo_item || 'produto',
-          produto_principal_id: d.produto_principal_id || null,
           obs: d.observacao ?? d.obs ?? null,
         })) as unknown as FichaAtiva[]);
       return;
@@ -119,7 +117,6 @@ export function useFichasConsumo() {
           exigir_dados_atendente: cat.exigir_dados_atendente || false,
           valor: k.valor || 0,
           tipo_item: 'kit',
-          produto_principal_id: k.produto_principal_id || null,
           obs: k.observacao || null,
           created_at: k.created_at,
         });
