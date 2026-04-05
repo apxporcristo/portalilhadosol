@@ -1662,16 +1662,8 @@ export default function FichasLista() {
               printer_id: (ci.ficha as any).printer_id || null,
             }));
             await lancarItens(confirmComanda.id, itemsToLaunch, userName || undefined);
-            // Decrement kit component stock
+            // Insert into fichas_impressas (kit stock handled inside insertFichaImpressa)
             const sbClient = await getSupabaseClient();
-            for (const ci of cart) {
-              if (ci.ficha.tipo_item === 'kit') {
-                try {
-                  await decrementKitComponentStock(sbClient, ci.ficha.id, ci.quantidade);
-                } catch (e) { console.warn('[Comanda] kit stock decrement falhou:', e); }
-              }
-            }
-            // Also insert into fichas_impressas so sales appear in Reimpressão
             try {
               const codigoVenda = generateCodigoVenda();
               for (const ci of cart) {
