@@ -534,52 +534,12 @@ export default function FichasLista() {
     const isKit = item.ficha.tipo_item === 'kit';
 
     if (isKit) {
-      // For kits: insert each component as individual fichas_impressas rows
-      const components = await getKitComponents(sbClient, item.ficha.id);
-      if (components.length === 0) {
-        console.warn('[Kit] Nenhum componente encontrado, pulando insert fichas_impressas');
-        return;
-      }
-
-      // Calculate kit value distributed proportionally or use component's own value
       const kitValorTotal = Number(item.ficha.valor) * item.quantidade;
-      
-      for (const comp of components) {
-        const qtdBaixa = comp.quantidade_baixa * item.quantidade;
-        const produto = comp.produto;
-        const produtoNome = produto?.nome_produto || item.ficha.nome_produto;
 
-        // Insert component as individual sale row
-        await sbClient.from('fichas_impressas' as any).insert({
-          produto_id: comp.produto_componente_id,
-          produto_nome: `${produtoNome} (Kit: ${item.ficha.nome_produto})`,
-          categoria_id: item.ficha.categoria_id,
-          categoria_nome: item.ficha.categoria_nome,
-          quantidade: qtdBaixa,
-          valor_unitario: 0,
-          valor_total: 0,
-          nome_cliente: extras?.nomeCliente || null,
-          telefone_cliente: extras?.telefoneCliente || null,
-          nome_atendente: extras?.nomeAtendente || null,
-          codigo_venda: codigoVenda,
-          ...buildVendaOrigem(extras?.origem),
-        });
-
-        // Also register in fichas_impressoes for stock consumption
-        await sbClient.from('fichas_impressoes' as any).insert({
-          produto_id: comp.produto_componente_id,
-          quantidade: qtdBaixa,
-          valor_unitario: 0,
-          valor_total: 0,
-          nome_cliente: extras?.nomeCliente || null,
-          nome_atendente: extras?.nomeAtendente || null,
-        });
-      }
-
-      // Insert a summary row for the kit sale with the actual value
+      // Insert single row for the kit sale
       await sbClient.from('fichas_impressas' as any).insert({
-        produto_id: components[0].produto_componente_id, // use first component as reference
-        produto_nome: `🎁 ${item.ficha.nome_produto}`,
+        produto_id: item.ficha.id,
+        produto_nome: item.ficha.nome_produto,
         categoria_id: item.ficha.categoria_id,
         categoria_nome: item.ficha.categoria_nome,
         quantidade: item.quantidade,
@@ -592,7 +552,21 @@ export default function FichasLista() {
         ...buildVendaOrigem(extras?.origem),
       });
 
-      console.info(`[Kit] Venda registrada: ${item.ficha.nome_produto}, ${components.length} componentes, valor total: ${kitValorTotal}`);
+      // Decrement stock for each component via fichas_impressoes
+      const components = await getKitComponents(sbClient, item.ficha.id);
+      for (const comp of components) {
+        const qtdBaixa = comp.quantidade_baixa * item.quantidade;
+        await sbClient.from('fichas_impressoes' as any).insert({
+          produto_id: comp.produto_componente_id,
+          quantidade: qtdBaixa,
+          valor_unitario: 0,
+          valor_total: 0,
+          nome_cliente: extras?.nomeCliente || null,
+          nome_atendente: extras?.nomeAtendente || null,
+        });
+      }
+
+      console.info(`[Kit] Venda registrada: ${item.ficha.nome_produto}, valor total: ${kitValorTotal}`);
     } else {
       // Regular product: single insert
       const unitTotal = cartItemTotal(item);
