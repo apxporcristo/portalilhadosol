@@ -229,15 +229,13 @@ export default function KitTab() {
           </TableHeader>
           <TableBody>
             {kits.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Nenhum kit cadastrado.</TableCell></TableRow>
             ) : (
               kits.map(kit => (
                 <TableRow key={kit.id}>
                   <TableCell className="font-medium">{kit.nome_kit || '—'}</TableCell>
-                  <TableCell>{kit.categoria_nome || '—'}</TableCell>
                   <TableCell className="text-right">R$ {(kit.valor || 0).toFixed(2).replace('.', ',')}</TableCell>
                   <TableCell className="text-center">{kit.itens?.length || 0}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{kit.observacao || '—'}</TableCell>
                   <TableCell>
                     <Badge variant={kit.ativo ? 'default' : 'secondary'} className="cursor-pointer" onClick={() => toggleAtivo(kit)}>
                       {kit.ativo ? 'Ativo' : 'Inativo'}
