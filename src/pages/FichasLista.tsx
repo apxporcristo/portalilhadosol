@@ -177,14 +177,14 @@ export default function FichasLista() {
   const nomeAtendente = userName;
 
   const visibleFichas = useMemo(() => {
-    const activeProductIds = new Set(
-      produtos
-        .filter(produto => produto.ativo)
-        .map(produto => produto.id)
-    );
-
-    // Include products that exist in produtos table + all kits (kits come from fichas_kits, not fichas_produtos)
-    return fichasAtivas.filter(ficha => ficha.tipo_item === 'kit' || activeProductIds.has(ficha.id));
+    // fichasAtivas already contains only active products (from vw_fichas_ativas) and active kits
+    // Just filter out inactive products using the produtos list as reference
+    return fichasAtivas.filter(ficha => {
+      if (ficha.tipo_item === 'kit') return true;
+      // If product exists in produtos list, check ativo flag; if not found, show it (view already filtered)
+      const produto = produtos.find(p => p.id === ficha.id);
+      return !produto || produto.ativo;
+    });
   }, [fichasAtivas, produtos]);
 
   const categoriasList = useMemo(() => {
