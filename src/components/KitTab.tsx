@@ -288,6 +288,11 @@ export default function KitTab() {
             </div>
 
             <div className="space-y-2">
+              <Label>Valor de venda *</Label>
+              <Input type="text" inputMode="decimal" value={form.valor} onChange={e => setForm(p => ({ ...p, valor: e.target.value }))} placeholder="Ex: 25,00" />
+            </div>
+
+            <div className="space-y-2">
               <Label>Observação</Label>
               <Input value={form.observacao} onChange={e => setForm(p => ({ ...p, observacao: e.target.value }))} placeholder="Ex: Kit festa" maxLength={100} />
             </div>
