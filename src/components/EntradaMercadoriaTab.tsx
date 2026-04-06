@@ -298,6 +298,36 @@ export default function EntradaMercadoriaTab() {
         toast({ title: 'Entrada de mercadoria salva com sucesso!' });
       }
 
+      // Check price diffs
+      const prodIds = [...new Set(itens.map(i => i.produto_id))];
+      const { data: currentProducts } = await supabase
+        .from('fichas_produtos' as any)
+        .select('id, nome_produto, valor')
+        .in('id', prodIds);
+
+      if (currentProducts) {
+        const diffs: PriceDiffItem[] = [];
+        for (const item of itens) {
+          const novoValor = Math.round(calcValorVenda(item) * 100) / 100;
+          const prod = (currentProducts as any[]).find(p => p.id === item.produto_id);
+          if (prod) {
+            const valorAtual = Math.round(Number(prod.valor) * 100) / 100;
+            if (valorAtual !== novoValor && !diffs.some(d => d.produto_id === item.produto_id)) {
+              diffs.push({
+                produto_id: item.produto_id,
+                produto_nome: prod.nome_produto,
+                valor_anterior: valorAtual,
+                novo_valor: novoValor,
+              });
+            }
+          }
+        }
+        if (diffs.length > 0) {
+          setPriceDiffItems(diffs);
+          setSelectedPriceDiffs(new Set());
+        }
+      }
+
       setShowFormModal(false);
       resetForm();
       fetchData();
@@ -305,6 +335,27 @@ export default function EntradaMercadoriaTab() {
       toast({ title: 'Erro ao salvar', description: err?.message || 'Erro desconhecido', variant: 'destructive' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUpdatePrices = async () => {
+    if (selectedPriceDiffs.size === 0) return;
+    setUpdatingPrices(true);
+    try {
+      const supabase = await getSupabaseClient();
+      for (const item of priceDiffItems) {
+        if (selectedPriceDiffs.has(item.produto_id)) {
+          await supabase.from('fichas_produtos' as any).update({ valor: item.novo_valor } as any).eq('id', item.produto_id);
+        }
+      }
+      toast({ title: 'Valores de venda atualizados com sucesso!' });
+      setPriceDiffItems([]);
+      setSelectedPriceDiffs(new Set());
+      fetchData();
+    } catch (err: any) {
+      toast({ title: 'Erro ao atualizar valores', description: err?.message, variant: 'destructive' });
+    } finally {
+      setUpdatingPrices(false);
     }
   };
 
