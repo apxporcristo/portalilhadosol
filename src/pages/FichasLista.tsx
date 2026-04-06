@@ -1205,7 +1205,7 @@ export default function FichasLista() {
 
       <div className="flex flex-col md:flex-row">
         {/* Main content - products */}
-        <main className={cn("flex-1 px-3 sm:px-6 py-4 sm:py-6 space-y-4 transition-all", cart.length > 0 ? "md:pr-2 pb-52 md:pb-6" : "")}>
+        <main className={cn("flex-1 px-3 sm:px-6 py-4 sm:py-6 space-y-4 transition-all", showCart ? "md:pr-2 pb-52 md:pb-6" : "")}>
           {categoriasList.length > 0 && (
             <div className="overflow-x-auto scrollbar-hide">
               <div className="flex gap-2 flex-nowrap pb-1">
