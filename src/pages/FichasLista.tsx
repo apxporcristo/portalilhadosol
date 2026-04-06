@@ -89,6 +89,8 @@ export default function FichasLista() {
   const [search, setSearch] = useState('');
   const [selectedCategoria, setSelectedCategoria] = useState<string | null>(null);
   const [printing, setPrinting] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [flyAnim, setFlyAnim] = useState<{ id: string; x: number; y: number } | null>(null);
 
   // Peso manual input
   const [showPesoModal, setShowPesoModal] = useState(false);
