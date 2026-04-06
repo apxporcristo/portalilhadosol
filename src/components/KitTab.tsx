@@ -44,6 +44,9 @@ interface Kit {
 }
 
 export default function KitTab() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [kits, setKits] = useState<Kit[]>([]);
   const [produtos, setProdutos] = useState<ProdutoSimples[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
