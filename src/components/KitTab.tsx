@@ -164,7 +164,7 @@ export default function KitTab() {
         return;
       }
 
-      const { data, error } = await supabase.rpc('salvar_kit_com_componentes', {
+      const rpcParams: any = {
         p_kit_id: editKit?.id || null,
         p_nome_kit: form.nome_kit.trim(),
         p_categoria_id: form.categoria_id,
@@ -175,7 +175,9 @@ export default function KitTab() {
           produto_componente_id: c.produto_componente_id,
           quantidade_baixa: c.quantidade_baixa,
         })),
-      });
+      };
+      if (empresaId) rpcParams.p_empresa_id = empresaId;
+      const { data, error } = await supabase.rpc('salvar_kit_com_componentes', rpcParams);
 
       if (error) throw error;
       toast({ title: editKit ? 'Kit atualizado!' : 'Kit cadastrado!' });

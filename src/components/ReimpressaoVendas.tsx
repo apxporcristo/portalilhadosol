@@ -110,6 +110,9 @@ const normalizeVendaItem = (raw: any): VendaItem => {
 };
 
 export function ReimpressaoVendas() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [vendas, setVendas] = useState<VendaGroup[]>([]);
   const [loading, setLoading] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
