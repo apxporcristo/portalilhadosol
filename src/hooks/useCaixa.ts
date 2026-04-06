@@ -105,11 +105,13 @@ export function useCaixa() {
       const db = await getSupabaseClient();
       const hoje = new Date().toISOString().split('T')[0];
 
-      const { data, error } = await db
+      let query = db
         .from('vw_reimpressao_vendas')
         .select('*')
         .gte('data_venda', `${hoje}T00:00:00`)
         .lte('data_venda', `${hoje}T23:59:59`);
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query;
 
       if (error) {
         console.error('[Caixa] Erro vendas:', error);
