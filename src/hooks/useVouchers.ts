@@ -4,6 +4,7 @@ import { normalizeTempoValidade } from '@/lib/voucher-utils';
 import { toast } from '@/hooks/use-toast';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient as getExternalSupabaseClient } from '@/lib/supabase-external';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 function getBrazilISOString(): string {
   const now = new Date();
