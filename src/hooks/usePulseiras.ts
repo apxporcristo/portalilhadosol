@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabase-external';
 import { toast } from '@/hooks/use-toast';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 /* ── Types ── */
 
@@ -51,6 +52,8 @@ export interface PulseiraHistorico {
 /* ── Hook ── */
 
 export function usePulseiras() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const [loading, setLoading] = useState(false);
   const [pulseirasAbertas, setPulseirasAbertas] = useState<PulseiraResumo[]>([]);
   const [pulseirasFechadas, setPulseirasFechadas] = useState<PulseiraResumo[]>([]);
@@ -67,32 +70,36 @@ export function usePulseiras() {
   const listarAbertas = useCallback(async () => {
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db
+      let query = db
         .from('vw_pulseiras_resumo' as any)
         .select('*')
         .eq('status', 'ativa')
         .order('aberta_em', { ascending: false });
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query;
       if (error) throw error;
       setPulseirasAbertas((data || []) as PulseiraResumo[]);
     } catch (err: any) {
       console.warn('[Pulseiras] Erro listar abertas:', err.message);
     }
-  }, []);
+  }, [empresaId]);
 
   const listarFechadas = useCallback(async () => {
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db
+      let query = db
         .from('vw_pulseiras_resumo' as any)
         .select('*')
         .eq('status', 'fechada')
         .order('fechada_em', { ascending: false });
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query;
       if (error) throw error;
       setPulseirasFechadas((data || []) as PulseiraResumo[]);
     } catch (err: any) {
       console.warn('[Pulseiras] Erro listar fechadas:', err.message);
     }
-  }, []);
+  }, [empresaId]);
 
   /* ── Detalhe ── */
 
@@ -181,14 +188,16 @@ export function usePulseiras() {
   const abrirPulseira = useCallback(async (params: { numero: string; nome_cliente: string; telefone?: string; cpf?: string; aberta_por?: string; aberta_por_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db.rpc('abrir_pulseira' as any, {
+      const rpcParams: any = {
         p_numero: params.numero,
         p_nome_cliente: params.nome_cliente,
         p_telefone: params.telefone || null,
         p_cpf: params.cpf || null,
         p_aberta_por: params.aberta_por || null,
         p_aberta_por_nome: params.aberta_por_nome || null,
-      } as any);
+      };
+      if (empresaId) rpcParams.p_empresa_id = empresaId;
+      const { data, error } = await db.rpc('abrir_pulseira' as any, rpcParams);
       if (error) throw error;
       toast({ title: 'Pulseira aberta com sucesso!' });
       listarAbertas();

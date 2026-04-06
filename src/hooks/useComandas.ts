@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseClient, getAuthClient } from '@/lib/supabase-external';
 import { toast } from '@/hooks/use-toast';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface Comanda {
   id: string;
@@ -47,17 +48,22 @@ export interface ComandaAlteracao {
 }
 
 export function useComandas() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [comandas, setComandas] = useState<Comanda[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchComandas = useCallback(async () => {
     try {
       const supabase = await getSupabaseClient();
-      const { data } = await supabase.from('comandas' as any).select('*').eq('ativo', true).order('numero');
+      let query = supabase.from('comandas' as any).select('*').eq('ativo', true).order('numero');
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data } = await query;
       if (data) setComandas(data as unknown as Comanda[]);
     } catch { /* table may not exist */ }
     setLoading(false);
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchComandas(); }, [fetchComandas]);
 
@@ -66,10 +72,12 @@ export function useComandas() {
 
   const createComanda = useCallback(async (numero: number, observacao?: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comandas' as any).insert({ numero, observacao: observacao || null } as any);
+    const payload: any = { numero, observacao: observacao || null };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('comandas' as any).insert(payload);
     if (error) throw error;
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const updateComanda = useCallback(async (id: string, data: Partial<Comanda>) => {
     const supabase = await getSupabaseClient();

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { toast } from '@/hooks/use-toast';
 import { getSupabaseClient } from '@/hooks/useVouchers';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 interface ProdutoSimples {
   id: string;
@@ -43,6 +44,9 @@ interface Kit {
 }
 
 export default function KitTab() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [kits, setKits] = useState<Kit[]>([]);
   const [produtos, setProdutos] = useState<ProdutoSimples[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
@@ -61,11 +65,17 @@ export default function KitTab() {
 
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const [prodRes, kitRes, catRes] = await Promise.all([
-      supabase.from('fichas_produtos' as any).select('id, nome_produto, categoria_id').eq('ativo', true).order('nome_produto'),
-      supabase.from('fichas_kits' as any).select('id, nome_kit, categoria_id, observacao, ativo, valor, created_at').order('created_at', { ascending: false }),
-      supabase.from('fichas_categorias' as any).select('id, nome_categoria').eq('ativo', true).order('nome_categoria'),
-    ]);
+
+    let prodQ = supabase.from('fichas_produtos' as any).select('id, nome_produto, categoria_id').eq('ativo', true).order('nome_produto');
+    if (empresaId) prodQ = prodQ.eq('empresa_id', empresaId);
+
+    let kitQ = supabase.from('fichas_kits' as any).select('id, nome_kit, categoria_id, observacao, ativo, valor, created_at').order('created_at', { ascending: false });
+    if (empresaId) kitQ = kitQ.eq('empresa_id', empresaId);
+
+    let catQ = supabase.from('fichas_categorias' as any).select('id, nome_categoria').eq('ativo', true).order('nome_categoria');
+    if (empresaId) catQ = catQ.eq('empresa_id', empresaId);
+
+    const [prodRes, kitRes, catRes] = await Promise.all([prodQ, kitQ, catQ]);
 
     const prodList = (prodRes.data || []) as ProdutoSimples[];
     setProdutos(prodList);
@@ -87,7 +97,7 @@ export default function KitTab() {
     }
     setKits(kitList);
     setLoading(false);
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -154,7 +164,7 @@ export default function KitTab() {
         return;
       }
 
-      const { data, error } = await supabase.rpc('salvar_kit_com_componentes', {
+      const rpcParams: any = {
         p_kit_id: editKit?.id || null,
         p_nome_kit: form.nome_kit.trim(),
         p_categoria_id: form.categoria_id,
@@ -165,7 +175,9 @@ export default function KitTab() {
           produto_componente_id: c.produto_componente_id,
           quantidade_baixa: c.quantidade_baixa,
         })),
-      });
+      };
+      if (empresaId) rpcParams.p_empresa_id = empresaId;
+      const { data, error } = await supabase.rpc('salvar_kit_com_componentes', rpcParams);
 
       if (error) throw error;
       toast({ title: editKit ? 'Kit atualizado!' : 'Kit cadastrado!' });

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getSupabaseClient } from '@/lib/supabase-external';
 import { useOptionalUserSession } from '@/contexts/UserSessionContext';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface Caixa {
   id: string;
@@ -42,6 +43,8 @@ export interface VendaDia {
 
 export function useCaixa() {
   const userSession = useOptionalUserSession();
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const userId = userSession?.user?.id;
   const userName = userSession?.access?.nome || '';
 
@@ -55,13 +58,14 @@ export function useCaixa() {
     if (!userId) { setLoading(false); return; }
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db
+      let query = db
         .from('caixas')
         .select('*')
         .eq('usuario_id', userId)
         .eq('status', 'aberto')
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query.maybeSingle();
 
       if (error) console.error('[Caixa] Erro ao carregar:', error);
       setCaixaAberto(data as Caixa | null);
@@ -76,7 +80,7 @@ export function useCaixa() {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, empresaId]);
 
   const carregarMovimentacoes = useCallback(async (caixaId: string) => {
     try {
@@ -101,11 +105,13 @@ export function useCaixa() {
       const db = await getSupabaseClient();
       const hoje = new Date().toISOString().split('T')[0];
 
-      const { data, error } = await db
+      let query = db
         .from('vw_reimpressao_vendas')
         .select('*')
         .gte('data_venda', `${hoje}T00:00:00`)
         .lte('data_venda', `${hoje}T23:59:59`);
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query;
 
       if (error) {
         console.error('[Caixa] Erro vendas:', error);
@@ -136,22 +142,24 @@ export function useCaixa() {
     } finally {
       setLoadingVendas(false);
     }
-  }, [userId]);
+  }, [userId, empresaId]);
 
   const abrirCaixa = useCallback(async (valorAbertura: number, observacao?: string) => {
     if (!userId) throw new Error('Usuário não logado');
     const db = await getSupabaseClient();
-    const { data, error } = await db.rpc('abrir_caixa', {
+    const rpcParams: any = {
       p_usuario_id: userId,
       p_usuario_nome: userName,
       p_valor_abertura: valorAbertura,
       p_observacao: observacao || null,
-    });
+    };
+    if (empresaId) rpcParams.p_empresa_id = empresaId;
+    const { data, error } = await db.rpc('abrir_caixa', rpcParams);
     if (error) throw error;
     await carregarCaixaAberto();
     await carregarVendasDia();
     return data;
-  }, [userId, userName, carregarCaixaAberto, carregarVendasDia]);
+  }, [userId, userName, empresaId, carregarCaixaAberto, carregarVendasDia]);
 
   const registrarSangria = useCallback(async (valor: number, descricao?: string) => {
     if (!userId) throw new Error('Usuário não logado');

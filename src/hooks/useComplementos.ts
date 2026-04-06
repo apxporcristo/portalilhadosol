@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseClient } from '@/hooks/useVouchers';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface Complemento {
   id: string;
@@ -42,6 +43,9 @@ export interface ProdutoComplemento {
 }
 
 export function useComplementos() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [complementos, setComplementos] = useState<Complemento[]>([]);
   const [items, setItems] = useState<ComplementoItem[]>([]);
   const [grupos, setGrupos] = useState<GrupoComplemento[]>([]);
@@ -50,9 +54,11 @@ export function useComplementos() {
 
   const fetchComplementos = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('complemento_categorias' as any).select('*').order('nome');
+    let query = supabase.from('complemento_categorias' as any).select('*').order('nome');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setComplementos(data as any);
-  }, []);
+  }, [empresaId]);
 
   const fetchItems = useCallback(async () => {
     const supabase = await getSupabaseClient();
@@ -83,10 +89,12 @@ export function useComplementos() {
   // Complementos (categorias) CRUD
   const createComplemento = useCallback(async (nome: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_categorias' as any).insert({ nome } as any);
+    const payload: any = { nome };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('complemento_categorias' as any).insert(payload);
     if (error) throw error;
     await fetchComplementos();
-  }, [fetchComplementos]);
+  }, [empresaId, fetchComplementos]);
 
   const updateComplemento = useCallback(async (id: string, data: Partial<Complemento>) => {
     const supabase = await getSupabaseClient();

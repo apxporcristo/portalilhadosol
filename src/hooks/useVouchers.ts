@@ -4,6 +4,7 @@ import { normalizeTempoValidade } from '@/lib/voucher-utils';
 import { toast } from '@/hooks/use-toast';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseClient as getExternalSupabaseClient } from '@/lib/supabase-external';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 function getBrazilISOString(): string {
   const now = new Date();
@@ -59,6 +60,9 @@ export interface VoucherStats {
 }
 
 export function useVouchers() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [stats, setStats] = useState<VoucherStats>({
     livresPorTempo: {},
@@ -89,6 +93,8 @@ export function useVouchers() {
           .from('vouchers')
           .select('*')
           .range(from, from + pageSize - 1);
+
+        if (empresaId) query = query.eq('empresa_id', empresaId);
 
         if (useCreatedAt) {
           query = query.order('created_at', { ascending: false });
@@ -171,7 +177,7 @@ export function useVouchers() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [empresaId]);
 
   const calculateStats = (voucherList: Voucher[]) => {
     const livresPorTempo: Record<string, number> = {};
@@ -223,12 +229,16 @@ export function useVouchers() {
 
     try {
       // Insert all vouchers directly into temp_vouchers without classification
-      const toInsert = parsedVouchers.map(pv => ({
-        voucher_id: pv.voucherId.trim(),
-        tempo_validade: pv.tempoValidade,
-        status: pv.status || 'livre',
-        data_uso: pv.dataUso || null,
-      }));
+      const toInsert = parsedVouchers.map(pv => {
+        const row: any = {
+          voucher_id: pv.voucherId.trim(),
+          tempo_validade: pv.tempoValidade,
+          status: pv.status || 'livre',
+          data_uso: pv.dataUso || null,
+        };
+        if (empresaId) row.empresa_id = empresaId;
+        return row;
+      });
 
       let imported = 0;
       let errors = 0;
@@ -424,6 +434,8 @@ export function useVouchers() {
           .eq('status', 'usado')
           .not('data_uso', 'is', null);
 
+        if (empresaId) query = query.eq('empresa_id', empresaId);
+
         if (startDate) {
           query = query.gte('data_uso', startDate.toISOString());
         }
@@ -443,7 +455,7 @@ export function useVouchers() {
         return [];
       }
     },
-    []
+    [empresaId]
   );
 
   useEffect(() => {

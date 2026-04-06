@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { toast } from '@/hooks/use-toast';
 import { getSupabaseClient } from '@/hooks/useVouchers';
 import { useUserSession } from '@/contexts/UserSessionContext';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface PriceDiffItem {
@@ -75,6 +76,8 @@ const isToday = (dateStr: string) => {
 
 export default function EntradaMercadoriaTab() {
   const { user, access } = useUserSession();
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const [produtos, setProdutos] = useState<ProdutoAtivo[]>([]);
   const [entradas, setEntradas] = useState<EntradaHeader[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,10 +114,14 @@ export default function EntradaMercadoriaTab() {
 
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const [prodRes, entRes] = await Promise.all([
-      supabase.from('vw_fichas_ativas' as any).select('*'),
-      supabase.from('entradas_mercadoria' as any).select('*').order('data_compra', { ascending: false }).order('created_at', { ascending: false }),
-    ]);
+
+    let prodQuery = supabase.from('vw_fichas_ativas' as any).select('*');
+    if (empresaId) prodQuery = prodQuery.eq('empresa_id', empresaId);
+
+    let entQuery = supabase.from('entradas_mercadoria' as any).select('*').order('data_compra', { ascending: false }).order('created_at', { ascending: false });
+    if (empresaId) entQuery = entQuery.eq('empresa_id', empresaId);
+
+    const [prodRes, entRes] = await Promise.all([prodQuery, entQuery]);
 
     if (prodRes.data) {
       setProdutos((prodRes.data as any[]).map(d => ({
@@ -154,7 +161,7 @@ export default function EntradaMercadoriaTab() {
       }
     }
     setLoading(false);
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 

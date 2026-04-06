@@ -5,6 +5,7 @@ import { getPrintLayoutConfig } from '@/hooks/usePrintLayout';
 import { usePrinterContext } from '@/contexts/PrinterContext';
 import { useFichasConsumo } from '@/hooks/useFichasConsumo';
 import { useOptionalUserSession } from '@/contexts/UserSessionContext';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -109,6 +110,9 @@ const normalizeVendaItem = (raw: any): VendaItem => {
 };
 
 export function ReimpressaoVendas() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [vendas, setVendas] = useState<VendaGroup[]>([]);
   const [loading, setLoading] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
@@ -131,12 +135,14 @@ export function ReimpressaoVendas() {
       const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
       const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
 
-      const { data, error } = await sbClient
+      let query = sbClient
         .from('vw_reimpressao_vendas' as any)
         .select('*')
         .gte('data_venda', startOfDay)
         .lt('data_venda', endOfDay)
         .order('data_venda', { ascending: false });
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query;
 
       if (error) throw error;
 
