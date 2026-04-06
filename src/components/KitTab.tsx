@@ -97,7 +97,7 @@ export default function KitTab() {
     }
     setKits(kitList);
     setLoading(false);
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
