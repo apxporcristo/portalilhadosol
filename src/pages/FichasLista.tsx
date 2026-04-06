@@ -1224,14 +1224,31 @@ export default function FichasLista() {
             </div>
           )}
 
-          <div className="relative max-w-2xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome do produto..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
+          <div className="relative max-w-2xl flex gap-2 items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome do produto..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button
+              id="cart-icon-btn"
+              variant={totalItems > 0 ? "default" : "outline"}
+              size="icon"
+              className="relative shrink-0 h-10 w-10"
+              onClick={() => { if (totalItems > 0) setShowCart(prev => !prev); }}
+              disabled={totalItems === 0}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full h-5 w-5 flex items-center justify-center text-[10px] font-bold">
+                  {totalItems}
+                </span>
+              )}
+            </Button>
           </div>
 
           {grouped.length === 0 ? (
