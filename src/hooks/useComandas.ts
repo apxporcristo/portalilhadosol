@@ -72,10 +72,12 @@ export function useComandas() {
 
   const createComanda = useCallback(async (numero: number, observacao?: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comandas' as any).insert({ numero, observacao: observacao || null } as any);
+    const payload: any = { numero, observacao: observacao || null };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('comandas' as any).insert(payload);
     if (error) throw error;
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const updateComanda = useCallback(async (id: string, data: Partial<Comanda>) => {
     const supabase = await getSupabaseClient();
