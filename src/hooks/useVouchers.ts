@@ -94,6 +94,8 @@ export function useVouchers() {
           .select('*')
           .range(from, from + pageSize - 1);
 
+        if (empresaId) query = query.eq('empresa_id', empresaId);
+
         if (useCreatedAt) {
           query = query.order('created_at', { ascending: false });
         }
