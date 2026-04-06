@@ -5,6 +5,7 @@ import { getPrintLayoutConfig } from '@/hooks/usePrintLayout';
 import { usePrinterContext } from '@/contexts/PrinterContext';
 import { useFichasConsumo } from '@/hooks/useFichasConsumo';
 import { useOptionalUserSession } from '@/contexts/UserSessionContext';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
