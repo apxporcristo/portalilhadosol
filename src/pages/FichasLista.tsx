@@ -89,6 +89,8 @@ export default function FichasLista() {
   const [search, setSearch] = useState('');
   const [selectedCategoria, setSelectedCategoria] = useState<string | null>(null);
   const [printing, setPrinting] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [flyAnim, setFlyAnim] = useState<{ id: string; x: number; y: number } | null>(null);
 
   // Peso manual input
   const [showPesoModal, setShowPesoModal] = useState(false);
@@ -229,7 +231,13 @@ export default function FichasLista() {
   const needsCliente = useMemo(() => cart.some(item => item.ficha.exigir_dados_cliente), [cart]);
   const needsAtendente = useMemo(() => cart.some(item => item.ficha.exigir_dados_atendente), [cart]);
 
-  const addToCart = async (ficha: FichaAtiva) => {
+  const triggerFlyAnimation = (ficha: FichaAtiva, e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setFlyAnim({ id: ficha.id, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    setTimeout(() => setFlyAnim(null), 600);
+  };
+
+  const addToCart = async (ficha: FichaAtiva, e?: React.MouseEvent) => {
     // If it's a kit, validate component stock BEFORE adding to cart
     if (ficha.tipo_item === 'kit') {
       const sbClient = await getSupabaseClient();
@@ -1197,7 +1205,7 @@ export default function FichasLista() {
 
       <div className="flex flex-col md:flex-row">
         {/* Main content - products */}
-        <main className={cn("flex-1 px-3 sm:px-6 py-4 sm:py-6 space-y-4 transition-all", cart.length > 0 ? "md:pr-2 pb-52 md:pb-6" : "")}>
+        <main className={cn("flex-1 px-3 sm:px-6 py-4 sm:py-6 space-y-4 transition-all", showCart ? "md:pr-2 pb-52 md:pb-6" : "")}>
           {categoriasList.length > 0 && (
             <div className="overflow-x-auto scrollbar-hide">
               <div className="flex gap-2 flex-nowrap pb-1">
@@ -1216,14 +1224,31 @@ export default function FichasLista() {
             </div>
           )}
 
-          <div className="relative max-w-2xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome do produto..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
+          <div className="relative max-w-2xl flex gap-2 items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome do produto..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button
+              id="cart-icon-btn"
+              variant={totalItems > 0 ? "default" : "outline"}
+              size="icon"
+              className="relative shrink-0 h-10 w-10"
+              onClick={() => { if (totalItems > 0) setShowCart(prev => !prev); }}
+              disabled={totalItems === 0}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full h-5 w-5 flex items-center justify-center text-[10px] font-bold">
+                  {totalItems}
+                </span>
+              )}
+            </Button>
           </div>
 
           {grouped.length === 0 ? (
@@ -1253,7 +1278,7 @@ export default function FichasLista() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => addToCart(item)}
+                        onClick={(e) => { triggerFlyAnimation(item, e); addToCart(item, e); }}
                         className={cn(
                           "relative flex flex-col items-center justify-center min-h-[5rem] px-3 py-2 rounded-lg border-2 transition-all",
                           isInCart
@@ -1285,7 +1310,7 @@ export default function FichasLista() {
         </main>
 
         {/* Cart - bottom sheet on mobile, sidebar on desktop */}
-        {cart.length > 0 && (
+        {showCart && cart.length > 0 && (
           <aside className="fixed bottom-0 left-0 right-0 md:relative md:w-80 md:min-w-[280px] bg-card border-t md:border-t-0 md:border-l shadow-[0_-4px_20px_rgba(0,0,0,0.15)] md:shadow-lg md:sticky md:top-[65px] md:h-[calc(100vh-65px)] flex flex-col z-20 max-h-[55vh] md:max-h-none rounded-t-2xl md:rounded-none">
             <div className="p-4 border-b flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -1351,6 +1376,30 @@ export default function FichasLista() {
           </aside>
         )}
       </div>
+
+      {/* Fly to cart animation */}
+      {flyAnim && (() => {
+        const cartBtn = document.getElementById('cart-icon-btn');
+        const targetX = cartBtn ? cartBtn.getBoundingClientRect().left + cartBtn.getBoundingClientRect().width / 2 : window.innerWidth - 40;
+        const targetY = cartBtn ? cartBtn.getBoundingClientRect().top + cartBtn.getBoundingClientRect().height / 2 : 80;
+        return (
+          <div
+            key={flyAnim.id + '-' + Date.now()}
+            className="fixed z-[100] pointer-events-none"
+            style={{
+              left: flyAnim.x,
+              top: flyAnim.y,
+              animation: 'fly-to-cart 0.5s ease-in forwards',
+              '--fly-tx': `${targetX - flyAnim.x}px`,
+              '--fly-ty': `${targetY - flyAnim.y}px`,
+            } as React.CSSProperties}
+          >
+            <div className="bg-primary text-primary-foreground rounded-full h-8 w-8 flex items-center justify-center shadow-lg">
+              <ShoppingCart className="h-4 w-4" />
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Sequential category selection modal */}
       <Dialog open={showCatModal} onOpenChange={(open) => { if (!open) { setShowCatModal(false); setPendingFicha(null); } }}>
