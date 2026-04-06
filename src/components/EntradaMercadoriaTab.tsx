@@ -104,6 +104,11 @@ export default function EntradaMercadoriaTab() {
   const [detailItens, setDetailItens] = useState<EntradaItem[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
 
+  // Price diff modal
+  const [priceDiffItems, setPriceDiffItems] = useState<PriceDiffItem[]>([]);
+  const [selectedPriceDiffs, setSelectedPriceDiffs] = useState<Set<string>>(new Set());
+  const [updatingPrices, setUpdatingPrices] = useState(false);
+
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
     const [prodRes, entRes] = await Promise.all([
