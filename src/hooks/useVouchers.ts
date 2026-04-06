@@ -177,7 +177,7 @@ export function useVouchers() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [empresaId]);
 
   const calculateStats = (voucherList: Voucher[]) => {
     const livresPorTempo: Record<string, number> = {};
