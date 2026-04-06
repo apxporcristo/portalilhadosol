@@ -516,7 +516,7 @@ export default function EntradaMercadoriaTab() {
                                 <Input type="text" inputMode="numeric" className="h-8 text-center text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" value={item.quantidade} onChange={e => updateItem(idx, 'quantidade', parseInt(e.target.value.replace(/\D/g, '')) || 0)} />
                               </TableCell>
                               <TableCell>
-                                <Input type="text" inputMode="decimal" className="h-8 text-center text-xs" placeholder="R$ 0,00" value={fmtInput(item.valor_comprado)} onChange={e => updateItem(idx, 'valor_comprado', parseReal(e.target.value))} />
+                                <Input type="text" inputMode="decimal" className="h-8 text-center text-xs" placeholder="0,00" defaultValue={item.valor_comprado ? fmtInput(item.valor_comprado) : ''} key={`compra-${idx}-${item.produto_id}`} onBlur={e => updateItem(idx, 'valor_comprado', parseReal(e.target.value))} />
                               </TableCell>
                               <TableCell>
                                 <Input type="text" inputMode="decimal" className="h-8 text-center text-xs" value={item.margem_lucro} onChange={e => updateItem(idx, 'margem_lucro', parseFloat(e.target.value.replace(',', '.')) || 0)} />
