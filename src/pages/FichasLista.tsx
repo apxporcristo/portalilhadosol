@@ -1278,7 +1278,7 @@ export default function FichasLista() {
                     return (
                       <button
                         key={item.id}
-                        onClick={() => addToCart(item)}
+                        onClick={(e) => { triggerFlyAnimation(item, e); addToCart(item, e); }}
                         className={cn(
                           "relative flex flex-col items-center justify-center min-h-[5rem] px-3 py-2 rounded-lg border-2 transition-all",
                           isInCart
