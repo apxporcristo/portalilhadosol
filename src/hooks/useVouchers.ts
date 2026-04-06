@@ -229,12 +229,16 @@ export function useVouchers() {
 
     try {
       // Insert all vouchers directly into temp_vouchers without classification
-      const toInsert = parsedVouchers.map(pv => ({
-        voucher_id: pv.voucherId.trim(),
-        tempo_validade: pv.tempoValidade,
-        status: pv.status || 'livre',
-        data_uso: pv.dataUso || null,
-      }));
+      const toInsert = parsedVouchers.map(pv => {
+        const row: any = {
+          voucher_id: pv.voucherId.trim(),
+          tempo_validade: pv.tempoValidade,
+          status: pv.status || 'livre',
+          data_uso: pv.dataUso || null,
+        };
+        if (empresaId) row.empresa_id = empresaId;
+        return row;
+      });
 
       let imported = 0;
       let errors = 0;
