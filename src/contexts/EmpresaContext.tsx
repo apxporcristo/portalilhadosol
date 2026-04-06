@@ -81,7 +81,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
         const { data: vinculos, error: vinculoErr } = await db
           .from('empresa_usuarios' as any)
           .select('empresa_id')
-          .eq('user_id', uid);
+          .eq('user_id', realUserId);
 
         if (vinculoErr || !vinculos || vinculos.length === 0) {
           console.warn('[Empresa] Nenhuma empresa vinculada ao usuário:', uid);
