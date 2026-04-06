@@ -34,56 +34,58 @@ const App = () => (
       <Toaster />
       <Sonner />
       <UserSessionProvider>
-        <PrinterProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/cadastro" element={<Cadastro />} />
-              <Route path="/esqueci-senha" element={<EsqueciSenha />} />
-              <Route path="/redefinir-senha" element={<RedefinirSenha />} />
-              <Route path="/acesso-negado" element={<AcessoNegado />} />
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/vouchers" element={<VoucherLista />} />
-              <Route path="/fichas" element={
-                <ProtectedRoute permission="acesso_ficha_consumo">
-                  <FichasLista />
-                </ProtectedRoute>
-              } />
-              <Route path="/fichas-admin" element={
-                <ProtectedRoute permission="acesso_cadastrar_produto">
-                  <FichasAdmin />
-                </ProtectedRoute>
-              } />
-              <Route path="/fichas-relatorio" element={
-                <ProtectedRoute permission="acesso_cadastrar_produto">
-                  <FichasRelatorio />
-                </ProtectedRoute>
-              } />
-              <Route path="/comandas" element={
-                <ProtectedRoute permission="acesso_ficha_consumo">
-                  <ComandasLista />
-                </ProtectedRoute>
-              } />
-              <Route path="/kds" element={
-                <ProtectedRoute anyPermission={['acesso_kds', 'acesso_ficha_consumo']}>
-                  <KdsPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/pulseiras" element={
-                <ProtectedRoute permission="acesso_pulseira">
-                  <PulseirasPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/caixa" element={
-                <ProtectedRoute>
-                  <CaixaPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/install" element={<Install />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </PrinterProvider>
+        <EmpresaProvider>
+          <PrinterProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/cadastro" element={<Cadastro />} />
+                <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+                <Route path="/redefinir-senha" element={<RedefinirSenha />} />
+                <Route path="/acesso-negado" element={<AcessoNegado />} />
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/vouchers" element={<VoucherLista />} />
+                <Route path="/fichas" element={
+                  <ProtectedRoute permission="acesso_ficha_consumo">
+                    <FichasLista />
+                  </ProtectedRoute>
+                } />
+                <Route path="/fichas-admin" element={
+                  <ProtectedRoute permission="acesso_cadastrar_produto">
+                    <FichasAdmin />
+                  </ProtectedRoute>
+                } />
+                <Route path="/fichas-relatorio" element={
+                  <ProtectedRoute permission="acesso_cadastrar_produto">
+                    <FichasRelatorio />
+                  </ProtectedRoute>
+                } />
+                <Route path="/comandas" element={
+                  <ProtectedRoute permission="acesso_ficha_consumo">
+                    <ComandasLista />
+                  </ProtectedRoute>
+                } />
+                <Route path="/kds" element={
+                  <ProtectedRoute anyPermission={['acesso_kds', 'acesso_ficha_consumo']}>
+                    <KdsPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/pulseiras" element={
+                  <ProtectedRoute permission="acesso_pulseira">
+                    <PulseirasPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/caixa" element={
+                  <ProtectedRoute>
+                    <CaixaPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/install" element={<Install />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </PrinterProvider>
+        </EmpresaProvider>
       </UserSessionProvider>
     </TooltipProvider>
   </QueryClientProvider>
