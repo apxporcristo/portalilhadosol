@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Plus } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Plus, ShoppingCart, X } from 'lucide-react';
 import { useVouchers } from '@/hooks/useVouchers';
 import { usePrinterContext } from '@/contexts/PrinterContext';
 import { useVoucherCart } from '@/hooks/useVoucherCart';
@@ -41,8 +41,16 @@ export default function VoucherLista() {
 
   const [batchPrinting, setBatchPrinting] = useState(false);
   const [viewVouchers, setViewVouchers] = useState<{ voucher_id: string; tempo_validade: string }[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [flyAnim, setFlyAnim] = useState<{ id: string; x: number; y: number } | null>(null);
 
-  const handleAddToCart = useCallback((tempo: string) => {
+  const triggerFlyAnimation = (tempo: string, e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setFlyAnim({ id: tempo, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    setTimeout(() => setFlyAnim(null), 600);
+  };
+
+  const handleAddToCart = useCallback((tempo: string, e?: React.MouseEvent) => {
     const inCart = cart.items.find(i => i.tempo === tempo)?.quantity || 0;
     const available = stats.livresPorTempo[tempo] || 0;
     if (inCart >= available) {
@@ -59,7 +67,6 @@ export default function VoucherLista() {
       const selectedVouchers = voucherItems.length > 0 ? getFreVouchersBatch(voucherItems) : [];
       if (selectedVouchers.length === 0) { setBatchPrinting(false); return; }
 
-      // Connect to Bluetooth (auto-reconnect with 3 retries)
       const characteristic = await ensureBluetoothConnected();
       if (!characteristic) {
         toast({ title: 'Impressora não conectada', description: 'Não foi possível conectar à impressora Bluetooth.', variant: 'destructive' });
@@ -67,16 +74,15 @@ export default function VoucherLista() {
         return;
       }
 
-      // Generate ESC/POS data and print directly via Bluetooth
       for (const v of selectedVouchers) {
         const escposData = await createVoucherData(v.voucher_id, v.tempo_validade);
         await writeToCharacteristic(characteristic, escposData);
       }
 
-      // Mark vouchers as pre-reserved
       await markVouchersPreReservado(selectedVouchers.map(v => v.voucher_id));
       toast({ title: 'Impresso!', description: `${selectedVouchers.length} voucher(s) impresso(s) com sucesso.` });
       cart.clearCart();
+      setShowCart(false);
     } catch (error) {
       console.error('Erro na impressão em lote:', error);
       toast({ title: 'Erro', description: 'Ocorreu um erro durante a impressão.', variant: 'destructive' });
@@ -108,6 +114,7 @@ export default function VoucherLista() {
       toast({ title: 'Vouchers confirmados!', description: `${ids.length} voucher(s) marcados como pré-reservado.` });
       cart.clearCart();
       setViewVouchers([]);
+      setShowCart(false);
     } catch (error) {
       console.error('Erro ao confirmar vouchers:', error);
       toast({ title: 'Erro', description: 'Ocorreu um erro ao confirmar os vouchers.', variant: 'destructive' });
@@ -165,7 +172,7 @@ export default function VoucherLista() {
               const inCart = cart.items.find(i => i.tempo === tempo)?.quantity || 0;
               const colorClass = timeColors[tempo] || 'bg-primary hover:bg-primary/90';
               return (
-                <Button key={tempo} onClick={() => handleAddToCart(tempo)} disabled={batchPrinting || inCart >= available}
+                <Button key={tempo} onClick={(e) => { triggerFlyAnimation(tempo, e); handleAddToCart(tempo, e); }} disabled={batchPrinting || inCart >= available}
                   className={cn('flex flex-col items-center justify-center h-32 w-full rounded-xl text-primary-foreground shadow-lg transition-all duration-300 transform hover:scale-105 relative', colorClass)}>
                   {inCart > 0 && (
                     <Badge className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-sm px-2">{inCart}</Badge>
@@ -185,20 +192,72 @@ export default function VoucherLista() {
             <AlertDescription>Nenhum voucher disponível no momento.</AlertDescription>
           </Alert>
         )}
-
-        <VoucherCart
-          items={cart.items}
-          onAdd={(tempo, opts) => cart.addItem(tempo, opts)}
-          onRemove={(tempo, fichaType) => cart.removeItem(tempo, fichaType)}
-          onRemoveAll={(tempo, fichaType) => cart.removeAll(tempo, fichaType)}
-          onClear={cart.clearCart}
-          onPrint={isSpecificTempo ? handleViewVoucher : handleBatchPrint}
-          totalItems={cart.totalItems}
-          printing={batchPrinting}
-          availableByTempo={stats.livresPorTempo}
-          viewMode={isSpecificTempo}
-        />
       </main>
+
+      {/* Floating cart button - bottom right */}
+      {cart.totalItems > 0 && !showCart && (
+        <button
+          id="voucher-cart-icon-btn"
+          onClick={() => setShowCart(true)}
+          className="fixed bottom-6 right-6 z-30 bg-primary text-primary-foreground rounded-full h-14 w-14 flex items-center justify-center shadow-xl hover:scale-110 transition-transform"
+        >
+          <ShoppingCart className="h-6 w-6" />
+          <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full h-6 w-6 flex items-center justify-center text-xs font-bold">
+            {cart.totalItems}
+          </span>
+        </button>
+      )}
+
+      {/* Cart panel - slides up from bottom right */}
+      {showCart && cart.totalItems > 0 && (
+        <div className="fixed bottom-6 right-6 z-30 w-[90vw] max-w-md animate-scale-in">
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute -top-2 -right-2 z-10 bg-card border rounded-full h-8 w-8 shadow-md"
+              onClick={() => setShowCart(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            <VoucherCart
+              items={cart.items}
+              onAdd={(tempo, opts) => cart.addItem(tempo, opts)}
+              onRemove={(tempo, fichaType) => cart.removeItem(tempo, fichaType)}
+              onRemoveAll={(tempo, fichaType) => cart.removeAll(tempo, fichaType)}
+              onClear={() => { cart.clearCart(); setShowCart(false); }}
+              onPrint={isSpecificTempo ? handleViewVoucher : handleBatchPrint}
+              totalItems={cart.totalItems}
+              printing={batchPrinting}
+              availableByTempo={stats.livresPorTempo}
+              viewMode={isSpecificTempo}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Fly to cart animation */}
+      {flyAnim && (() => {
+        const targetX = window.innerWidth - 40;
+        const targetY = window.innerHeight - 40;
+        return (
+          <div
+            key={flyAnim.id + '-' + Date.now()}
+            className="fixed z-[100] pointer-events-none"
+            style={{
+              left: flyAnim.x,
+              top: flyAnim.y,
+              animation: 'fly-to-cart 0.5s ease-in forwards',
+              '--fly-tx': `${targetX - flyAnim.x}px`,
+              '--fly-ty': `${targetY - flyAnim.y}px`,
+            } as React.CSSProperties}
+          >
+            <div className="bg-primary text-primary-foreground rounded-full h-8 w-8 flex items-center justify-center shadow-lg">
+              <ShoppingCart className="h-4 w-4" />
+            </div>
+          </div>
+        );
+      })()}
 
       <VoucherViewDialog
         open={viewVouchers.length > 0}
