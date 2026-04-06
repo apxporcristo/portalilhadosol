@@ -3,6 +3,7 @@ import { Plus, Trash2, Save, Search, Package, Pencil, Trash } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -10,6 +11,13 @@ import { toast } from '@/hooks/use-toast';
 import { getSupabaseClient } from '@/hooks/useVouchers';
 import { useUserSession } from '@/contexts/UserSessionContext';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+
+interface PriceDiffItem {
+  produto_id: string;
+  produto_nome: string;
+  valor_anterior: number;
+  novo_valor: number;
+}
 
 interface ProdutoAtivo {
   id: string;
@@ -53,6 +61,13 @@ interface EntradaItem {
 
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+const fmtInput = (v: number) => v.toFixed(2).replace('.', ',');
+
+const parseReal = (s: string): number => {
+  const cleaned = s.replace(/[^\d,.-]/g, '').replace(',', '.');
+  return parseFloat(cleaned) || 0;
+};
+
 const isToday = (dateStr: string) => {
   const today = new Date().toISOString().slice(0, 10);
   return dateStr.slice(0, 10) === today;
@@ -88,6 +103,11 @@ export default function EntradaMercadoriaTab() {
   const [detailEntrada, setDetailEntrada] = useState<EntradaHeader | null>(null);
   const [detailItens, setDetailItens] = useState<EntradaItem[]>([]);
   const [loadingDetail, setLoadingDetail] = useState(false);
+
+  // Price diff modal
+  const [priceDiffItems, setPriceDiffItems] = useState<PriceDiffItem[]>([]);
+  const [selectedPriceDiffs, setSelectedPriceDiffs] = useState<Set<string>>(new Set());
+  const [updatingPrices, setUpdatingPrices] = useState(false);
 
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
@@ -278,6 +298,36 @@ export default function EntradaMercadoriaTab() {
         toast({ title: 'Entrada de mercadoria salva com sucesso!' });
       }
 
+      // Check price diffs
+      const prodIds = [...new Set(itens.map(i => i.produto_id))];
+      const { data: currentProducts } = await supabase
+        .from('fichas_produtos' as any)
+        .select('id, nome_produto, valor')
+        .in('id', prodIds);
+
+      if (currentProducts) {
+        const diffs: PriceDiffItem[] = [];
+        for (const item of itens) {
+          const novoValor = Math.round(calcValorVenda(item) * 100) / 100;
+          const prod = (currentProducts as any[]).find(p => p.id === item.produto_id);
+          if (prod) {
+            const valorAtual = Math.round(Number(prod.valor) * 100) / 100;
+            if (valorAtual !== novoValor && !diffs.some(d => d.produto_id === item.produto_id)) {
+              diffs.push({
+                produto_id: item.produto_id,
+                produto_nome: prod.nome_produto,
+                valor_anterior: valorAtual,
+                novo_valor: novoValor,
+              });
+            }
+          }
+        }
+        if (diffs.length > 0) {
+          setPriceDiffItems(diffs);
+          setSelectedPriceDiffs(new Set());
+        }
+      }
+
       setShowFormModal(false);
       resetForm();
       fetchData();
@@ -285,6 +335,27 @@ export default function EntradaMercadoriaTab() {
       toast({ title: 'Erro ao salvar', description: err?.message || 'Erro desconhecido', variant: 'destructive' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleUpdatePrices = async () => {
+    if (selectedPriceDiffs.size === 0) return;
+    setUpdatingPrices(true);
+    try {
+      const supabase = await getSupabaseClient();
+      for (const item of priceDiffItems) {
+        if (selectedPriceDiffs.has(item.produto_id)) {
+          await supabase.from('fichas_produtos' as any).update({ valor: item.novo_valor } as any).eq('id', item.produto_id);
+        }
+      }
+      toast({ title: 'Valores de venda atualizados com sucesso!' });
+      setPriceDiffItems([]);
+      setSelectedPriceDiffs(new Set());
+      fetchData();
+    } catch (err: any) {
+      toast({ title: 'Erro ao atualizar valores', description: err?.message, variant: 'destructive' });
+    } finally {
+      setUpdatingPrices(false);
     }
   };
 
@@ -442,13 +513,13 @@ export default function EntradaMercadoriaTab() {
                                 </Button>
                               </TableCell>
                               <TableCell>
-                                <Input type="number" min={1} className="h-8 text-center text-xs" value={item.quantidade} onChange={e => updateItem(idx, 'quantidade', parseInt(e.target.value) || 0)} />
+                                <Input type="text" inputMode="numeric" className="h-8 text-center text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" value={item.quantidade} onChange={e => updateItem(idx, 'quantidade', parseInt(e.target.value.replace(/\D/g, '')) || 0)} />
                               </TableCell>
                               <TableCell>
-                                <Input type="number" min={0} step={0.01} className="h-8 text-center text-xs" value={item.valor_comprado} onChange={e => updateItem(idx, 'valor_comprado', parseFloat(e.target.value) || 0)} />
+                                <Input type="text" inputMode="decimal" className="h-8 text-center text-xs" placeholder="R$ 0,00" value={fmtInput(item.valor_comprado)} onChange={e => updateItem(idx, 'valor_comprado', parseReal(e.target.value))} />
                               </TableCell>
                               <TableCell>
-                                <Input type="number" min={0.01} step={0.01} className="h-8 text-center text-xs" value={item.margem_lucro} onChange={e => updateItem(idx, 'margem_lucro', parseFloat(e.target.value) || 0)} />
+                                <Input type="text" inputMode="decimal" className="h-8 text-center text-xs" value={item.margem_lucro} onChange={e => updateItem(idx, 'margem_lucro', parseFloat(e.target.value.replace(',', '.')) || 0)} />
                               </TableCell>
                               <TableCell className="text-center text-xs font-medium">{fmt(vVenda)}</TableCell>
                               <TableCell>
@@ -556,6 +627,56 @@ export default function EntradaMercadoriaTab() {
           confirmText={deleting ? 'Excluindo...' : 'Excluir'}
           cancelText="Cancelar"
         />
+
+        {/* Price diff modal */}
+        <Dialog open={priceDiffItems.length > 0} onOpenChange={open => { if (!open) { setPriceDiffItems([]); setSelectedPriceDiffs(new Set()); } }}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Valores de venda diferentes</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">Os seguintes produtos possuem valor de venda diferente do calculado na nota. Selecione os que deseja atualizar:</p>
+            <div className="rounded-md border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10"></TableHead>
+                    <TableHead>Produto</TableHead>
+                    <TableHead className="text-right">Valor anterior</TableHead>
+                    <TableHead className="text-right">Novo valor</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {priceDiffItems.map(item => (
+                    <TableRow key={item.produto_id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedPriceDiffs.has(item.produto_id)}
+                          onCheckedChange={checked => {
+                            setSelectedPriceDiffs(prev => {
+                              const next = new Set(prev);
+                              if (checked) next.add(item.produto_id); else next.delete(item.produto_id);
+                              return next;
+                            });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="text-sm">{item.produto_nome}</TableCell>
+                      <TableCell className="text-right text-sm">{fmt(item.valor_anterior)}</TableCell>
+                      <TableCell className="text-right text-sm font-medium">{fmt(item.novo_valor)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {selectedPriceDiffs.size > 0 && (
+              <div className="flex justify-end">
+                <Button onClick={handleUpdatePrices} disabled={updatingPrices}>
+                  {updatingPrices ? 'Atualizando...' : `Alterar valores (${selectedPriceDiffs.size})`}
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );
