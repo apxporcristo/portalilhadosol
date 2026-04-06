@@ -188,14 +188,16 @@ export function usePulseiras() {
   const abrirPulseira = useCallback(async (params: { numero: string; nome_cliente: string; telefone?: string; cpf?: string; aberta_por?: string; aberta_por_nome?: string }) => {
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db.rpc('abrir_pulseira' as any, {
+      const rpcParams: any = {
         p_numero: params.numero,
         p_nome_cliente: params.nome_cliente,
         p_telefone: params.telefone || null,
         p_cpf: params.cpf || null,
         p_aberta_por: params.aberta_por || null,
         p_aberta_por_nome: params.aberta_por_nome || null,
-      } as any);
+      };
+      if (empresaId) rpcParams.p_empresa_id = empresaId;
+      const { data, error } = await db.rpc('abrir_pulseira' as any, rpcParams);
       if (error) throw error;
       toast({ title: 'Pulseira aberta com sucesso!' });
       listarAbertas();
