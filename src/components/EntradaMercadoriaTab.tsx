@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { toast } from '@/hooks/use-toast';
 import { getSupabaseClient } from '@/hooks/useVouchers';
 import { useUserSession } from '@/contexts/UserSessionContext';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface PriceDiffItem {
