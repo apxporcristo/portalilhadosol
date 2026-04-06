@@ -147,17 +147,19 @@ export function useCaixa() {
   const abrirCaixa = useCallback(async (valorAbertura: number, observacao?: string) => {
     if (!userId) throw new Error('Usuário não logado');
     const db = await getSupabaseClient();
-    const { data, error } = await db.rpc('abrir_caixa', {
+    const rpcParams: any = {
       p_usuario_id: userId,
       p_usuario_nome: userName,
       p_valor_abertura: valorAbertura,
       p_observacao: observacao || null,
-    });
+    };
+    if (empresaId) rpcParams.p_empresa_id = empresaId;
+    const { data, error } = await db.rpc('abrir_caixa', rpcParams);
     if (error) throw error;
     await carregarCaixaAberto();
     await carregarVendasDia();
     return data;
-  }, [userId, userName, carregarCaixaAberto, carregarVendasDia]);
+  }, [userId, userName, empresaId, carregarCaixaAberto, carregarVendasDia]);
 
   const registrarSangria = useCallback(async (valor: number, descricao?: string) => {
     if (!userId) throw new Error('Usuário não logado');
