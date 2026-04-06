@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PrinterProvider } from "@/contexts/PrinterContext";
+import { EmpresaProvider } from "@/contexts/EmpresaContext";
 import { UserSessionProvider } from "@/contexts/UserSessionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
