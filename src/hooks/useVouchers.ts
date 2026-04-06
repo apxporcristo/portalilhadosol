@@ -60,6 +60,9 @@ export interface VoucherStats {
 }
 
 export function useVouchers() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [stats, setStats] = useState<VoucherStats>({
     livresPorTempo: {},
