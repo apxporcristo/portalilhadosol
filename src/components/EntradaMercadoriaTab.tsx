@@ -61,6 +61,13 @@ interface EntradaItem {
 
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+const fmtInput = (v: number) => v.toFixed(2).replace('.', ',');
+
+const parseReal = (s: string): number => {
+  const cleaned = s.replace(/[^\d,.-]/g, '').replace(',', '.');
+  return parseFloat(cleaned) || 0;
+};
+
 const isToday = (dateStr: string) => {
   const today = new Date().toISOString().slice(0, 10);
   return dateStr.slice(0, 10) === today;
