@@ -114,10 +114,14 @@ export default function EntradaMercadoriaTab() {
 
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const [prodRes, entRes] = await Promise.all([
-      supabase.from('vw_fichas_ativas' as any).select('*'),
-      supabase.from('entradas_mercadoria' as any).select('*').order('data_compra', { ascending: false }).order('created_at', { ascending: false }),
-    ]);
+
+    let prodQuery = supabase.from('vw_fichas_ativas' as any).select('*');
+    if (empresaId) prodQuery = prodQuery.eq('empresa_id', empresaId);
+
+    let entQuery = supabase.from('entradas_mercadoria' as any).select('*').order('data_compra', { ascending: false }).order('created_at', { ascending: false });
+    if (empresaId) entQuery = entQuery.eq('empresa_id', empresaId);
+
+    const [prodRes, entRes] = await Promise.all([prodQuery, entQuery]);
 
     if (prodRes.data) {
       setProdutos((prodRes.data as any[]).map(d => ({
