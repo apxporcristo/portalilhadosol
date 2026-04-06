@@ -43,6 +43,9 @@ export interface ProdutoComplemento {
 }
 
 export function useComplementos() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [complementos, setComplementos] = useState<Complemento[]>([]);
   const [items, setItems] = useState<ComplementoItem[]>([]);
   const [grupos, setGrupos] = useState<GrupoComplemento[]>([]);
@@ -51,9 +54,11 @@ export function useComplementos() {
 
   const fetchComplementos = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('complemento_categorias' as any).select('*').order('nome');
+    let query = supabase.from('complemento_categorias' as any).select('*').order('nome');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setComplementos(data as any);
-  }, []);
+  }, [empresaId]);
 
   const fetchItems = useCallback(async () => {
     const supabase = await getSupabaseClient();

@@ -85,6 +85,9 @@ function speakOrder(order: KdsOrder) {
 }
 
 export function useKdsOrders(isMainKitchenKds = false) {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [orders, setOrders] = useState<KdsOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<KdsStatus | 'all'>('novo');
@@ -97,13 +100,15 @@ export function useKdsOrders(isMainKitchenKds = false) {
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const { data, error } = await supabase
+      let query = supabase
         .from('kds_orders' as any)
         .select('*')
         .gte('created_at', today.toISOString())
         .lt('created_at', tomorrow.toISOString())
         .is('cancelado_at', null)
         .order('created_at', { ascending: true });
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query;
       if (error) throw error;
       setOrders(((data as any[]) || []).filter((order) => !isCancelledOrder(order)));
     } catch (e) {
@@ -111,7 +116,7 @@ export function useKdsOrders(isMainKitchenKds = false) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [empresaId]);
 
   // Announce new orders — only on main kitchen KDS
   const announceNewOrders = useCallback((newOrders: KdsOrder[]) => {

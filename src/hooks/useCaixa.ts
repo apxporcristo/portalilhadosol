@@ -80,7 +80,7 @@ export function useCaixa() {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, empresaId]);
 
   const carregarMovimentacoes = useCallback(async (caixaId: string) => {
     try {
