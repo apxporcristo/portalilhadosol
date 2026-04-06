@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { getSupabaseClient } from '@/lib/supabase-external';
 import { toast } from '@/hooks/use-toast';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 /* ── Types ── */
 
