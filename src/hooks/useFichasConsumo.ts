@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseClient } from '@/hooks/useVouchers';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface FichaCategoria {
   id: string;
@@ -54,6 +55,9 @@ export interface FichaImpressao {
 }
 
 export function useFichasConsumo() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [fichasAtivas, setFichasAtivas] = useState<FichaAtiva[]>([]);
   const [categorias, setCategorias] = useState<FichaCategoria[]>([]);
   const [produtos, setProdutos] = useState<FichaProduto[]>([]);
@@ -63,9 +67,13 @@ export function useFichasConsumo() {
   const fetchFichasAtivas = useCallback(async () => {
     const supabase = await getSupabaseClient();
     
-    // Load products from vw_fichas_ativas (all active products) + kits from fichas_kits
-    const { data: prodData } = await supabase.from('vw_fichas_ativas' as any).select('*');
-    const { data: kitData } = await supabase.from('fichas_kits' as any).select('*, fichas_categorias:categoria_id(nome_categoria, exigir_dados_cliente, exigir_dados_atendente)').eq('ativo', true);
+    let prodQuery = supabase.from('vw_fichas_ativas' as any).select('*');
+    if (empresaId) prodQuery = prodQuery.eq('empresa_id', empresaId);
+
+    let kitQuery = supabase.from('fichas_kits' as any).select('*, fichas_categorias:categoria_id(nome_categoria, exigir_dados_cliente, exigir_dados_atendente)').eq('ativo', true);
+    if (empresaId) kitQuery = kitQuery.eq('empresa_id', empresaId);
+
+    const [{ data: prodData }, { data: kitData }] = await Promise.all([prodQuery, kitQuery]);
 
     const items: any[] = [];
 
@@ -100,25 +108,31 @@ export function useFichasConsumo() {
     }
 
     setFichasAtivas(items as unknown as FichaAtiva[]);
-  }, []);
+  }, [empresaId]);
 
   const fetchCategorias = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('fichas_categorias').select('*').order('nome_categoria');
+    let query = supabase.from('fichas_categorias').select('*').order('nome_categoria');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setCategorias(data as unknown as FichaCategoria[]);
-  }, []);
+  }, [empresaId]);
 
   const fetchProdutos = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('fichas_produtos').select('*').order('nome_produto');
+    let query = supabase.from('fichas_produtos').select('*').order('nome_produto');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setProdutos(data as unknown as FichaProduto[]);
-  }, []);
+  }, [empresaId]);
 
   const fetchImpressoes = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('fichas_impressoes').select('*').order('created_at', { ascending: false }).limit(500);
+    let query = supabase.from('fichas_impressoes').select('*').order('created_at', { ascending: false }).limit(500);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setImpressoes(data as unknown as FichaImpressao[]);
-  }, []);
+  }, [empresaId]);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -131,15 +145,17 @@ export function useFichasConsumo() {
   // Categorias CRUD
   const createCategoria = useCallback(async (nome: string, exigirCliente = false, exigirAtendente = false) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('fichas_categorias').insert({ 
+    const payload: any = { 
       nome_categoria: nome, 
       exigir_dados_cliente: exigirCliente, 
-      exigir_dados_atendente: exigirAtendente 
-    } as any);
+      exigir_dados_atendente: exigirAtendente,
+    };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('fichas_categorias').insert(payload);
     if (error) throw error;
     await fetchCategorias();
     await fetchFichasAtivas();
-  }, [fetchCategorias, fetchFichasAtivas]);
+  }, [empresaId, fetchCategorias, fetchFichasAtivas]);
 
   const updateCategoria = useCallback(async (id: string, data: Partial<FichaCategoria>) => {
     const supabase = await getSupabaseClient();
@@ -161,11 +177,13 @@ export function useFichasConsumo() {
   // Produtos CRUD
   const createProduto = useCallback(async (produto: { categoria_id: string; nome_produto: string; valor: number; printer_id?: string | null }) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('fichas_produtos').insert(produto as any);
+    const payload: any = { ...produto };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('fichas_produtos').insert(payload);
     if (error) throw error;
     await fetchProdutos();
     await fetchFichasAtivas();
-  }, [fetchProdutos, fetchFichasAtivas]);
+  }, [empresaId, fetchProdutos, fetchFichasAtivas]);
 
   const updateProduto = useCallback(async (id: string, data: Partial<FichaProduto>) => {
     const supabase = await getSupabaseClient();
@@ -197,7 +215,7 @@ export function useFichasConsumo() {
     }
   ) => {
     const supabase = await getSupabaseClient();
-    const { data, error } = await supabase.rpc('registrar_impressao_fichas', {
+    const rpcParams: any = {
       p_produto_id: produtoId,
       p_quantidade: quantidade,
       p_valor_unitario: valorUnitario,
@@ -206,11 +224,13 @@ export function useFichasConsumo() {
       p_telefone_cliente: dadosExtras?.telefone_cliente || null,
       p_nome_atendente: dadosExtras?.nome_atendente || null,
       p_codigo_atendente: dadosExtras?.codigo_atendente || null,
-    } as any);
+    };
+    if (empresaId) rpcParams.p_empresa_id = empresaId;
+    const { data, error } = await supabase.rpc('registrar_impressao_fichas', rpcParams);
     if (error) throw error;
     await fetchImpressoes();
     return data;
-  }, [fetchImpressoes]);
+  }, [empresaId, fetchImpressoes]);
 
   // Verificar senha de cadastro
   const verificarSenha = useCallback(async (senha: string): Promise<boolean> => {
