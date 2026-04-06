@@ -135,12 +135,14 @@ export function ReimpressaoVendas() {
       const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
       const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
 
-      const { data, error } = await sbClient
+      let query = sbClient
         .from('vw_reimpressao_vendas' as any)
         .select('*')
         .gte('data_venda', startOfDay)
         .lt('data_venda', endOfDay)
         .order('data_venda', { ascending: false });
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query;
 
       if (error) throw error;
 
