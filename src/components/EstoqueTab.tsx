@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getSupabaseClient } from '@/hooks/useVouchers';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 interface EstoqueItem {
   produto_id: string;
