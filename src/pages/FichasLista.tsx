@@ -231,7 +231,13 @@ export default function FichasLista() {
   const needsCliente = useMemo(() => cart.some(item => item.ficha.exigir_dados_cliente), [cart]);
   const needsAtendente = useMemo(() => cart.some(item => item.ficha.exigir_dados_atendente), [cart]);
 
-  const addToCart = async (ficha: FichaAtiva) => {
+  const triggerFlyAnimation = (ficha: FichaAtiva, e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setFlyAnim({ id: ficha.id, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+    setTimeout(() => setFlyAnim(null), 600);
+  };
+
+  const addToCart = async (ficha: FichaAtiva, e?: React.MouseEvent) => {
     // If it's a kit, validate component stock BEFORE adding to cart
     if (ficha.tipo_item === 'kit') {
       const sbClient = await getSupabaseClient();
