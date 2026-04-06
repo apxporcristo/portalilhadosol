@@ -69,12 +69,13 @@ export function UserSessionProvider({ children }: { children: ReactNode }) {
   const loadAccess = useCallback(async (userId: string) => {
     try {
       const db = await getSupabaseClient();
-      const [profileRes, permRes] = await Promise.all([
-        db.from('user_profiles').select('nome, email, cpf, ativo').eq('id', userId).maybeSingle(),
-        db.from('user_permissions').select('acesso_voucher, acesso_cadastrar_produto, acesso_ficha_consumo, acesso_comanda, acesso_kds, reimpressao_venda, acesso_pulseira, is_admin, voucher_todos, voucher_tempo_id, voucher_tempo_acesso, cadastrar_produto, ficha_consumo, pulseira, voucher_tempo_permitido').eq('user_id', userId).maybeSingle(),
-      ]);
-
+      // First get profile including user_id field
+      const profileRes = await db.from('user_profiles').select('nome, email, cpf, ativo, user_id').eq('id', userId).maybeSingle();
       const profile = profileRes.data as any;
+      // Use user_profiles.user_id for permissions/empresa queries (may differ from user_profiles.id)
+      const realUserId = profile?.user_id || userId;
+      const permRes = await db.from('user_permissions').select('acesso_voucher, acesso_cadastrar_produto, acesso_ficha_consumo, acesso_comanda, acesso_kds, reimpressao_venda, acesso_pulseira, is_admin, voucher_todos, voucher_tempo_id, voucher_tempo_acesso, cadastrar_produto, ficha_consumo, pulseira, voucher_tempo_permitido').eq('user_id', realUserId).maybeSingle();
+
       const perm = permRes.data as any;
 
       if (profile || perm) {

@@ -40,11 +40,22 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
     try {
       const db = await getSupabaseClient();
 
+      // Get the real user_id from user_profiles (uid is user_profiles.id, not user_profiles.user_id)
+      const { data: profileData } = await db
+        .from('user_profiles' as any)
+        .select('user_id')
+        .eq('id', uid)
+        .limit(1);
+      
+      const realUserId = (profileData && (profileData as any[]).length > 0) 
+        ? (profileData as any[])[0].user_id 
+        : uid;
+
       // Verificar se o usuário é admin
       const { data: permData } = await db
         .from('user_permissions' as any)
         .select('is_admin')
-        .eq('user_id', uid)
+        .eq('user_id', realUserId)
         .limit(1);
 
       const isAdmin = permData && (permData as any[]).length > 0 && (permData as any[])[0].is_admin === true;
@@ -70,10 +81,10 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
         const { data: vinculos, error: vinculoErr } = await db
           .from('empresa_usuarios' as any)
           .select('empresa_id')
-          .eq('user_id', uid);
+          .eq('user_id', realUserId);
 
         if (vinculoErr || !vinculos || vinculos.length === 0) {
-          console.warn('[Empresa] Nenhuma empresa vinculada ao usuário:', uid);
+          console.warn('[Empresa] Nenhuma empresa vinculada ao usuário:', realUserId);
           setEmpresas([]);
           setEmpresa(null);
           setLoading(false);
