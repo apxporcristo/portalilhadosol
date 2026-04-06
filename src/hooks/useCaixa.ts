@@ -43,6 +43,8 @@ export interface VendaDia {
 
 export function useCaixa() {
   const userSession = useOptionalUserSession();
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const userId = userSession?.user?.id;
   const userName = userSession?.access?.nome || '';
 
