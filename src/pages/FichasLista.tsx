@@ -1377,6 +1377,30 @@ export default function FichasLista() {
         )}
       </div>
 
+      {/* Fly to cart animation */}
+      {flyAnim && (() => {
+        const cartBtn = document.getElementById('cart-icon-btn');
+        const targetX = cartBtn ? cartBtn.getBoundingClientRect().left + cartBtn.getBoundingClientRect().width / 2 : window.innerWidth - 40;
+        const targetY = cartBtn ? cartBtn.getBoundingClientRect().top + cartBtn.getBoundingClientRect().height / 2 : 80;
+        return (
+          <div
+            key={flyAnim.id + '-' + Date.now()}
+            className="fixed z-[100] pointer-events-none"
+            style={{
+              left: flyAnim.x,
+              top: flyAnim.y,
+              animation: 'fly-to-cart 0.5s ease-in forwards',
+              '--fly-tx': `${targetX - flyAnim.x}px`,
+              '--fly-ty': `${targetY - flyAnim.y}px`,
+            } as React.CSSProperties}
+          >
+            <div className="bg-primary text-primary-foreground rounded-full h-8 w-8 flex items-center justify-center shadow-lg">
+              <ShoppingCart className="h-4 w-4" />
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Sequential category selection modal */}
       <Dialog open={showCatModal} onOpenChange={(open) => { if (!open) { setShowCatModal(false); setPendingFicha(null); } }}>
         <DialogContent className="max-h-[85vh] overflow-y-auto">
