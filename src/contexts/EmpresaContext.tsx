@@ -40,36 +40,63 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
     try {
       const db = await getSupabaseClient();
 
-      // Buscar empresas vinculadas ao usuário via empresa_usuarios
-      const { data: vinculos, error: vinculoErr } = await db
-        .from('empresa_usuarios' as any)
-        .select('empresa_id')
-        .eq('user_id', uid);
+      // Verificar se o usuário é admin
+      const { data: permData } = await db
+        .from('user_permissions' as any)
+        .select('is_admin')
+        .eq('user_id', uid)
+        .limit(1);
 
-      if (vinculoErr || !vinculos || vinculos.length === 0) {
-        console.warn('[Empresa] Nenhuma empresa vinculada ao usuário:', uid);
-        setEmpresas([]);
-        setEmpresa(null);
-        setLoading(false);
-        return;
+      const isAdmin = permData && (permData as any[]).length > 0 && (permData as any[])[0].is_admin === true;
+
+      let lista: Empresa[] = [];
+
+      if (isAdmin) {
+        // Admin tem acesso a TODAS as empresas
+        const { data: empresasData, error: empresaErr } = await db
+          .from('empresas' as any)
+          .select('id, nome');
+
+        if (empresaErr || !empresasData) {
+          console.warn('[Empresa] Erro ao carregar empresas (admin):', empresaErr);
+          setEmpresas([]);
+          setEmpresa(null);
+          setLoading(false);
+          return;
+        }
+        lista = empresasData as Empresa[];
+      } else {
+        // Usuário normal: buscar apenas empresas vinculadas
+        const { data: vinculos, error: vinculoErr } = await db
+          .from('empresa_usuarios' as any)
+          .select('empresa_id')
+          .eq('user_id', uid);
+
+        if (vinculoErr || !vinculos || vinculos.length === 0) {
+          console.warn('[Empresa] Nenhuma empresa vinculada ao usuário:', uid);
+          setEmpresas([]);
+          setEmpresa(null);
+          setLoading(false);
+          return;
+        }
+
+        const empresaIds = (vinculos as any[]).map(v => v.empresa_id);
+
+        const { data: empresasData, error: empresaErr } = await db
+          .from('empresas' as any)
+          .select('id, nome')
+          .in('id', empresaIds);
+
+        if (empresaErr || !empresasData) {
+          console.warn('[Empresa] Erro ao carregar empresas:', empresaErr);
+          setEmpresas([]);
+          setEmpresa(null);
+          setLoading(false);
+          return;
+        }
+        lista = empresasData as Empresa[];
       }
 
-      const empresaIds = (vinculos as any[]).map(v => v.empresa_id);
-
-      const { data: empresasData, error: empresaErr } = await db
-        .from('empresas' as any)
-        .select('id, nome')
-        .in('id', empresaIds);
-
-      if (empresaErr || !empresasData) {
-        console.warn('[Empresa] Erro ao carregar empresas:', empresaErr);
-        setEmpresas([]);
-        setEmpresa(null);
-        setLoading(false);
-        return;
-      }
-
-      const lista = empresasData as Empresa[];
       setEmpresas(lista);
 
       // Tentar restaurar empresa salva
@@ -78,11 +105,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
 
       if (saved) {
         setEmpresa(saved);
-      } else if (lista.length === 1) {
-        setEmpresa(lista[0]);
-        localStorage.setItem(EMPRESA_KEY, lista[0].id);
-      } else if (lista.length > 1) {
-        // Selecionar a primeira por padrão
+      } else if (lista.length >= 1) {
         setEmpresa(lista[0]);
         localStorage.setItem(EMPRESA_KEY, lista[0].id);
       }
