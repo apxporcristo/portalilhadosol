@@ -84,7 +84,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
           .eq('user_id', realUserId);
 
         if (vinculoErr || !vinculos || vinculos.length === 0) {
-          console.warn('[Empresa] Nenhuma empresa vinculada ao usuário:', uid);
+          console.warn('[Empresa] Nenhuma empresa vinculada ao usuário:', realUserId);
           setEmpresas([]);
           setEmpresa(null);
           setLoading(false);
