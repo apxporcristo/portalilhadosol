@@ -27,6 +27,9 @@ interface Categoria {
 }
 
 export default function EstoqueTab() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [items, setItems] = useState<EstoqueItem[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,14 +39,18 @@ export default function EstoqueTab() {
 
   const fetchData = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const [estRes, catRes] = await Promise.all([
-      supabase.from('vw_estoque' as any).select('*'),
-      supabase.from('fichas_categorias' as any).select('id, nome_categoria').eq('ativo', true),
-    ]);
+
+    let estQuery = supabase.from('vw_estoque' as any).select('*');
+    if (empresaId) estQuery = estQuery.eq('empresa_id', empresaId);
+
+    let catQuery = supabase.from('fichas_categorias' as any).select('id, nome_categoria').eq('ativo', true);
+    if (empresaId) catQuery = catQuery.eq('empresa_id', empresaId);
+
+    const [estRes, catRes] = await Promise.all([estQuery, catQuery]);
     if (estRes.data) setItems(estRes.data as any[]);
     if (catRes.data) setCategorias(catRes.data as any[]);
     setLoading(false);
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 

@@ -161,7 +161,7 @@ export default function EntradaMercadoriaTab() {
       }
     }
     setLoading(false);
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
