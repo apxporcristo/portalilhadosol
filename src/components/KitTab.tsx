@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { toast } from '@/hooks/use-toast';
 import { getSupabaseClient } from '@/hooks/useVouchers';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 interface ProdutoSimples {
   id: string;
