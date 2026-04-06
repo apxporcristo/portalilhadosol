@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getSupabaseClient } from '@/lib/supabase-external';
 import { useOptionalUserSession } from '@/contexts/UserSessionContext';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface Caixa {
   id: string;

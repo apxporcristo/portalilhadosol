@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseClient } from '@/hooks/useVouchers';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface Complemento {
   id: string;

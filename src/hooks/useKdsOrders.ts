@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getSupabaseClient } from '@/hooks/useVouchers';
 import { normalizeKdsDisplay } from '@/lib/kds-display';
 import { cancelKdsOrder, extractKdsCancelError } from '@/lib/kds-cancel';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export type KdsStatus = 'novo' | 'em_preparo' | 'pronto' | 'impresso' | 'entregue';
 

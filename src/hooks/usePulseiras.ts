@@ -52,7 +52,8 @@ export interface PulseiraHistorico {
 /* ── Hook ── */
 
 export function usePulseiras() {
-  const [loading, setLoading] = useState(false);
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const [pulseirasAbertas, setPulseirasAbertas] = useState<PulseiraResumo[]>([]);
   const [pulseirasFechadas, setPulseirasFechadas] = useState<PulseiraResumo[]>([]);
   const [detalhe, setDetalhe] = useState<PulseiraResumo | null>(null);
