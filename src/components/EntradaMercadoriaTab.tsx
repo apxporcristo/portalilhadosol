@@ -627,6 +627,56 @@ export default function EntradaMercadoriaTab() {
           confirmText={deleting ? 'Excluindo...' : 'Excluir'}
           cancelText="Cancelar"
         />
+
+        {/* Price diff modal */}
+        <Dialog open={priceDiffItems.length > 0} onOpenChange={open => { if (!open) { setPriceDiffItems([]); setSelectedPriceDiffs(new Set()); } }}>
+          <DialogContent className="max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Valores de venda diferentes</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">Os seguintes produtos possuem valor de venda diferente do calculado na nota. Selecione os que deseja atualizar:</p>
+            <div className="rounded-md border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10"></TableHead>
+                    <TableHead>Produto</TableHead>
+                    <TableHead className="text-right">Valor anterior</TableHead>
+                    <TableHead className="text-right">Novo valor</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {priceDiffItems.map(item => (
+                    <TableRow key={item.produto_id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedPriceDiffs.has(item.produto_id)}
+                          onCheckedChange={checked => {
+                            setSelectedPriceDiffs(prev => {
+                              const next = new Set(prev);
+                              if (checked) next.add(item.produto_id); else next.delete(item.produto_id);
+                              return next;
+                            });
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell className="text-sm">{item.produto_nome}</TableCell>
+                      <TableCell className="text-right text-sm">{fmt(item.valor_anterior)}</TableCell>
+                      <TableCell className="text-right text-sm font-medium">{fmt(item.novo_valor)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {selectedPriceDiffs.size > 0 && (
+              <div className="flex justify-end">
+                <Button onClick={handleUpdatePrices} disabled={updatingPrices}>
+                  {updatingPrices ? 'Atualizando...' : `Alterar valores (${selectedPriceDiffs.size})`}
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );
