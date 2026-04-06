@@ -388,7 +388,7 @@ export default function EntradaMercadoriaTab() {
 
         {/* Form Modal */}
         <Dialog open={showFormModal} onOpenChange={open => { if (!open) { setShowFormModal(false); resetForm(); } }}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[96vw] max-w-[1100px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingEntrada ? 'Editar Entrada' : 'Nova Entrada de Mercadoria'}</DialogTitle>
             </DialogHeader>
