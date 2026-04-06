@@ -76,6 +76,8 @@ const isToday = (dateStr: string) => {
 
 export default function EntradaMercadoriaTab() {
   const { user, access } = useUserSession();
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const [produtos, setProdutos] = useState<ProdutoAtivo[]>([]);
   const [entradas, setEntradas] = useState<EntradaHeader[]>([]);
   const [loading, setLoading] = useState(true);
