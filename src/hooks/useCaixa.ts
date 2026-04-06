@@ -58,13 +58,14 @@ export function useCaixa() {
     if (!userId) { setLoading(false); return; }
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db
+      let query = db
         .from('caixas')
         .select('*')
         .eq('usuario_id', userId)
         .eq('status', 'aberto')
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query.maybeSingle();
 
       if (error) console.error('[Caixa] Erro ao carregar:', error);
       setCaixaAberto(data as Caixa | null);
