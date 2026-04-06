@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getSupabaseClient, getAuthClient } from '@/lib/supabase-external';
 import { toast } from '@/hooks/use-toast';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface Comanda {
   id: string;
