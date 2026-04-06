@@ -455,7 +455,7 @@ export function useVouchers() {
         return [];
       }
     },
-    []
+    [empresaId]
   );
 
   useEffect(() => {
