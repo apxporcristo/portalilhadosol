@@ -142,7 +142,7 @@ export function useCaixa() {
     } finally {
       setLoadingVendas(false);
     }
-  }, [userId]);
+  }, [userId, empresaId]);
 
   const abrirCaixa = useCallback(async (valorAbertura: number, observacao?: string) => {
     if (!userId) throw new Error('Usuário não logado');
