@@ -48,17 +48,22 @@ export interface ComandaAlteracao {
 }
 
 export function useComandas() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [comandas, setComandas] = useState<Comanda[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchComandas = useCallback(async () => {
     try {
       const supabase = await getSupabaseClient();
-      const { data } = await supabase.from('comandas' as any).select('*').eq('ativo', true).order('numero');
+      let query = supabase.from('comandas' as any).select('*').eq('ativo', true).order('numero');
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data } = await query;
       if (data) setComandas(data as unknown as Comanda[]);
     } catch { /* table may not exist */ }
     setLoading(false);
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchComandas(); }, [fetchComandas]);
 
