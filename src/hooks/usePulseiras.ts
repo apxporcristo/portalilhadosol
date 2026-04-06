@@ -87,17 +87,19 @@ export function usePulseiras() {
   const listarFechadas = useCallback(async () => {
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db
+      let query = db
         .from('vw_pulseiras_resumo' as any)
         .select('*')
         .eq('status', 'fechada')
         .order('fechada_em', { ascending: false });
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query;
       if (error) throw error;
       setPulseirasFechadas((data || []) as PulseiraResumo[]);
     } catch (err: any) {
       console.warn('[Pulseiras] Erro listar fechadas:', err.message);
     }
-  }, []);
+  }, [empresaId]);
 
   /* ── Detalhe ── */
 
