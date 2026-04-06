@@ -1310,7 +1310,7 @@ export default function FichasLista() {
         </main>
 
         {/* Cart - bottom sheet on mobile, sidebar on desktop */}
-        {cart.length > 0 && (
+        {showCart && cart.length > 0 && (
           <aside className="fixed bottom-0 left-0 right-0 md:relative md:w-80 md:min-w-[280px] bg-card border-t md:border-t-0 md:border-l shadow-[0_-4px_20px_rgba(0,0,0,0.15)] md:shadow-lg md:sticky md:top-[65px] md:h-[calc(100vh-65px)] flex flex-col z-20 max-h-[55vh] md:max-h-none rounded-t-2xl md:rounded-none">
             <div className="p-4 border-b flex items-center justify-between">
               <div className="flex items-center gap-2">
