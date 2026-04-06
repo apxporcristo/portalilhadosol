@@ -434,6 +434,8 @@ export function useVouchers() {
           .eq('status', 'usado')
           .not('data_uso', 'is', null);
 
+        if (empresaId) query = query.eq('empresa_id', empresaId);
+
         if (startDate) {
           query = query.gte('data_uso', startDate.toISOString());
         }
