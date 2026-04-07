@@ -41,14 +41,27 @@ export function SupabaseConnectionModal({ open, onConnected }: Props) {
         return;
       }
 
-      // Save to internal app_settings
+      // Save to internal app_settings (select first, then insert or update)
       const jsonValue = JSON.stringify({ supabase_url: url, supabase_anon_key: anonKey });
-      const { error: saveError } = await cloudSupabase
+      const { data: existing } = await cloudSupabase
         .from('app_settings')
-        .upsert(
-          { key: 'default', value: jsonValue },
-          { onConflict: 'key' }
-        );
+        .select('id')
+        .eq('key', 'default')
+        .maybeSingle();
+
+      let saveError;
+      if (existing) {
+        const { error } = await cloudSupabase
+          .from('app_settings')
+          .update({ value: jsonValue })
+          .eq('key', 'default');
+        saveError = error;
+      } else {
+        const { error } = await cloudSupabase
+          .from('app_settings')
+          .insert({ key: 'default', value: jsonValue });
+        saveError = error;
+      }
 
       if (saveError) {
         setStatus('error');
