@@ -34,6 +34,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <SupabaseConnectionGate>
       <UserSessionProvider>
         <EmpresaProvider>
           <PrinterProvider>
