@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Database, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
+import { supabase as cloudSupabase } from '@/integrations/supabase/client';
+import { resetExternalClient } from '@/lib/supabase-external';
 
 interface Props {
   open: boolean;
@@ -38,11 +40,29 @@ export function SupabaseConnectionModal({ open, onConnected }: Props) {
         return;
       }
 
-      // Save to localStorage (global config, single DB)
-      localStorage.setItem('voucher_supabase_config', JSON.stringify({
-        supabase_url: url,
-        supabase_anon_key: anonKey,
-      }));
+      const jsonValue = JSON.stringify({ supabase_url: url, supabase_anon_key: anonKey });
+      const { data: existing } = await (cloudSupabase
+        .from('app_settings' as any)
+        .select('id')
+        .eq('key', 'default')
+        .maybeSingle() as any);
+
+      const saveResult = existing
+        ? await (cloudSupabase
+            .from('app_settings' as any)
+            .update({ value: jsonValue } as any)
+            .eq('key', 'default') as any)
+        : await (cloudSupabase
+            .from('app_settings' as any)
+            .insert({ key: 'default', value: jsonValue } as any) as any);
+
+      if (saveResult.error) {
+        setStatus('error');
+        setMessage(`Erro ao salvar configuração: ${saveResult.error.message}`);
+        return;
+      }
+
+      resetExternalClient();
 
       setStatus('connected');
       setMessage('Conexão estabelecida com sucesso!');

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { supabase as cloudSupabase } from '@/integrations/supabase/client';
+import { resetExternalClient } from '@/lib/supabase-external';
 
 interface SupabaseConfig {
   url: string;
@@ -127,8 +128,7 @@ export function useSupabaseConfig() {
           return false;
         }
 
-        localStorage.removeItem('voucher_supabase_config');
-
+        resetExternalClient();
         setConfig({ url, anonKey, isConfigured: true });
         setConnectionStatus({
           status: 'connected',
@@ -150,7 +150,8 @@ export function useSupabaseConfig() {
         .delete()
         .eq('key', 'default');
 
-      localStorage.removeItem('voucher_supabase_config');
+      resetExternalClient();
+
     } catch (e) {
       console.error('Error clearing config:', e);
     }

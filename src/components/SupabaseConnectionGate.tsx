@@ -1,4 +1,5 @@
 import { useState, useEffect, ReactNode } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { supabase as cloudSupabase } from '@/integrations/supabase/client';
 import { SupabaseConnectionModal } from '@/components/SupabaseConnectionModal';
 import { Loader2 } from 'lucide-react';
@@ -13,21 +14,35 @@ export function SupabaseConnectionGate({ children }: Props) {
 
   const checkConfig = async () => {
     try {
-      // Test if the current client can reach the DB
-      const { error } = await cloudSupabase
+      const { data, error } = await (cloudSupabase
+        .from('app_settings' as any)
+        .select('key, value')
+        .eq('key', 'default')
+        .maybeSingle() as any);
+
+      if (error || !data?.value) {
+        setIsConfigured(false);
+        return;
+      }
+
+      const parsed = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
+      if (!parsed?.supabase_url || !parsed?.supabase_anon_key) {
+        setIsConfigured(false);
+        return;
+      }
+
+      const testClient = createClient(parsed.supabase_url, parsed.supabase_anon_key);
+      const { error: testError } = await testClient
         .from('user_profiles')
         .select('id')
         .limit(1);
 
-      if (!error) {
-        setIsConfigured(true);
-        setChecking(false);
-        return;
+      setIsConfigured(!testError);
+      if (testError) {
+        console.error('Erro ao verificar conexão externa:', testError);
       }
-
-      console.error('Erro ao verificar conexão:', error);
-      setIsConfigured(false);
-    } catch {
+    } catch (error) {
+      console.error('Erro ao validar configuração global:', error);
       setIsConfigured(false);
     } finally {
       setChecking(false);
