@@ -95,7 +95,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
 
         const { data: empresasData, error: empresaErr } = await db
           .from('empresas' as any)
-          .select('id, nome')
+          .select('id, nome_fantasia')
           .in('id', empresaIds);
 
         if (empresaErr || !empresasData) {
