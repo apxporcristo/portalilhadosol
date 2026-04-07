@@ -689,7 +689,7 @@ export function UserPermissionsManager() {
                       {(() => {
                         const ue = userEmpresas[u.user_id];
                         if (!ue || ue.length === 0) return '—';
-                        return ue.map(eid => empresas.find(e => e.id === eid)?.nome || eid).join(', ');
+                        return ue.map(eid => empresas.find(e => e.id === eid)?.nome_fantasia || eid).join(', ');
                       })()}
                     </TableCell>
                     <TableCell className="text-center">
