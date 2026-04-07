@@ -131,13 +131,15 @@ export function useComandas() {
     if (error) throw error;
 
     // 2. Log the closing
-    await supabase.from('comanda_alteracoes' as any).insert({
+    const logPayload: any = {
       comanda_id: id,
       tipo: 'edicao',
       descricao: `Comanda fechada - Forma: ${formaPagamentoNome} - Fechada por: ${usuarioNome || usuarioEmail}`,
       usuario_email: usuarioEmail,
       usuario_nome: usuarioNome || null,
-    } as any);
+    };
+    if (empresaId) logPayload.empresa_id = empresaId;
+    await supabase.from('comanda_alteracoes' as any).insert(logPayload as any);
 
     // 3. Reset comanda to 'livre' for reuse (clear client data but keep history in comanda_alteracoes)
     const { error: resetError } = await supabase.from('comandas' as any).update({
