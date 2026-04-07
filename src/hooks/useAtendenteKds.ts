@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getSupabaseClient } from '@/hooks/useVouchers';
 import { cancelKdsOrder, extractKdsCancelError } from '@/lib/kds-cancel';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface KdsProntoOrder {
   id: string;
