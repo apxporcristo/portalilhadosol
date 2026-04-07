@@ -113,10 +113,12 @@ export function useComplementos() {
 
   const deleteComplemento = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_categorias' as any).delete().eq('id', id);
+    let query = supabase.from('complemento_categorias' as any).delete().eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await Promise.all([fetchComplementos(), fetchProdutoComplementos(), fetchItems(), fetchGrupos()]);
-  }, [fetchComplementos, fetchProdutoComplementos, fetchItems, fetchGrupos]);
+  }, [empresaId, fetchComplementos, fetchProdutoComplementos, fetchItems, fetchGrupos]);
 
   // Items CRUD
   const createItem = useCallback(async (complemento_id: string, nome: string, valor: number, grupo_id?: string | null, escolha_exclusiva?: boolean) => {
