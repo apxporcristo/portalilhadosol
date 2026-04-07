@@ -119,10 +119,12 @@ export function useComplementos() {
   // Items CRUD
   const createItem = useCallback(async (complemento_id: string, nome: string, valor: number, grupo_id?: string | null, escolha_exclusiva?: boolean) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_itens' as any).insert({ categoria_id: complemento_id, nome, valor, grupo_id: grupo_id || null, escolha_exclusiva: escolha_exclusiva || false } as any);
+    const payload: any = { categoria_id: complemento_id, nome, valor, grupo_id: grupo_id || null, escolha_exclusiva: escolha_exclusiva || false };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('complemento_itens' as any).insert(payload);
     if (error) throw error;
     await fetchItems();
-  }, [fetchItems]);
+  }, [empresaId, fetchItems]);
 
   const updateItem = useCallback(async (id: string, data: Partial<ComplementoItem>) => {
     const supabase = await getSupabaseClient();
