@@ -122,7 +122,7 @@ export function useComandas() {
   ) => {
     const supabase = await getSupabaseClient();
     // 1. Mark as fechada
-    const { error } = await supabase.from('comandas' as any).update({
+    let closeQuery = supabase.from('comandas' as any).update({
       status: 'fechada',
       fechada_em: new Date().toISOString(),
       fechada_por: usuarioId || null,
@@ -130,6 +130,8 @@ export function useComandas() {
       forma_pagamento_nome: formaPagamentoNome,
       updated_at: new Date().toISOString(),
     } as any).eq('id', id);
+    if (empresaId) closeQuery = closeQuery.eq('empresa_id', empresaId);
+    const { error } = await closeQuery;
     if (error) throw error;
 
     // 2. Log the closing
