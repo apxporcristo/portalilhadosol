@@ -280,9 +280,11 @@ export default function EntradaMercadoriaTab() {
         toast({ title: 'Entrada atualizada com sucesso!' });
       } else {
         // Insert new
+        const insertPayload: any = { numero_nota: numeroNota.trim(), data_compra: dataCompra, observacao: observacao.trim() || null, usuario_id: user?.id || null, usuario_nome: access?.nome || null };
+        if (empresaId) insertPayload.empresa_id = empresaId;
         const { data: entrada, error: errH } = await supabase
           .from('entradas_mercadoria' as any)
-          .insert({ numero_nota: numeroNota.trim(), data_compra: dataCompra, observacao: observacao.trim() || null, usuario_id: user?.id || null, usuario_nome: access?.nome || null } as any)
+          .insert(insertPayload)
           .select('id')
           .single();
         if (errH || !entrada) throw errH || new Error('Erro ao salvar cabeçalho');
