@@ -90,7 +90,7 @@ export function EmpresaSettings() {
         toast({ title: 'Empresa atualizada!' });
       } else {
         const { error } = await db.from('empresas' as any).insert({
-          nome: fNome.trim(),
+          nome_fantasia: fNome.trim(),
           cnpj: cnpjClean,
           ativo: fAtivo,
         } as any);
