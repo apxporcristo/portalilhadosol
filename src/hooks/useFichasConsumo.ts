@@ -128,7 +128,7 @@ export function useFichasConsumo() {
 
   const fetchImpressoes = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    let query = supabase.from('fichas_impressoes').select('*').order('created_at', { ascending: false }).limit(500);
+    let query = supabase.from('fichas_impressoes').select('*').order('id', { ascending: false }).limit(500);
     if (empresaId) query = query.eq('empresa_id', empresaId);
     const { data } = await query;
     if (data) setImpressoes(data as unknown as FichaImpressao[]);
