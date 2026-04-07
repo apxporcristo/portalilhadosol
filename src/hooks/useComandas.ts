@@ -99,16 +99,18 @@ export function useComandas() {
 
   const abrirComanda = useCallback(async (id: string, nomeCliente: string, telefoneCliente?: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comandas' as any).update({
+    let query = supabase.from('comandas' as any).update({
       status: 'aberta',
       nome_cliente: nomeCliente,
       telefone_cliente: telefoneCliente || null,
       aberta_em: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const fecharComanda = useCallback(async (
     id: string,
@@ -120,7 +122,7 @@ export function useComandas() {
   ) => {
     const supabase = await getSupabaseClient();
     // 1. Mark as fechada
-    const { error } = await supabase.from('comandas' as any).update({
+    let closeQuery = supabase.from('comandas' as any).update({
       status: 'fechada',
       fechada_em: new Date().toISOString(),
       fechada_por: usuarioId || null,
@@ -128,6 +130,8 @@ export function useComandas() {
       forma_pagamento_nome: formaPagamentoNome,
       updated_at: new Date().toISOString(),
     } as any).eq('id', id);
+    if (empresaId) closeQuery = closeQuery.eq('empresa_id', empresaId);
+    const { error } = await closeQuery;
     if (error) throw error;
 
     // 2. Log the closing
@@ -142,7 +146,7 @@ export function useComandas() {
     await supabase.from('comanda_alteracoes' as any).insert(logPayload as any);
 
     // 3. Reset comanda to 'livre' for reuse (clear client data but keep history in comanda_alteracoes)
-    const { error: resetError } = await supabase.from('comandas' as any).update({
+    let resetQuery = supabase.from('comandas' as any).update({
       status: 'livre',
       nome_cliente: null,
       telefone_cliente: null,
@@ -154,6 +158,8 @@ export function useComandas() {
       forma_pagamento_nome: null,
       updated_at: new Date().toISOString(),
     } as any).eq('id', id);
+    if (empresaId) resetQuery = resetQuery.eq('empresa_id', empresaId);
+    const { error: resetError } = await resetQuery;
     if (resetError) throw resetError;
 
     await fetchComandas();
@@ -254,15 +260,19 @@ export function useComandas() {
 
   const editarItem = useCallback(async (itemId: string, dados: Partial<ComandaItem>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comanda_itens' as any).update(dados as any).eq('id', itemId);
+    let query = supabase.from('comanda_itens' as any).update(dados as any).eq('id', itemId);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
-  }, []);
+  }, [empresaId]);
 
   const excluirItem = useCallback(async (itemId: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comanda_itens' as any).delete().eq('id', itemId);
+    let query = supabase.from('comanda_itens' as any).delete().eq('id', itemId);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
-  }, []);
+  }, [empresaId]);
 
   const registrarAlteracao = useCallback(async (
     comandaId: string,

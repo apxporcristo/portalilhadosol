@@ -159,20 +159,24 @@ export function useFichasConsumo() {
 
   const updateCategoria = useCallback(async (id: string, data: Partial<FichaCategoria>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('fichas_categorias').update(data as any).eq('id', id);
+    let query = supabase.from('fichas_categorias').update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchCategorias();
     await fetchFichasAtivas();
-  }, [fetchCategorias, fetchFichasAtivas]);
+  }, [empresaId, fetchCategorias, fetchFichasAtivas]);
 
   const deleteCategoria = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('fichas_categorias').delete().eq('id', id);
+    let query = supabase.from('fichas_categorias').delete().eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchCategorias();
     await fetchProdutos();
     await fetchFichasAtivas();
-  }, [fetchCategorias, fetchProdutos, fetchFichasAtivas]);
+  }, [empresaId, fetchCategorias, fetchProdutos, fetchFichasAtivas]);
 
   // Produtos CRUD
   const createProduto = useCallback(async (produto: { categoria_id: string; nome_produto: string; valor: number; printer_id?: string | null }) => {
@@ -187,19 +191,23 @@ export function useFichasConsumo() {
 
   const updateProduto = useCallback(async (id: string, data: Partial<FichaProduto>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('fichas_produtos').update(data as any).eq('id', id);
+    let query = supabase.from('fichas_produtos').update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchProdutos();
     await fetchFichasAtivas();
-  }, [fetchProdutos, fetchFichasAtivas]);
+  }, [empresaId, fetchProdutos, fetchFichasAtivas]);
 
   const deleteProduto = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('fichas_produtos').delete().eq('id', id);
+    let query = supabase.from('fichas_produtos').delete().eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchProdutos();
     await fetchFichasAtivas();
-  }, [fetchProdutos, fetchFichasAtivas]);
+  }, [empresaId, fetchProdutos, fetchFichasAtivas]);
 
   // Registrar impressão via RPC with optional client/attendant data
   const registrarImpressao = useCallback(async (

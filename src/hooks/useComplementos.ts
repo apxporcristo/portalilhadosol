@@ -104,17 +104,21 @@ export function useComplementos() {
 
   const updateComplemento = useCallback(async (id: string, data: Partial<Complemento>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_categorias' as any).update(data as any).eq('id', id);
+    let query = supabase.from('complemento_categorias' as any).update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchComplementos();
-  }, [fetchComplementos]);
+  }, [empresaId, fetchComplementos]);
 
   const deleteComplemento = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_categorias' as any).delete().eq('id', id);
+    let query = supabase.from('complemento_categorias' as any).delete().eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await Promise.all([fetchComplementos(), fetchProdutoComplementos(), fetchItems(), fetchGrupos()]);
-  }, [fetchComplementos, fetchProdutoComplementos, fetchItems, fetchGrupos]);
+  }, [empresaId, fetchComplementos, fetchProdutoComplementos, fetchItems, fetchGrupos]);
 
   // Items CRUD
   const createItem = useCallback(async (complemento_id: string, nome: string, valor: number, grupo_id?: string | null, escolha_exclusiva?: boolean) => {
@@ -128,17 +132,21 @@ export function useComplementos() {
 
   const updateItem = useCallback(async (id: string, data: Partial<ComplementoItem>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_itens' as any).update(data as any).eq('id', id);
+    let query = supabase.from('complemento_itens' as any).update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchItems();
-  }, [fetchItems]);
+  }, [empresaId, fetchItems]);
 
   const deleteItem = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_itens' as any).delete().eq('id', id);
+    let query = supabase.from('complemento_itens' as any).delete().eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchItems();
-  }, [fetchItems]);
+  }, [empresaId, fetchItems]);
 
   const copyItems = useCallback(async (fromComplementoId: string, toComplementoId: string) => {
     const existing = items.filter(s => s.categoria_id === toComplementoId);
@@ -146,12 +154,16 @@ export function useComplementos() {
     const toCopy = items.filter(s => s.categoria_id === fromComplementoId && !existingNames.has(s.nome.toLowerCase()));
     if (toCopy.length === 0) return 0;
     const supabase = await getSupabaseClient();
-    const inserts = toCopy.map(s => ({ categoria_id: toComplementoId, nome: s.nome, valor: s.valor }));
+    const inserts = toCopy.map(s => {
+      const row: any = { categoria_id: toComplementoId, nome: s.nome, valor: s.valor };
+      if (empresaId) row.empresa_id = empresaId;
+      return row;
+    });
     const { error } = await supabase.from('complemento_itens' as any).insert(inserts as any);
     if (error) throw error;
     await fetchItems();
     return toCopy.length;
-  }, [items, fetchItems]);
+  }, [empresaId, items, fetchItems]);
 
   // Grupos CRUD
   const createGrupo = useCallback(async (categoria_id: string, nome_grupo: string, tipo_selecao: 'single' | 'multi', min_escolhas: number, max_escolhas: number | null) => {
@@ -167,19 +179,25 @@ export function useComplementos() {
 
   const updateGrupo = useCallback(async (id: string, data: Partial<GrupoComplemento>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_grupos' as any).update(data as any).eq('id', id);
+    let query = supabase.from('complemento_grupos' as any).update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchGrupos();
-  }, [fetchGrupos]);
+  }, [empresaId, fetchGrupos]);
 
   const deleteGrupo = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
     // Remove grupo_id from items that belong to this group
-    await supabase.from('complemento_itens' as any).update({ grupo_id: null } as any).eq('grupo_id', id);
-    const { error } = await supabase.from('complemento_grupos' as any).delete().eq('id', id);
+    let updateQ = supabase.from('complemento_itens' as any).update({ grupo_id: null } as any).eq('grupo_id', id);
+    if (empresaId) updateQ = updateQ.eq('empresa_id', empresaId);
+    await updateQ;
+    let deleteQ = supabase.from('complemento_grupos' as any).delete().eq('id', id);
+    if (empresaId) deleteQ = deleteQ.eq('empresa_id', empresaId);
+    const { error } = await deleteQ;
     if (error) throw error;
     await Promise.all([fetchGrupos(), fetchItems()]);
-  }, [fetchGrupos, fetchItems]);
+  }, [empresaId, fetchGrupos, fetchItems]);
 
   const getGruposDaCategoria = useCallback((categoriaId: string) => {
     return grupos.filter(g => g.categoria_id === categoriaId && g.ativo).sort((a, b) => a.ordem - b.ordem);
@@ -197,17 +215,21 @@ export function useComplementos() {
 
   const desvincularComplemento = useCallback(async (produto_id: string, categoria_id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('produto_complemento_categorias' as any).delete().eq('produto_id', produto_id).eq('categoria_id', categoria_id);
+    let query = supabase.from('produto_complemento_categorias' as any).delete().eq('produto_id', produto_id).eq('categoria_id', categoria_id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchProdutoComplementos();
-  }, [fetchProdutoComplementos]);
+  }, [empresaId, fetchProdutoComplementos]);
 
   const updateVinculoOrdem = useCallback(async (produto_id: string, categoria_id: string, ordem: number) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('produto_complemento_categorias' as any).update({ ordem } as any).eq('produto_id', produto_id).eq('categoria_id', categoria_id);
+    let query = supabase.from('produto_complemento_categorias' as any).update({ ordem } as any).eq('produto_id', produto_id).eq('categoria_id', categoria_id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchProdutoComplementos();
-  }, [fetchProdutoComplementos]);
+  }, [empresaId, fetchProdutoComplementos]);
 
   const getCategoriasOrdenadas = useCallback((produto_id: string) => {
     const vinculos = produtoComplementos
