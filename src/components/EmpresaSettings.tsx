@@ -14,7 +14,7 @@ import { toast } from '@/hooks/use-toast';
 
 interface Empresa {
   id: string;
-  nome: string;
+  nome_fantasia: string;
   cnpj: string | null;
   ativo: boolean;
 }

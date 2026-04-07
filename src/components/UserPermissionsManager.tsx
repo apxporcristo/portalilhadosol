@@ -173,7 +173,7 @@ export function UserPermissionsManager() {
   const fetchEmpresas = useCallback(async () => {
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db.from('empresas' as any).select('id, nome').eq('ativo', true).order('nome');
+      const { data, error } = await db.from('empresas' as any).select('id, nome_fantasia').eq('ativo', true).order('nome_fantasia');
       if (error) throw error;
       setEmpresas((data as any[]) || []);
     } catch (err) {
