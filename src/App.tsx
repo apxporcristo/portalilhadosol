@@ -89,6 +89,7 @@ const App = () => (
           </PrinterProvider>
         </EmpresaProvider>
       </UserSessionProvider>
+      </SupabaseConnectionGate>
     </TooltipProvider>
   </QueryClientProvider>
 );
