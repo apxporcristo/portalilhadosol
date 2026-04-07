@@ -11,6 +11,7 @@ import { StatsCard } from '@/components/StatsCard';
 import { StatsDetailDialog } from '@/components/StatsDetailDialog';
 import { VoucherReport } from '@/components/VoucherReport';
 import { AdminSettings } from '@/components/AdminSettings';
+import { EmpresaSettings } from '@/components/EmpresaSettings';
   import { SupabaseSettings } from '@/components/SupabaseSettings';
   import { PrintLayoutSettings } from '@/components/PrintLayoutSettings';
   import { FichaLayoutSettings } from '@/components/FichaLayoutSettings';
