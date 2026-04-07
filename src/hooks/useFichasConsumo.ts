@@ -191,11 +191,13 @@ export function useFichasConsumo() {
 
   const updateProduto = useCallback(async (id: string, data: Partial<FichaProduto>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('fichas_produtos').update(data as any).eq('id', id);
+    let query = supabase.from('fichas_produtos').update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchProdutos();
     await fetchFichasAtivas();
-  }, [fetchProdutos, fetchFichasAtivas]);
+  }, [empresaId, fetchProdutos, fetchFichasAtivas]);
 
   const deleteProduto = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
