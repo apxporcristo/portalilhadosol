@@ -6,8 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Database, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import { supabase as cloudSupabase } from '@/integrations/supabase/client';
-import { resetExternalClient } from '@/lib/supabase-external';
 
 interface Props {
   open: boolean;
@@ -32,7 +30,6 @@ export function SupabaseConnectionModal({ open, onConnected }: Props) {
 
     try {
       const testClient = createClient(url, anonKey);
-      // Test with a simple query
       const { error } = await testClient.from('user_profiles').select('id').limit(1);
 
       if (error) {
@@ -41,35 +38,12 @@ export function SupabaseConnectionModal({ open, onConnected }: Props) {
         return;
       }
 
-      // Save to internal app_settings (select first, then insert or update)
-      const jsonValue = JSON.stringify({ supabase_url: url, supabase_anon_key: anonKey });
-      const { data: existing } = await cloudSupabase
-        .from('app_settings')
-        .select('id')
-        .eq('key', 'default')
-        .maybeSingle();
+      // Save to localStorage (global config, single DB)
+      localStorage.setItem('voucher_supabase_config', JSON.stringify({
+        supabase_url: url,
+        supabase_anon_key: anonKey,
+      }));
 
-      let saveError;
-      if (existing) {
-        const { error } = await cloudSupabase
-          .from('app_settings')
-          .update({ value: jsonValue })
-          .eq('key', 'default');
-        saveError = error;
-      } else {
-        const { error } = await cloudSupabase
-          .from('app_settings')
-          .insert({ key: 'default', value: jsonValue });
-        saveError = error;
-      }
-
-      if (saveError) {
-        setStatus('error');
-        setMessage(`Erro ao salvar: ${saveError.message}`);
-        return;
-      }
-
-      resetExternalClient();
       setStatus('connected');
       setMessage('Conexão estabelecida com sucesso!');
 
