@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getSupabaseClient } from '@/lib/supabase-external';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Package, PackageCheck, AlertCircle, LogOut, Printer, Database, DollarSign, Clock, List, User, LogIn, CreditCard, ClipboardList, Settings, ArrowLeft, FileText, ChefHat, Watch } from 'lucide-react';
+import { Ticket, Package, PackageCheck, AlertCircle, LogOut, Printer, Database, DollarSign, Clock, List, User, LogIn, CreditCard, ClipboardList, Settings, ArrowLeft, FileText, ChefHat, Watch, Building2 } from 'lucide-react';
 import { useVouchers } from '@/hooks/useVouchers';
 import { usePrinterContext } from '@/contexts/PrinterContext';
 import { useVoucherCart } from '@/hooks/useVoucherCart';
