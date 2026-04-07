@@ -66,7 +66,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
         // Admin tem acesso a TODAS as empresas
         const { data: empresasData, error: empresaErr } = await db
           .from('empresas' as any)
-          .select('id, nome');
+          .select('id, nome_fantasia');
 
         if (empresaErr || !empresasData) {
           console.warn('[Empresa] Erro ao carregar empresas (admin):', empresaErr);
