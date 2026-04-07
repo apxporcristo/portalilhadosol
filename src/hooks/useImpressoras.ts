@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getSupabaseClient } from '@/lib/supabase-external';
 import { toast } from '@/hooks/use-toast';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface Impressora {
   id: string;
@@ -25,6 +26,9 @@ export interface VoucherPrintConfig {
 }
 
 export function useImpressoras() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
+
   const [impressoras, setImpressoras] = useState<Impressora[]>([]);
   const [loading, setLoading] = useState(true);
   const [voucherConfig, setVoucherConfig] = useState<VoucherPrintConfig>({
@@ -48,35 +52,38 @@ export function useImpressoras() {
   });
 
   const fetchImpressoras = useCallback(async () => {
-    
-    const { data, error } = await supabase
-      .from('printers' as any)
+    const supabase = await getSupabaseClient();
+    let query = supabase
+      .from('impressoras' as any)
       .select('*')
       .order('created_at', { ascending: true });
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data, error } = await query;
     if (error) {
       console.error('Erro ao carregar impressoras:', error);
     } else {
       setImpressoras((data as any[] || []).map(normalizeRow));
     }
     setLoading(false);
-  }, []);
+  }, [empresaId]);
 
   const fetchVoucherConfig = useCallback(async () => {
-    
+    const supabase = await getSupabaseClient();
     const { data } = await supabase
       .from('app_settings' as any)
-      .select('setting_key, value')
-      .in('setting_key', ['voucher_print_target', 'voucher_bluetooth_printer_id']);
+      .select('*')
+      .in('key', ['voucher_print_target', 'voucher_bluetooth_printer_id']);
     if (data) {
       const config: VoucherPrintConfig = {
         voucher_print_target: 'default_printer',
         voucher_bluetooth_printer_id: null,
       };
       (data as any[]).forEach((row) => {
-        if (row.setting_key === 'voucher_print_target') {
+        const k = row.setting_key || row.key;
+        if (k === 'voucher_print_target') {
           config.voucher_print_target = row.value as VoucherPrintTarget;
         }
-        if (row.setting_key === 'voucher_bluetooth_printer_id') {
+        if (k === 'voucher_bluetooth_printer_id') {
           config.voucher_bluetooth_printer_id = row.value || null;
         }
       });
@@ -90,11 +97,15 @@ export function useImpressoras() {
   }, [fetchImpressoras, fetchVoucherConfig]);
 
   const createImpressora = useCallback(async (data: Omit<Impressora, 'id' | 'created_at' | 'updated_at'>) => {
-    
+    const supabase = await getSupabaseClient();
     if (data.padrao) {
-      await supabase.from('printers' as any).update({ padrao: false } as any).eq('padrao', true);
+      let resetQuery = supabase.from('impressoras' as any).update({ padrao: false } as any).eq('padrao', true);
+      if (empresaId) resetQuery = resetQuery.eq('empresa_id', empresaId);
+      await resetQuery;
     }
-    const { error } = await supabase.from('printers' as any).insert(data as any);
+    const payload: any = { ...data };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('impressoras' as any).insert(payload);
     if (error) {
       toast({ title: 'Erro', description: `Não foi possível criar a impressora: ${error.message}`, variant: 'destructive' });
       return false;
@@ -102,25 +113,27 @@ export function useImpressoras() {
     toast({ title: 'Impressora criada', description: `${data.nome} foi adicionada.` });
     await fetchImpressoras();
     return true;
-  }, [fetchImpressoras]);
+  }, [empresaId, fetchImpressoras]);
 
   const updateImpressora = useCallback(async (id: string, data: Partial<Impressora>) => {
-    
+    const supabase = await getSupabaseClient();
     if (data.padrao) {
-      await supabase.from('printers' as any).update({ padrao: false } as any).eq('padrao', true);
+      let resetQuery = supabase.from('impressoras' as any).update({ padrao: false } as any).eq('padrao', true);
+      if (empresaId) resetQuery = resetQuery.eq('empresa_id', empresaId);
+      await resetQuery;
     }
-    const { error } = await supabase.from('printers' as any).update(data as any).eq('id', id);
+    const { error } = await supabase.from('impressoras' as any).update(data as any).eq('id', id);
     if (error) {
       toast({ title: 'Erro', description: `Não foi possível atualizar a impressora: ${error.message}`, variant: 'destructive' });
       return false;
     }
     await fetchImpressoras();
     return true;
-  }, [fetchImpressoras]);
+  }, [empresaId, fetchImpressoras]);
 
   const deleteImpressora = useCallback(async (id: string) => {
-    
-    const { error } = await supabase.from('printers' as any).delete().eq('id', id);
+    const supabase = await getSupabaseClient();
+    const { error } = await supabase.from('impressoras' as any).delete().eq('id', id);
     if (error) {
       toast({ title: 'Erro', description: `Não foi possível excluir a impressora: ${error.message}`, variant: 'destructive' });
       return false;
@@ -131,15 +144,18 @@ export function useImpressoras() {
   }, [fetchImpressoras]);
 
   const setAsDefault = useCallback(async (id: string) => {
-    
-    await supabase.from('printers' as any).update({ padrao: false } as any).eq('padrao', true);
-    await supabase.from('printers' as any).update({ padrao: true } as any).eq('id', id);
+    const supabase = await getSupabaseClient();
+    let resetQuery = supabase.from('impressoras' as any).update({ padrao: false } as any).eq('padrao', true);
+    if (empresaId) resetQuery = resetQuery.eq('empresa_id', empresaId);
+    await resetQuery;
+    await supabase.from('impressoras' as any).update({ padrao: true } as any).eq('id', id);
     await fetchImpressoras();
     toast({ title: 'Impressora padrão definida' });
-  }, [fetchImpressoras]);
+  }, [empresaId, fetchImpressoras]);
 
   const toggleAtiva = useCallback(async (id: string, ativa: boolean) => {
-    const { error } = await supabase.from('printers' as any).update({ ativo: ativa } as any).eq('id', id);
+    const supabase = await getSupabaseClient();
+    const { error } = await supabase.from('impressoras' as any).update({ ativa } as any).eq('id', id);
     if (error) {
       console.error('Erro ao alternar status da impressora:', error);
       toast({ title: 'Erro', description: `Não foi possível alterar o status: ${error.message}`, variant: 'destructive' });
@@ -157,15 +173,15 @@ export function useImpressoras() {
   }, [impressoras]);
 
   const saveVoucherConfig = useCallback(async (config: VoucherPrintConfig) => {
-    
+    const supabase = await getSupabaseClient();
     const keys = [
-      { setting_key: 'voucher_print_target', key: 'voucher_print_target', value: config.voucher_print_target },
-      { setting_key: 'voucher_bluetooth_printer_id', key: 'voucher_bluetooth_printer_id', value: config.voucher_bluetooth_printer_id || '' },
+      { key: 'voucher_print_target', value: config.voucher_print_target },
+      { key: 'voucher_bluetooth_printer_id', value: config.voucher_bluetooth_printer_id || '' },
     ];
     for (const item of keys) {
       const { error } = await supabase
         .from('app_settings' as any)
-        .upsert(item as any, { onConflict: 'setting_key' } as any);
+        .upsert(item as any, { onConflict: 'key' } as any);
       if (error) {
         console.error('Erro ao salvar config voucher:', error);
       }

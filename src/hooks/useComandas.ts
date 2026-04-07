@@ -273,15 +273,17 @@ export function useComandas() {
     usuarioNome?: string
   ) => {
     const supabase = await getSupabaseClient();
-    await supabase.from('comanda_alteracoes' as any).insert({
+    const payload: any = {
       comanda_id: comandaId,
       item_id: itemId,
       tipo,
       descricao,
       usuario_email: usuarioEmail,
       usuario_nome: usuarioNome || null,
-    } as any);
-  }, []);
+    };
+    if (empresaId) payload.empresa_id = empresaId;
+    await supabase.from('comanda_alteracoes' as any).insert(payload as any);
+  }, [empresaId]);
 
   const autenticarUsuario = useCallback(async (cpf: string, senha: string): Promise<{ success: boolean; nome?: string; email?: string }> => {
     try {

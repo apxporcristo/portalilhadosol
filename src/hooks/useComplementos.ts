@@ -188,10 +188,12 @@ export function useComplementos() {
   // Produto-complemento vínculo
   const vincularComplemento = useCallback(async (produto_id: string, categoria_id: string, ordem: number) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('produto_complemento_categorias' as any).insert({ produto_id, categoria_id, ordem } as any);
+    const payload: any = { produto_id, categoria_id, ordem };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('produto_complemento_categorias' as any).insert(payload);
     if (error) throw error;
     await fetchProdutoComplementos();
-  }, [fetchProdutoComplementos]);
+  }, [empresaId, fetchProdutoComplementos]);
 
   const desvincularComplemento = useCallback(async (produto_id: string, categoria_id: string) => {
     const supabase = await getSupabaseClient();

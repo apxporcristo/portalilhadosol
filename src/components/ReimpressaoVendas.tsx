@@ -185,7 +185,7 @@ export function ReimpressaoVendas() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [empresaId]);
 
   const handleOpenList = () => {
     setShowListModal(true);
