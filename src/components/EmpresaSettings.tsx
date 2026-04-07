@@ -64,7 +64,7 @@ export function EmpresaSettings() {
 
   const openEdit = (e: Empresa) => {
     setEditing(e);
-    setFNome(e.nome);
+    setFNome(e.nome_fantasia);
     setFCnpj(e.cnpj ? formatCnpj(e.cnpj) : '');
     setFAtivo(e.ativo);
     setModalOpen(true);
