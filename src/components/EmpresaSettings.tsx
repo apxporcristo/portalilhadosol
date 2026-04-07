@@ -121,7 +121,7 @@ export function EmpresaSettings() {
   const filtered = empresas.filter(e => {
     if (!search.trim()) return true;
     const s = search.toLowerCase();
-    return e.nome.toLowerCase().includes(s) || (e.cnpj || '').includes(s.replace(/\D/g, ''));
+    return e.nome_fantasia.toLowerCase().includes(s) || (e.cnpj || '').includes(s.replace(/\D/g, ''));
   });
 
   if (loading) return <Skeleton className="h-64 w-full" />;
