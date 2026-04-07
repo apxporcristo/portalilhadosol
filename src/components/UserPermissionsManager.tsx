@@ -252,7 +252,7 @@ export function UserPermissionsManager() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchUsers(); fetchAvailableTempos(); }, [fetchUsers, fetchAvailableTempos]);
+  useEffect(() => { fetchUsers(); fetchAvailableTempos(); fetchEmpresas(); fetchUserEmpresas(); }, [fetchUsers, fetchAvailableTempos, fetchEmpresas, fetchUserEmpresas]);
 
   /* ── Form helpers ── */
   const resetForm = () => {
