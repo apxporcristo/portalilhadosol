@@ -794,6 +794,21 @@ export function UserPermissionsManager() {
                   <Switch checked={fAtivo} onCheckedChange={setFAtivo} />
                 </div>
 
+                {/* Empresa */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1"><Building2 className="h-3.5 w-3.5" /> Empresa</Label>
+                  <Select value={fEmpresaId} onValueChange={setFEmpresaId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a empresa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {empresas.map(e => (
+                        <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Permissions */}
                 <div className="border rounded-lg p-3 space-y-3">
                   <Label className="text-sm font-semibold">Permissões</Label>
