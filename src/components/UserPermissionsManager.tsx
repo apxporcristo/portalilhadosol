@@ -291,6 +291,9 @@ export function UserPermissionsManager() {
     }
     console.log('[openEdit] vouchers carregados:', tempoId);
     setFVoucherTempoAcesso(u.voucher_tempo_acesso || '');
+    // Load empresa vinculada
+    const ue = userEmpresas[u.user_id];
+    setFEmpresaId(ue && ue.length > 0 ? ue[0] : '');
     setModalMode('edit');
   };
 
