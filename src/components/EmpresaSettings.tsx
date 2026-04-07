@@ -14,7 +14,7 @@ import { toast } from '@/hooks/use-toast';
 
 interface Empresa {
   id: string;
-  nome: string;
+  nome_fantasia: string;
   cnpj: string | null;
   ativo: boolean;
 }
@@ -35,7 +35,7 @@ export function EmpresaSettings() {
     setLoading(true);
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db.from('empresas' as any).select('id, nome, cnpj, ativo').order('nome');
+      const { data, error } = await db.from('empresas' as any).select('id, nome_fantasia, cnpj, ativo').order('nome_fantasia');
       if (error) throw error;
       setEmpresas((data as any[]) || []);
     } catch (err: any) {
@@ -64,7 +64,7 @@ export function EmpresaSettings() {
 
   const openEdit = (e: Empresa) => {
     setEditing(e);
-    setFNome(e.nome);
+    setFNome(e.nome_fantasia);
     setFCnpj(e.cnpj ? formatCnpj(e.cnpj) : '');
     setFAtivo(e.ativo);
     setModalOpen(true);
@@ -82,7 +82,7 @@ export function EmpresaSettings() {
 
       if (editing) {
         const { error } = await db.from('empresas' as any).update({
-          nome: fNome.trim(),
+          nome_fantasia: fNome.trim(),
           cnpj: cnpjClean,
           ativo: fAtivo,
         } as any).eq('id', editing.id);
@@ -90,7 +90,7 @@ export function EmpresaSettings() {
         toast({ title: 'Empresa atualizada!' });
       } else {
         const { error } = await db.from('empresas' as any).insert({
-          nome: fNome.trim(),
+          nome_fantasia: fNome.trim(),
           cnpj: cnpjClean,
           ativo: fAtivo,
         } as any);
@@ -121,7 +121,7 @@ export function EmpresaSettings() {
   const filtered = empresas.filter(e => {
     if (!search.trim()) return true;
     const s = search.toLowerCase();
-    return e.nome.toLowerCase().includes(s) || (e.cnpj || '').includes(s.replace(/\D/g, ''));
+    return e.nome_fantasia.toLowerCase().includes(s) || (e.cnpj || '').includes(s.replace(/\D/g, ''));
   });
 
   if (loading) return <Skeleton className="h-64 w-full" />;
@@ -168,7 +168,7 @@ export function EmpresaSettings() {
               <TableBody>
                 {filtered.map(e => (
                   <TableRow key={e.id} className={!e.ativo ? 'opacity-50' : ''}>
-                    <TableCell className="font-medium">{e.nome}</TableCell>
+                    <TableCell className="font-medium">{e.nome_fantasia}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {e.cnpj ? formatCnpj(e.cnpj) : '—'}
                     </TableCell>

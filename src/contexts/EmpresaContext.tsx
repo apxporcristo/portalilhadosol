@@ -4,7 +4,7 @@ import { useOptionalUserSession } from '@/contexts/UserSessionContext';
 
 export interface Empresa {
   id: string;
-  nome: string;
+  nome: string; // mapped from nome_fantasia
 }
 
 interface EmpresaContextType {
@@ -66,7 +66,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
         // Admin tem acesso a TODAS as empresas
         const { data: empresasData, error: empresaErr } = await db
           .from('empresas' as any)
-          .select('id, nome');
+          .select('id, nome_fantasia');
 
         if (empresaErr || !empresasData) {
           console.warn('[Empresa] Erro ao carregar empresas (admin):', empresaErr);
@@ -75,7 +75,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
           setLoading(false);
           return;
         }
-        lista = empresasData as Empresa[];
+        lista = (empresasData as any[]).map(e => ({ id: e.id, nome: e.nome_fantasia }));
       } else {
         // Usuário normal: buscar apenas empresas vinculadas
         const { data: vinculos, error: vinculoErr } = await db
@@ -95,7 +95,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
 
         const { data: empresasData, error: empresaErr } = await db
           .from('empresas' as any)
-          .select('id, nome')
+          .select('id, nome_fantasia')
           .in('id', empresaIds);
 
         if (empresaErr || !empresasData) {
@@ -105,7 +105,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
           setLoading(false);
           return;
         }
-        lista = empresasData as Empresa[];
+        lista = (empresasData as any[]).map(e => ({ id: e.id, nome: e.nome_fantasia }));
       }
 
       setEmpresas(lista);

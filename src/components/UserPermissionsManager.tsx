@@ -131,7 +131,7 @@ export function UserPermissionsManager() {
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [availableTempos, setAvailableTempos] = useState<string[]>([]);
-  const [empresas, setEmpresas] = useState<{ id: string; nome: string }[]>([]);
+  const [empresas, setEmpresas] = useState<{ id: string; nome_fantasia: string }[]>([]);
   const [userEmpresas, setUserEmpresas] = useState<Record<string, string[]>>({});
 
   // Form state
@@ -173,7 +173,7 @@ export function UserPermissionsManager() {
   const fetchEmpresas = useCallback(async () => {
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db.from('empresas' as any).select('id, nome').eq('ativo', true).order('nome');
+      const { data, error } = await db.from('empresas' as any).select('id, nome_fantasia').eq('ativo', true).order('nome_fantasia');
       if (error) throw error;
       setEmpresas((data as any[]) || []);
     } catch (err) {
@@ -689,7 +689,7 @@ export function UserPermissionsManager() {
                       {(() => {
                         const ue = userEmpresas[u.user_id];
                         if (!ue || ue.length === 0) return '—';
-                        return ue.map(eid => empresas.find(e => e.id === eid)?.nome || eid).join(', ');
+                        return ue.map(eid => empresas.find(e => e.id === eid)?.nome_fantasia || eid).join(', ');
                       })()}
                     </TableCell>
                     <TableCell className="text-center">
@@ -803,7 +803,7 @@ export function UserPermissionsManager() {
                     </SelectTrigger>
                     <SelectContent>
                       {empresas.map(e => (
-                        <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                        <SelectItem key={e.id} value={e.id}>{e.nome_fantasia}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
