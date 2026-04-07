@@ -1,22 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useUserSession } from '@/contexts/UserSessionContext';
+import { useEmpresa } from '@/contexts/EmpresaContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { LogIn, Ticket, Loader2 } from 'lucide-react';
+import { LogIn, Ticket, Loader2, Building2, ChevronRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { formatCPF, cleanCPF } from '@/lib/cpf-utils';
 import { getSupabaseClient } from '@/lib/supabase-external';
 
+type LoginStep = 'credentials' | 'empresa';
+
 export default function Login() {
   const navigate = useNavigate();
   const { signIn, user, loading: sessionLoading } = useUserSession();
+  const { empresas, loading: empresaLoading, trocarEmpresa } = useEmpresa();
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasAdmin, setHasAdmin] = useState<boolean | null>(null);
+  const [step, setStep] = useState<LoginStep>('credentials');
 
   // Check if any admin exists - if not, redirect to first access
   useEffect(() => {
@@ -33,7 +38,7 @@ export default function Login() {
         if (cancelled) return;
         if (error) {
           console.warn('Erro ao verificar admin:', error.message);
-          setHasAdmin(true); // assume exists on error
+          setHasAdmin(true);
           return;
         }
         setHasAdmin((data?.length ?? 0) > 0);
@@ -45,17 +50,28 @@ export default function Login() {
     return () => { cancelled = true; };
   }, []);
 
-  // Redirect if already logged in
+  // Redirect if already logged in and not selecting empresa
   useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user && step === 'credentials') {
+      // After login, check empresas
+      if (!empresaLoading) {
+        if (empresas.length <= 1) {
+          navigate('/', { replace: true });
+        } else {
+          setStep('empresa');
+        }
+      }
+    }
+  }, [user, empresas, empresaLoading, step, navigate]);
 
   // Redirect to first access if no admin exists
   useEffect(() => {
     if (hasAdmin === false) navigate('/cadastro', { replace: true });
   }, [hasAdmin, navigate]);
 
-  if (sessionLoading || user || hasAdmin === null) return null;
+  if (sessionLoading || hasAdmin === null) return null;
+  // If already logged in and single empresa, redirect handled by useEffect
+  if (user && step === 'credentials' && empresaLoading) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,11 +94,51 @@ export default function Login() {
         description: error.message || 'CPF ou senha incorretos.',
         variant: 'destructive',
       });
-    } else {
-      navigate('/');
     }
+    // useEffect will handle navigation after empresas load
   };
 
+  const handleSelectEmpresa = (empresaId: string) => {
+    trocarEmpresa(empresaId);
+    navigate('/');
+  };
+
+  // Step 2: Empresa selection
+  if (step === 'empresa' && user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto p-3 bg-primary rounded-xl w-fit mb-2">
+              <Building2 className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <CardTitle className="text-2xl">Selecione a Empresa</CardTitle>
+            <CardDescription>Escolha a empresa para acessar o sistema</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {empresas.map(e => (
+                <Button
+                  key={e.id}
+                  variant="outline"
+                  className="w-full justify-between h-auto py-3 px-4"
+                  onClick={() => handleSelectEmpresa(e.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    <span className="font-medium">{e.nome}</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Step 1: Credentials
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">

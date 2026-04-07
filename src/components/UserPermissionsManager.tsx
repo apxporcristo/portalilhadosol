@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { Users, RefreshCw, Plus, Pencil, KeyRound, Trash2, Power, Search } from 'lucide-react';
+import { Users, RefreshCw, Plus, Pencil, KeyRound, Trash2, Power, Search, Building2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
 import { formatCPF, cleanCPF, isValidCPF } from '@/lib/cpf-utils';
@@ -130,6 +131,8 @@ export function UserPermissionsManager() {
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [availableTempos, setAvailableTempos] = useState<string[]>([]);
+  const [empresas, setEmpresas] = useState<{ id: string; nome: string }[]>([]);
+  const [userEmpresas, setUserEmpresas] = useState<Record<string, string[]>>({});
 
   // Form state
   const [fNome, setFNome] = useState('');
@@ -148,6 +151,7 @@ export function UserPermissionsManager() {
   const [fVoucherTodos, setFVoucherTodos] = useState(false);
   const [fVoucherTemposSelecionados, setFVoucherTemposSelecionados] = useState<string[]>([]);
   const [fVoucherTempoAcesso, setFVoucherTempoAcesso] = useState('');
+  const [fEmpresaId, setFEmpresaId] = useState<string>('');
 
   /* ── Fetch available voucher tempos ── */
   const fetchAvailableTempos = useCallback(async () => {
@@ -160,10 +164,36 @@ export function UserPermissionsManager() {
       if (error) throw error;
       const tempos = Array.from(new Set((data || []).map((v: any) => v.tempo_validade).filter(Boolean)));
       tempos.sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
-      console.log('[fetchAvailableTempos] tempos:', tempos);
       setAvailableTempos(tempos);
     } catch (err) {
       console.error('[fetchAvailableTempos]', err);
+    }
+  }, []);
+
+  const fetchEmpresas = useCallback(async () => {
+    try {
+      const db = await getSupabaseClient();
+      const { data, error } = await db.from('empresas' as any).select('id, nome').eq('ativo', true).order('nome');
+      if (error) throw error;
+      setEmpresas((data as any[]) || []);
+    } catch (err) {
+      console.error('[fetchEmpresas]', err);
+    }
+  }, []);
+
+  const fetchUserEmpresas = useCallback(async () => {
+    try {
+      const db = await getSupabaseClient();
+      const { data, error } = await db.from('empresa_usuarios' as any).select('user_id, empresa_id');
+      if (error) throw error;
+      const map: Record<string, string[]> = {};
+      for (const row of (data as any[]) || []) {
+        if (!map[row.user_id]) map[row.user_id] = [];
+        map[row.user_id].push(row.empresa_id);
+      }
+      setUserEmpresas(map);
+    } catch (err) {
+      console.error('[fetchUserEmpresas]', err);
     }
   }, []);
 
@@ -222,7 +252,7 @@ export function UserPermissionsManager() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchUsers(); fetchAvailableTempos(); }, [fetchUsers, fetchAvailableTempos]);
+  useEffect(() => { fetchUsers(); fetchAvailableTempos(); fetchEmpresas(); fetchUserEmpresas(); }, [fetchUsers, fetchAvailableTempos, fetchEmpresas, fetchUserEmpresas]);
 
   /* ── Form helpers ── */
   const resetForm = () => {
@@ -231,6 +261,7 @@ export function UserPermissionsManager() {
     setFCadProduto(false); setFFicha(false); setFComanda(false);
     setFKds(false); setFReimpressao(false); setFPulseira(false);
     setFVoucherTodos(false); setFVoucherTemposSelecionados([]); setFVoucherTempoAcesso('');
+    setFEmpresaId('');
   };
 
   const openCreate = () => { resetForm(); setSelectedUser(null); setModalMode('create'); };
@@ -260,6 +291,9 @@ export function UserPermissionsManager() {
     }
     console.log('[openEdit] vouchers carregados:', tempoId);
     setFVoucherTempoAcesso(u.voucher_tempo_acesso || '');
+    // Load empresa vinculada
+    const ue = userEmpresas[u.user_id];
+    setFEmpresaId(ue && ue.length > 0 ? ue[0] : '');
     setModalMode('edit');
   };
 
@@ -465,6 +499,16 @@ export function UserPermissionsManager() {
           await createUserDirect(cpfClean, perms);
         }
         toast({ title: 'Usuário criado com sucesso!' });
+        // Save empresa link - need to find the created user id
+        if (fEmpresaId) {
+          try {
+            const db = await getSupabaseClient();
+            const { data: newUser } = await db.from('user_profiles').select('id').eq('cpf', cpfClean).maybeSingle();
+            if (newUser) {
+              await db.from('empresa_usuarios' as any).insert({ user_id: (newUser as any).id, empresa_id: fEmpresaId } as any);
+            }
+          } catch (e) { console.warn('Erro ao vincular empresa:', e); }
+        }
 
       } else if (modalMode === 'edit' && selectedUser) {
         const cpfClean = cleanCPF(fCpf);
@@ -500,6 +544,14 @@ export function UserPermissionsManager() {
           await updateUserDirect(selectedUser.user_id, cpfClean, perms);
         }
         toast({ title: 'Usuário atualizado com sucesso!' });
+        // Update empresa link
+        try {
+          const db = await getSupabaseClient();
+          await db.from('empresa_usuarios' as any).delete().eq('user_id', selectedUser.user_id);
+          if (fEmpresaId) {
+            await db.from('empresa_usuarios' as any).insert({ user_id: selectedUser.user_id, empresa_id: fEmpresaId } as any);
+          }
+        } catch (e) { console.warn('Erro ao atualizar empresa:', e); }
 
       } else if (modalMode === 'reset-password' && selectedUser) {
         if (!fSenha || fSenha.length < 6) {
@@ -520,7 +572,7 @@ export function UserPermissionsManager() {
       }
 
       setModalMode(null);
-      await fetchUsers();
+      await Promise.all([fetchUsers(), fetchUserEmpresas()]);
     } catch (err) {
       console.error('[handleSave]', err);
       toast({ title: 'Erro ao salvar', description: extractError(err), variant: 'destructive' });
@@ -620,6 +672,7 @@ export function UserPermissionsManager() {
                   <TableHead>Nome</TableHead>
                   <TableHead>CPF</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Empresa</TableHead>
                   <TableHead className="text-center">Status</TableHead>
                   <TableHead>Permissões</TableHead>
                   <TableHead className="text-center">Logins</TableHead>
@@ -632,6 +685,13 @@ export function UserPermissionsManager() {
                     <TableCell className="font-medium">{u.nome || '—'}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.cpf ? formatCPF(u.cpf) : '—'}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.email || '—'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {(() => {
+                        const ue = userEmpresas[u.user_id];
+                        if (!ue || ue.length === 0) return '—';
+                        return ue.map(eid => empresas.find(e => e.id === eid)?.nome || eid).join(', ');
+                      })()}
+                    </TableCell>
                     <TableCell className="text-center">
                       <Badge variant={u.ativo ? 'default' : 'secondary'} className="cursor-pointer" onClick={() => toggleAtivo(u)}>
                         {u.ativo ? 'Ativo' : 'Inativo'}
@@ -732,6 +792,21 @@ export function UserPermissionsManager() {
                 <div className="flex items-center justify-between">
                   <Label>Ativo</Label>
                   <Switch checked={fAtivo} onCheckedChange={setFAtivo} />
+                </div>
+
+                {/* Empresa */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1"><Building2 className="h-3.5 w-3.5" /> Empresa</Label>
+                  <Select value={fEmpresaId} onValueChange={setFEmpresaId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a empresa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {empresas.map(e => (
+                        <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Permissions */}

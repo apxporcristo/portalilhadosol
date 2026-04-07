@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getSupabaseClient } from '@/lib/supabase-external';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Package, PackageCheck, AlertCircle, LogOut, Printer, Database, DollarSign, Clock, List, User, LogIn, CreditCard, ClipboardList, Settings, ArrowLeft, FileText, ChefHat, Watch } from 'lucide-react';
+import { Ticket, Package, PackageCheck, AlertCircle, LogOut, Printer, Database, DollarSign, Clock, List, User, LogIn, CreditCard, ClipboardList, Settings, ArrowLeft, FileText, ChefHat, Watch, Building2 } from 'lucide-react';
 import { useVouchers } from '@/hooks/useVouchers';
 import { usePrinterContext } from '@/contexts/PrinterContext';
 import { useVoucherCart } from '@/hooks/useVoucherCart';
@@ -11,6 +11,7 @@ import { StatsCard } from '@/components/StatsCard';
 import { StatsDetailDialog } from '@/components/StatsDetailDialog';
 import { VoucherReport } from '@/components/VoucherReport';
 import { AdminSettings } from '@/components/AdminSettings';
+import { EmpresaSettings } from '@/components/EmpresaSettings';
   import { SupabaseSettings } from '@/components/SupabaseSettings';
   import { PrintLayoutSettings } from '@/components/PrintLayoutSettings';
   import { FichaLayoutSettings } from '@/components/FichaLayoutSettings';
@@ -250,6 +251,10 @@ const Index = () => {
                   Usuários
                 </TabsTrigger>
                 <TabsTrigger value="settings">Configurações</TabsTrigger>
+                <TabsTrigger value="empresas" className="flex items-center gap-1">
+                  <Building2 className="h-3 w-3" />
+                  Empresas
+                </TabsTrigger>
                 <TabsTrigger value="auditoria" className="flex items-center gap-1">
                   <FileText className="h-3 w-3" />
                   Auditoria
@@ -282,6 +287,9 @@ const Index = () => {
               </TabsContent>
               <TabsContent value="settings" className="mt-6">
                 <AdminSettings />
+              </TabsContent>
+              <TabsContent value="empresas" className="mt-6">
+                <EmpresaSettings />
               </TabsContent>
               <TabsContent value="auditoria" className="mt-6">
                 <AuditoriaComandas />
