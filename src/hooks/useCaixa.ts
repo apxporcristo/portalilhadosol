@@ -169,6 +169,7 @@ export function useCaixa() {
       p_valor: valor,
       p_descricao: descricao || 'Sangria',
     });
+    // Note: empresa_id filtering is done at caixa query level, not needed in sangria RPC
     if (error) throw error;
     await carregarCaixaAberto();
     return data;
@@ -181,6 +182,7 @@ export function useCaixa() {
       p_usuario_id: userId,
       p_observacao: observacao || null,
     });
+    // Note: empresa_id filtering is done at caixa query level
     if (error) throw error;
     await carregarCaixaAberto();
     return data;
