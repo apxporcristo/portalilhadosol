@@ -146,7 +146,7 @@ export function useComandas() {
     await supabase.from('comanda_alteracoes' as any).insert(logPayload as any);
 
     // 3. Reset comanda to 'livre' for reuse (clear client data but keep history in comanda_alteracoes)
-    const { error: resetError } = await supabase.from('comandas' as any).update({
+    let resetQuery = supabase.from('comandas' as any).update({
       status: 'livre',
       nome_cliente: null,
       telefone_cliente: null,
@@ -158,6 +158,8 @@ export function useComandas() {
       forma_pagamento_nome: null,
       updated_at: new Date().toISOString(),
     } as any).eq('id', id);
+    if (empresaId) resetQuery = resetQuery.eq('empresa_id', empresaId);
+    const { error: resetError } = await resetQuery;
     if (resetError) throw resetError;
 
     await fetchComandas();
