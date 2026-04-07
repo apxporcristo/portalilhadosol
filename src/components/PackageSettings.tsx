@@ -8,6 +8,7 @@ import { Package, Save, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { getSupabaseClient } from '@/hooks/useVouchers';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 interface PacoteDisponivel {
   tempo_validade: string;
