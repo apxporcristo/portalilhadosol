@@ -75,7 +75,7 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
           setLoading(false);
           return;
         }
-        lista = empresasData as Empresa[];
+        lista = (empresasData as any[]).map(e => ({ id: e.id, nome: e.nome_fantasia }));
       } else {
         // Usuário normal: buscar apenas empresas vinculadas
         const { data: vinculos, error: vinculoErr } = await db
