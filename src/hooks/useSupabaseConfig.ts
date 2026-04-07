@@ -102,12 +102,25 @@ export function useSupabaseConfig() {
       try {
         const jsonValue = JSON.stringify({ supabase_url: url, supabase_anon_key: anonKey });
 
-          const { error } = await cloudSupabase
+        const { data: existing } = await (cloudSupabase
           .from('app_settings' as any)
-          .upsert(
-            { key: 'default', value: jsonValue } as any,
-            { onConflict: 'key' }
-          );
+          .select('id')
+          .eq('key', 'default')
+          .maybeSingle() as any);
+
+        let error;
+        if (existing) {
+          const result = await (cloudSupabase
+            .from('app_settings' as any)
+            .update({ value: jsonValue } as any)
+            .eq('key', 'default') as any);
+          error = result.error;
+        } else {
+          const result = await (cloudSupabase
+            .from('app_settings' as any)
+            .insert({ key: 'default', value: jsonValue } as any) as any);
+          error = result.error;
+        }
 
         if (error) {
           setConnectionStatus({ status: 'error', message: `Erro ao salvar: ${error.message}` });
