@@ -342,7 +342,7 @@ const Index = () => {
               </div>
 
               {/* Comandas e Pulseiras lado a lado */}
-              {(canSeeFichas || canSeePulseira) && (
+              {(canSeeComanda || canSeePulseira) && (
                 <div className="grid grid-cols-2 gap-3">
                   {canSeeFichas && (
                     <Card
