@@ -189,11 +189,15 @@ export function useComplementos() {
   const deleteGrupo = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
     // Remove grupo_id from items that belong to this group
-    await supabase.from('complemento_itens' as any).update({ grupo_id: null } as any).eq('grupo_id', id);
-    const { error } = await supabase.from('complemento_grupos' as any).delete().eq('id', id);
+    let updateQ = supabase.from('complemento_itens' as any).update({ grupo_id: null } as any).eq('grupo_id', id);
+    if (empresaId) updateQ = updateQ.eq('empresa_id', empresaId);
+    await updateQ;
+    let deleteQ = supabase.from('complemento_grupos' as any).delete().eq('id', id);
+    if (empresaId) deleteQ = deleteQ.eq('empresa_id', empresaId);
+    const { error } = await deleteQ;
     if (error) throw error;
     await Promise.all([fetchGrupos(), fetchItems()]);
-  }, [fetchGrupos, fetchItems]);
+  }, [empresaId, fetchGrupos, fetchItems]);
 
   const getGruposDaCategoria = useCallback((categoriaId: string) => {
     return grupos.filter(g => g.categoria_id === categoriaId && g.ativo).sort((a, b) => a.ordem - b.ordem);
