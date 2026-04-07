@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { supabase as cloudSupabase } from '@/integrations/supabase/client';
+import { resetExternalClient } from '@/lib/supabase-external';
 
 interface SupabaseConfig {
   url: string;
@@ -127,6 +128,7 @@ export function useSupabaseConfig() {
           return false;
         }
 
+        resetExternalClient();
         setConfig({ url, anonKey, isConfigured: true });
         setConnectionStatus({
           status: 'connected',
@@ -147,6 +149,8 @@ export function useSupabaseConfig() {
         .from('app_settings' as any)
         .delete()
         .eq('key', 'default');
+
+      resetExternalClient();
 
     } catch (e) {
       console.error('Error clearing config:', e);
