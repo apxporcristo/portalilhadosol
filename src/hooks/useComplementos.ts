@@ -104,10 +104,12 @@ export function useComplementos() {
 
   const updateComplemento = useCallback(async (id: string, data: Partial<Complemento>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_categorias' as any).update(data as any).eq('id', id);
+    let query = supabase.from('complemento_categorias' as any).update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchComplementos();
-  }, [fetchComplementos]);
+  }, [empresaId, fetchComplementos]);
 
   const deleteComplemento = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
