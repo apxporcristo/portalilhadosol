@@ -81,17 +81,21 @@ export function useComandas() {
 
   const updateComanda = useCallback(async (id: string, data: Partial<Comanda>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comandas' as any).update({ ...data, updated_at: new Date().toISOString() } as any).eq('id', id);
+    let query = supabase.from('comandas' as any).update({ ...data, updated_at: new Date().toISOString() } as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const deleteComanda = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comandas' as any).delete().eq('id', id);
+    let query = supabase.from('comandas' as any).delete().eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const abrirComanda = useCallback(async (id: string, nomeCliente: string, telefoneCliente?: string) => {
     const supabase = await getSupabaseClient();
