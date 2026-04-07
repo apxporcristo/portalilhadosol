@@ -35,7 +35,7 @@ export function EmpresaSettings() {
     setLoading(true);
     try {
       const db = await getSupabaseClient();
-      const { data, error } = await db.from('empresas' as any).select('id, nome, cnpj, ativo').order('nome');
+      const { data, error } = await db.from('empresas' as any).select('id, nome_fantasia, cnpj, ativo').order('nome_fantasia');
       if (error) throw error;
       setEmpresas((data as any[]) || []);
     } catch (err: any) {
