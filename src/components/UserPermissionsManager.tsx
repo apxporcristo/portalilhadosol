@@ -803,7 +803,7 @@ export function UserPermissionsManager() {
                     </SelectTrigger>
                     <SelectContent>
                       {empresas.map(e => (
-                        <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                        <SelectItem key={e.id} value={e.id}>{e.nome_fantasia}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

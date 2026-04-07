@@ -168,7 +168,7 @@ export function EmpresaSettings() {
               <TableBody>
                 {filtered.map(e => (
                   <TableRow key={e.id} className={!e.ativo ? 'opacity-50' : ''}>
-                    <TableCell className="font-medium">{e.nome}</TableCell>
+                    <TableCell className="font-medium">{e.nome_fantasia}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {e.cnpj ? formatCnpj(e.cnpj) : '—'}
                     </TableCell>
