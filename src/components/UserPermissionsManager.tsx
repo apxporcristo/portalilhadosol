@@ -164,10 +164,36 @@ export function UserPermissionsManager() {
       if (error) throw error;
       const tempos = Array.from(new Set((data || []).map((v: any) => v.tempo_validade).filter(Boolean)));
       tempos.sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
-      console.log('[fetchAvailableTempos] tempos:', tempos);
       setAvailableTempos(tempos);
     } catch (err) {
       console.error('[fetchAvailableTempos]', err);
+    }
+  }, []);
+
+  const fetchEmpresas = useCallback(async () => {
+    try {
+      const db = await getSupabaseClient();
+      const { data, error } = await db.from('empresas' as any).select('id, nome').eq('ativo', true).order('nome');
+      if (error) throw error;
+      setEmpresas((data as any[]) || []);
+    } catch (err) {
+      console.error('[fetchEmpresas]', err);
+    }
+  }, []);
+
+  const fetchUserEmpresas = useCallback(async () => {
+    try {
+      const db = await getSupabaseClient();
+      const { data, error } = await db.from('empresa_usuarios' as any).select('user_id, empresa_id');
+      if (error) throw error;
+      const map: Record<string, string[]> = {};
+      for (const row of (data as any[]) || []) {
+        if (!map[row.user_id]) map[row.user_id] = [];
+        map[row.user_id].push(row.empresa_id);
+      }
+      setUserEmpresas(map);
+    } catch (err) {
+      console.error('[fetchUserEmpresas]', err);
     }
   }, []);
 
