@@ -62,21 +62,27 @@ export function useComplementos() {
 
   const fetchItems = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('complemento_itens' as any).select('*').order('nome');
+    let query = supabase.from('complemento_itens' as any).select('*').order('nome');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setItems(data as any);
-  }, []);
+  }, [empresaId]);
 
   const fetchGrupos = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('complemento_grupos' as any).select('*').order('ordem');
+    let query = supabase.from('complemento_grupos' as any).select('*').order('ordem');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setGrupos(data as any);
-  }, []);
+  }, [empresaId]);
 
   const fetchProdutoComplementos = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('produto_complemento_categorias' as any).select('*').order('ordem');
+    let query = supabase.from('produto_complemento_categorias' as any).select('*').order('ordem');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setProdutoComplementos(data as any);
-  }, []);
+  }, [empresaId]);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
