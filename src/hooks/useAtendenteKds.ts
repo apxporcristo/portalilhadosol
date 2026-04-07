@@ -94,7 +94,7 @@ export function useAtendenteKds(userId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, empresaId]);
 
   useEffect(() => {
     fetchOrders();
