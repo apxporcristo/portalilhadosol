@@ -82,7 +82,7 @@ export function EmpresaSettings() {
 
       if (editing) {
         const { error } = await db.from('empresas' as any).update({
-          nome: fNome.trim(),
+          nome_fantasia: fNome.trim(),
           cnpj: cnpjClean,
           ativo: fAtivo,
         } as any).eq('id', editing.id);
