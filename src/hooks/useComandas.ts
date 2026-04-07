@@ -99,16 +99,18 @@ export function useComandas() {
 
   const abrirComanda = useCallback(async (id: string, nomeCliente: string, telefoneCliente?: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comandas' as any).update({
+    let query = supabase.from('comandas' as any).update({
       status: 'aberta',
       nome_cliente: nomeCliente,
       telefone_cliente: telefoneCliente || null,
       aberta_em: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const fecharComanda = useCallback(async (
     id: string,
