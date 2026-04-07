@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getSupabaseClient } from '@/hooks/useVouchers';
 import { cancelKdsOrder, extractKdsCancelError } from '@/lib/kds-cancel';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 export interface KdsProntoOrder {
   id: string;
@@ -60,6 +61,8 @@ function sortOrders(orders: KdsProntoOrder[], userId: string | null): KdsProntoO
 }
 
 export function useAtendenteKds(userId: string | null) {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const [orders, setOrders] = useState<KdsProntoOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const knownIdsRef = useRef<Set<string>>(new Set());
@@ -72,7 +75,7 @@ export function useAtendenteKds(userId: string | null) {
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const { data, error } = await supabase
+      let query = supabase
         .from('kds_orders' as any)
         .select('*')
         .in('kds_status', ['novo', 'em_preparo', 'pronto', 'entregue'])
@@ -80,6 +83,8 @@ export function useAtendenteKds(userId: string | null) {
         .lt('created_at', tomorrow.toISOString())
         .is('cancelado_at', null)
         .order('created_at', { ascending: true });
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data, error } = await query;
       if (error) throw error;
       const list = ((data as any[]) || []).filter((order) => !isCancelledOrder(order));
       list.forEach(o => knownIdsRef.current.add(o.id));
@@ -89,7 +94,7 @@ export function useAtendenteKds(userId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, empresaId]);
 
   useEffect(() => {
     fetchOrders();

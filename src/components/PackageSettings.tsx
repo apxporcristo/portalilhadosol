@@ -8,6 +8,7 @@ import { Package, Save, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { getSupabaseClient } from '@/hooks/useVouchers';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 interface PacoteDisponivel {
   tempo_validade: string;
@@ -17,6 +18,8 @@ interface PacoteDisponivel {
 }
 
 export function PackageSettings() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const [pacotes, setPacotes] = useState<PacoteDisponivel[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -27,9 +30,11 @@ export function PackageSettings() {
     setLoading(true);
     try {
       // Fetch all vouchers to handle different status formats (Livre/livre/LIVRE)
-      const { data: vouchersData, error: vouchersError } = await supabase
+      let vouchersQuery = supabase
         .from('vouchers')
         .select('tempo_validade, status');
+      if (empresaId) vouchersQuery = vouchersQuery.eq('empresa_id', empresaId);
+      const { data: vouchersData, error: vouchersError } = await vouchersQuery;
 
       if (vouchersError) {
         console.error('Error fetching vouchers:', vouchersError);

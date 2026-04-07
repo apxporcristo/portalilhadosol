@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, RefreshCw, ClipboardList } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase-external';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 interface AuditoriaEntry {
   id: string;
@@ -20,6 +21,8 @@ interface AuditoriaEntry {
 }
 
 export function AuditoriaComandas() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const [entries, setEntries] = useState<AuditoriaEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -28,11 +31,13 @@ export function AuditoriaComandas() {
     setLoading(true);
     try {
       const supabase = await getSupabaseClient();
-      const { data } = await supabase
+      let query = supabase
         .from('comanda_alteracoes' as any)
         .select('*')
         .order('created_at', { ascending: false })
         .limit(200);
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { data } = await query;
       
       if (data) {
         // Fetch comanda numbers
@@ -57,7 +62,7 @@ export function AuditoriaComandas() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchAuditoria(); }, [fetchAuditoria]);
 
