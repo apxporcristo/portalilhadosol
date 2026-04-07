@@ -62,7 +62,7 @@ export function AuditoriaComandas() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchAuditoria(); }, [fetchAuditoria]);
 
