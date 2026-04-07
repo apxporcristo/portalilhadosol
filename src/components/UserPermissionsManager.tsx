@@ -131,7 +131,7 @@ export function UserPermissionsManager() {
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [availableTempos, setAvailableTempos] = useState<string[]>([]);
-  const [empresas, setEmpresas] = useState<{ id: string; nome: string }[]>([]);
+  const [empresas, setEmpresas] = useState<{ id: string; nome_fantasia: string }[]>([]);
   const [userEmpresas, setUserEmpresas] = useState<Record<string, string[]>>({});
 
   // Form state
