@@ -572,7 +572,7 @@ export function UserPermissionsManager() {
       }
 
       setModalMode(null);
-      await fetchUsers();
+      await Promise.all([fetchUsers(), fetchUserEmpresas()]);
     } catch (err) {
       console.error('[handleSave]', err);
       toast({ title: 'Erro ao salvar', description: extractError(err), variant: 'destructive' });
