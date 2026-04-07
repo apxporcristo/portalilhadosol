@@ -290,6 +290,7 @@ const Index = () => {
               </TabsContent>
               <TabsContent value="empresas" className="mt-6">
                 <EmpresaSettings />
+              </TabsContent>
               <TabsContent value="auditoria" className="mt-6">
                 <AuditoriaComandas />
               </TabsContent>
