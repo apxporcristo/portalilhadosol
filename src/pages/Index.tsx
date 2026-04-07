@@ -424,7 +424,7 @@ const Index = () => {
               )}
 
               {/* Reimpressão de vendas - only for users with permission */}
-              {isLoggedIn && userAccess?.reimpressao_venda && (
+              {canSeeReimpressao && (
                 <ReimpressaoVendas />
               )}
             </div>
