@@ -672,6 +672,7 @@ export function UserPermissionsManager() {
                   <TableHead>Nome</TableHead>
                   <TableHead>CPF</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Empresa</TableHead>
                   <TableHead className="text-center">Status</TableHead>
                   <TableHead>Permissões</TableHead>
                   <TableHead className="text-center">Logins</TableHead>
