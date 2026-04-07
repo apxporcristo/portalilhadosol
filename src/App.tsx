@@ -7,6 +7,7 @@ import { PrinterProvider } from "@/contexts/PrinterContext";
 import { EmpresaProvider } from "@/contexts/EmpresaContext";
 import { UserSessionProvider } from "@/contexts/UserSessionContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SupabaseConnectionGate } from "@/components/SupabaseConnectionGate";
 import Index from "./pages/Index";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
