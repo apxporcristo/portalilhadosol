@@ -4,7 +4,7 @@ import { useOptionalUserSession } from '@/contexts/UserSessionContext';
 
 export interface Empresa {
   id: string;
-  nome: string;
+  nome: string; // mapped from nome_fantasia
 }
 
 interface EmpresaContextType {
