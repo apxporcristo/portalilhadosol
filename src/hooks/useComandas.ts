@@ -268,9 +268,11 @@ export function useComandas() {
 
   const excluirItem = useCallback(async (itemId: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comanda_itens' as any).delete().eq('id', itemId);
+    let query = supabase.from('comanda_itens' as any).delete().eq('id', itemId);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
-  }, []);
+  }, [empresaId]);
 
   const registrarAlteracao = useCallback(async (
     comandaId: string,

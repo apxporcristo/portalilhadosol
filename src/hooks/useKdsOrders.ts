@@ -208,10 +208,12 @@ export function useKdsOrders(isMainKitchenKds = false) {
       const updateData: any = { kds_status: newStatus, updated_at: new Date().toISOString() };
       if (newStatus === 'pronto') updateData.pronto_at = new Date().toISOString();
       if (newStatus === 'entregue') updateData.entregue_at = new Date().toISOString();
-      const { error } = await supabase
+      let query = supabase
         .from('kds_orders' as any)
         .update(updateData)
         .eq('id', orderId);
+      if (empresaId) query = query.eq('empresa_id', empresaId);
+      const { error } = await query;
       if (error) throw error;
       const now = new Date().toISOString();
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, kds_status: newStatus, status_changed_at: now, ...(newStatus === 'pronto' ? { pronto_at: now } : {}), ...(newStatus === 'entregue' ? { entregue_at: now } : {}) } : o));
@@ -219,7 +221,7 @@ export function useKdsOrders(isMainKitchenKds = false) {
       console.error('[KDS] Erro ao atualizar status:', e);
       throw e;
     }
-  }, []);
+  }, [empresaId]);
 
   const cancelarPedido = useCallback(async (orderId: string, motivo: string, canceladoPor?: string, callerUserId?: string) => {
     try {
