@@ -129,11 +129,14 @@ const Index = () => {
     tempo => (stats.livresPorTempo[tempo] || 0) > 0
   );
 
-  const canSeeVoucher = isLoggedIn ? (userAccess?.acesso_voucher ?? false) : showVoucher;
-  const canSeeFichas = isLoggedIn ? (userAccess?.acesso_ficha_consumo ?? false) : showFichasConsumo;
-  const canSeeFichasAdmin = isLoggedIn ? (userAccess?.acesso_cadastrar_produto ?? false) : false;
-  const canSeeKds = isLoggedIn ? (userAccess?.acesso_kds ?? false) : false;
-  const canSeePulseira = isLoggedIn ? (userAccess?.acesso_pulseira ?? false) : false;
+  const isAdminUser = isLoggedIn && (userAccess?.is_admin === true);
+  const canSeeVoucher = isLoggedIn ? (isAdminUser || (userAccess?.acesso_voucher ?? false)) : showVoucher;
+  const canSeeFichas = isLoggedIn ? (isAdminUser || (userAccess?.acesso_ficha_consumo ?? false)) : showFichasConsumo;
+  const canSeeFichasAdmin = isLoggedIn ? (isAdminUser || (userAccess?.acesso_cadastrar_produto ?? false)) : false;
+  const canSeeKds = isLoggedIn ? (isAdminUser || (userAccess?.acesso_kds ?? false)) : false;
+  const canSeePulseira = isLoggedIn ? (isAdminUser || (userAccess?.acesso_pulseira ?? false)) : false;
+  const canSeeComanda = isLoggedIn ? (isAdminUser || (userAccess?.acesso_comanda ?? false) || (userAccess?.acesso_ficha_consumo ?? false)) : false;
+  const canSeeReimpressao = isLoggedIn ? (isAdminUser || (userAccess?.reimpressao_venda ?? false)) : false;
 
   if (loading) {
     return (
@@ -339,9 +342,9 @@ const Index = () => {
               </div>
 
               {/* Comandas e Pulseiras lado a lado */}
-              {(canSeeFichas || canSeePulseira) && (
+              {(canSeeComanda || canSeePulseira) && (
                 <div className="grid grid-cols-2 gap-3">
-                  {canSeeFichas && (
+                  {canSeeComanda && (
                     <Card
                       className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary"
                       onClick={() => navigate('/comandas')}
@@ -381,7 +384,7 @@ const Index = () => {
               )}
 
               {/* KDS */}
-              {(canSeeKds || canSeeFichas) && (
+              {(canSeeKds || canSeeComanda) && (
                 <Card
                   className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary"
                   onClick={() => navigate('/kds')}
@@ -421,7 +424,7 @@ const Index = () => {
               )}
 
               {/* Reimpressão de vendas - only for users with permission */}
-              {isLoggedIn && userAccess?.reimpressao_venda && (
+              {canSeeReimpressao && (
                 <ReimpressaoVendas />
               )}
             </div>
