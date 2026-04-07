@@ -131,6 +131,8 @@ export function UserPermissionsManager() {
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [availableTempos, setAvailableTempos] = useState<string[]>([]);
+  const [empresas, setEmpresas] = useState<{ id: string; nome: string }[]>([]);
+  const [userEmpresas, setUserEmpresas] = useState<Record<string, string[]>>({});
 
   // Form state
   const [fNome, setFNome] = useState('');
@@ -149,6 +151,7 @@ export function UserPermissionsManager() {
   const [fVoucherTodos, setFVoucherTodos] = useState(false);
   const [fVoucherTemposSelecionados, setFVoucherTemposSelecionados] = useState<string[]>([]);
   const [fVoucherTempoAcesso, setFVoucherTempoAcesso] = useState('');
+  const [fEmpresaId, setFEmpresaId] = useState<string>('');
 
   /* ── Fetch available voucher tempos ── */
   const fetchAvailableTempos = useCallback(async () => {
