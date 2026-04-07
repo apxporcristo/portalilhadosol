@@ -159,11 +159,13 @@ export function useFichasConsumo() {
 
   const updateCategoria = useCallback(async (id: string, data: Partial<FichaCategoria>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('fichas_categorias').update(data as any).eq('id', id);
+    let query = supabase.from('fichas_categorias').update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchCategorias();
     await fetchFichasAtivas();
-  }, [fetchCategorias, fetchFichasAtivas]);
+  }, [empresaId, fetchCategorias, fetchFichasAtivas]);
 
   const deleteCategoria = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
