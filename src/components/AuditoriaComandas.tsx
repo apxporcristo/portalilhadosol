@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, RefreshCw, ClipboardList } from 'lucide-react';
 import { getSupabaseClient } from '@/lib/supabase-external';
+import { useOptionalEmpresa } from '@/contexts/EmpresaContext';
 
 interface AuditoriaEntry {
   id: string;
