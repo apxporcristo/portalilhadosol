@@ -685,6 +685,13 @@ export function UserPermissionsManager() {
                     <TableCell className="font-medium">{u.nome || '—'}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.cpf ? formatCPF(u.cpf) : '—'}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.email || '—'}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {(() => {
+                        const ue = userEmpresas[u.user_id];
+                        if (!ue || ue.length === 0) return '—';
+                        return ue.map(eid => empresas.find(e => e.id === eid)?.nome || eid).join(', ');
+                      })()}
+                    </TableCell>
                     <TableCell className="text-center">
                       <Badge variant={u.ativo ? 'default' : 'secondary'} className="cursor-pointer" onClick={() => toggleAtivo(u)}>
                         {u.ativo ? 'Ativo' : 'Inativo'}
