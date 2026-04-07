@@ -261,6 +261,7 @@ export function UserPermissionsManager() {
     setFCadProduto(false); setFFicha(false); setFComanda(false);
     setFKds(false); setFReimpressao(false); setFPulseira(false);
     setFVoucherTodos(false); setFVoucherTemposSelecionados([]); setFVoucherTempoAcesso('');
+    setFEmpresaId('');
   };
 
   const openCreate = () => { resetForm(); setSelectedUser(null); setModalMode('create'); };
