@@ -158,12 +158,12 @@ export function useComplementos() {
     const supabase = await getSupabaseClient();
     const existingGrupos = grupos.filter(g => g.categoria_id === categoria_id);
     const nextOrdem = existingGrupos.length > 0 ? Math.max(...existingGrupos.map(g => g.ordem)) + 1 : 0;
-    const { error } = await supabase.from('complemento_grupos' as any).insert({
-      categoria_id, nome_grupo, tipo_selecao, min_escolhas, max_escolhas, ordem: nextOrdem
-    } as any);
+    const payload: any = { categoria_id, nome_grupo, tipo_selecao, min_escolhas, max_escolhas, ordem: nextOrdem };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('complemento_grupos' as any).insert(payload);
     if (error) throw error;
     await fetchGrupos();
-  }, [grupos, fetchGrupos]);
+  }, [empresaId, grupos, fetchGrupos]);
 
   const updateGrupo = useCallback(async (id: string, data: Partial<GrupoComplemento>) => {
     const supabase = await getSupabaseClient();
