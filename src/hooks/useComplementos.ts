@@ -154,12 +154,16 @@ export function useComplementos() {
     const toCopy = items.filter(s => s.categoria_id === fromComplementoId && !existingNames.has(s.nome.toLowerCase()));
     if (toCopy.length === 0) return 0;
     const supabase = await getSupabaseClient();
-    const inserts = toCopy.map(s => ({ categoria_id: toComplementoId, nome: s.nome, valor: s.valor }));
+    const inserts = toCopy.map(s => {
+      const row: any = { categoria_id: toComplementoId, nome: s.nome, valor: s.valor };
+      if (empresaId) row.empresa_id = empresaId;
+      return row;
+    });
     const { error } = await supabase.from('complemento_itens' as any).insert(inserts as any);
     if (error) throw error;
     await fetchItems();
     return toCopy.length;
-  }, [items, fetchItems]);
+  }, [empresaId, items, fetchItems]);
 
   // Grupos CRUD
   const createGrupo = useCallback(async (categoria_id: string, nome_grupo: string, tipo_selecao: 'single' | 'multi', min_escolhas: number, max_escolhas: number | null) => {
