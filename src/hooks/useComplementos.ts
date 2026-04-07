@@ -215,10 +215,12 @@ export function useComplementos() {
 
   const desvincularComplemento = useCallback(async (produto_id: string, categoria_id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('produto_complemento_categorias' as any).delete().eq('produto_id', produto_id).eq('categoria_id', categoria_id);
+    let query = supabase.from('produto_complemento_categorias' as any).delete().eq('produto_id', produto_id).eq('categoria_id', categoria_id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchProdutoComplementos();
-  }, [fetchProdutoComplementos]);
+  }, [empresaId, fetchProdutoComplementos]);
 
   const updateVinculoOrdem = useCallback(async (produto_id: string, categoria_id: string, ordem: number) => {
     const supabase = await getSupabaseClient();
