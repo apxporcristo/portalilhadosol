@@ -18,6 +18,8 @@ interface PacoteDisponivel {
 }
 
 export function PackageSettings() {
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const [pacotes, setPacotes] = useState<PacoteDisponivel[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -28,9 +30,11 @@ export function PackageSettings() {
     setLoading(true);
     try {
       // Fetch all vouchers to handle different status formats (Livre/livre/LIVRE)
-      const { data: vouchersData, error: vouchersError } = await supabase
+      let vouchersQuery = supabase
         .from('vouchers')
         .select('tempo_validade, status');
+      if (empresaId) vouchersQuery = vouchersQuery.eq('empresa_id', empresaId);
+      const { data: vouchersData, error: vouchersError } = await vouchersQuery;
 
       if (vouchersError) {
         console.error('Error fetching vouchers:', vouchersError);

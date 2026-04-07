@@ -26,6 +26,8 @@ interface FichaImpressa {
 
 export default function FichasRelatorio() {
   const navigate = useNavigate();
+  const empresaCtx = useOptionalEmpresa();
+  const empresaId = empresaCtx?.empresaId || null;
   const [registros, setRegistros] = useState<FichaImpressa[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,13 +40,15 @@ export default function FichasRelatorio() {
   const fetchRegistros = useCallback(async () => {
     setLoading(true);
     const supabase = await getSupabaseClient();
-    const { data } = await supabase
+    let query = supabase
       .from('fichas_impressas' as any)
       .select('*')
       .order('created_at', { ascending: false });
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setRegistros(data as unknown as FichaImpressa[]);
     setLoading(false);
-  }, []);
+  }, [empresaId]);
 
   useEffect(() => { fetchRegistros(); }, [fetchRegistros]);
 
