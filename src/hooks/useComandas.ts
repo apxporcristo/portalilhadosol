@@ -157,7 +157,7 @@ export function useComandas() {
     if (resetError) throw resetError;
 
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const getItensComanda = useCallback(async (comandaId: string): Promise<ComandaItem[]> => {
     const supabase = await getSupabaseClient();
