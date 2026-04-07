@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Database, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import { supabase as cloudSupabase } from '@/integrations/supabase/client';
-import { resetExternalClient } from '@/lib/supabase-external';
+import { resetExternalClient, setExternalConfig } from '@/lib/supabase-external';
 
 interface Props {
   open: boolean;
@@ -63,6 +63,7 @@ export function SupabaseConnectionModal({ open, onConnected }: Props) {
       }
 
       resetExternalClient();
+      setExternalConfig(url, anonKey);
 
       setStatus('connected');
       setMessage('Conexão estabelecida com sucesso!');

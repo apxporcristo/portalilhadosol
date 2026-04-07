@@ -1,12 +1,55 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { supabase as cloudSupabase } from '@/integrations/supabase/client';
 
+const LOCAL_CONFIG_KEY = 'voucher_supabase_config';
+
 let cachedExternalClient: SupabaseClient | null = null;
 let cachedConfig: { url: string; anonKey: string } | null = null;
 let configPromise: Promise<{ url: string; anonKey: string } | null> | null = null;
 
+function parseExternalConfig(value: unknown): { url: string; anonKey: string } | null {
+  if (!value) return null;
+
+  try {
+    const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+    const url = (parsed as any)?.supabase_url || (parsed as any)?.url;
+    const anonKey = (parsed as any)?.supabase_anon_key || (parsed as any)?.anonKey;
+
+    if (!url || !anonKey) return null;
+    return { url, anonKey };
+  } catch {
+    return null;
+  }
+}
+
+function readLocalConfig(): { url: string; anonKey: string } | null {
+  try {
+    const raw = localStorage.getItem(LOCAL_CONFIG_KEY);
+    return parseExternalConfig(raw);
+  } catch {
+    return null;
+  }
+}
+
+function persistLocalConfig(config: { url: string; anonKey: string }) {
+  try {
+    localStorage.setItem(LOCAL_CONFIG_KEY, JSON.stringify({
+      supabase_url: config.url,
+      supabase_anon_key: config.anonKey,
+    }));
+  } catch {
+    // ignore localStorage failures
+  }
+}
+
 async function loadExternalConfig(): Promise<{ url: string; anonKey: string } | null> {
   if (cachedConfig) return cachedConfig;
+
+  const localConfig = readLocalConfig();
+  if (localConfig) {
+    cachedConfig = localConfig;
+    return cachedConfig;
+  }
 
   const { data, error } = await (cloudSupabase
     .from('app_settings' as any)
@@ -16,14 +59,38 @@ async function loadExternalConfig(): Promise<{ url: string; anonKey: string } | 
 
   if (error || !data?.value) return null;
 
+  const parsedConfig = parseExternalConfig(data.value);
+  if (!parsedConfig) return null;
+
+  cachedConfig = parsedConfig;
+  persistLocalConfig(parsedConfig);
+  return cachedConfig;
+}
+
+export function setExternalConfig(url: string, anonKey: string) {
+  cachedConfig = { url, anonKey };
+  configPromise = Promise.resolve(cachedConfig);
+  cachedExternalClient = createClient(url, anonKey, {
+    auth: {
+      storage: localStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+      storageKey: 'external-auth-token',
+    },
+  });
+  persistLocalConfig(cachedConfig);
+}
+
+export function clearExternalConfig() {
   try {
-    const parsed = typeof data.value === 'string' ? JSON.parse(data.value) : data.value;
-    if (!parsed.supabase_url || !parsed.supabase_anon_key) return null;
-    cachedConfig = { url: parsed.supabase_url, anonKey: parsed.supabase_anon_key };
-    return cachedConfig;
+    localStorage.removeItem(LOCAL_CONFIG_KEY);
   } catch {
-    return null;
+    // ignore localStorage failures
   }
+
+  cachedExternalClient = null;
+  cachedConfig = null;
+  configPromise = null;
 }
 
 function getConfigPromise() {
