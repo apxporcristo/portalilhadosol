@@ -169,12 +169,14 @@ export function useFichasConsumo() {
 
   const deleteCategoria = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('fichas_categorias').delete().eq('id', id);
+    let query = supabase.from('fichas_categorias').delete().eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchCategorias();
     await fetchProdutos();
     await fetchFichasAtivas();
-  }, [fetchCategorias, fetchProdutos, fetchFichasAtivas]);
+  }, [empresaId, fetchCategorias, fetchProdutos, fetchFichasAtivas]);
 
   // Produtos CRUD
   const createProduto = useCallback(async (produto: { categoria_id: string; nome_produto: string; valor: number; printer_id?: string | null }) => {
