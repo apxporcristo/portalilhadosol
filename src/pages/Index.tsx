@@ -251,6 +251,10 @@ const Index = () => {
                   Usuários
                 </TabsTrigger>
                 <TabsTrigger value="settings">Configurações</TabsTrigger>
+                <TabsTrigger value="empresas" className="flex items-center gap-1">
+                  <Building2 className="h-3 w-3" />
+                  Empresas
+                </TabsTrigger>
                 <TabsTrigger value="auditoria" className="flex items-center gap-1">
                   <FileText className="h-3 w-3" />
                   Auditoria
