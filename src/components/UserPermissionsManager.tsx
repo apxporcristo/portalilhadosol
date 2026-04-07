@@ -544,6 +544,14 @@ export function UserPermissionsManager() {
           await updateUserDirect(selectedUser.user_id, cpfClean, perms);
         }
         toast({ title: 'Usuário atualizado com sucesso!' });
+        // Update empresa link
+        try {
+          const db = await getSupabaseClient();
+          await db.from('empresa_usuarios' as any).delete().eq('user_id', selectedUser.user_id);
+          if (fEmpresaId) {
+            await db.from('empresa_usuarios' as any).insert({ user_id: selectedUser.user_id, empresa_id: fEmpresaId } as any);
+          }
+        } catch (e) { console.warn('Erro ao atualizar empresa:', e); }
 
       } else if (modalMode === 'reset-password' && selectedUser) {
         if (!fSenha || fSenha.length < 6) {
