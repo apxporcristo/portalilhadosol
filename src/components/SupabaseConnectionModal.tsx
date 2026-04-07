@@ -38,12 +38,6 @@ export function SupabaseConnectionModal({ open, onConnected }: Props) {
         return;
       }
 
-      // Save to localStorage (global config, single DB)
-      localStorage.setItem('voucher_supabase_config', JSON.stringify({
-        supabase_url: url,
-        supabase_anon_key: anonKey,
-      }));
-
       setStatus('connected');
       setMessage('Conexão estabelecida com sucesso!');
 

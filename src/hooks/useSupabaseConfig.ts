@@ -127,8 +127,6 @@ export function useSupabaseConfig() {
           return false;
         }
 
-        localStorage.removeItem('voucher_supabase_config');
-
         setConfig({ url, anonKey, isConfigured: true });
         setConnectionStatus({
           status: 'connected',
@@ -150,7 +148,6 @@ export function useSupabaseConfig() {
         .delete()
         .eq('key', 'default');
 
-      localStorage.removeItem('voucher_supabase_config');
     } catch (e) {
       console.error('Error clearing config:', e);
     }
