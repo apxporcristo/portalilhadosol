@@ -344,7 +344,7 @@ const Index = () => {
               {/* Comandas e Pulseiras lado a lado */}
               {(canSeeComanda || canSeePulseira) && (
                 <div className="grid grid-cols-2 gap-3">
-                  {canSeeFichas && (
+                  {canSeeComanda && (
                     <Card
                       className="cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary"
                       onClick={() => navigate('/comandas')}
