@@ -499,6 +499,16 @@ export function UserPermissionsManager() {
           await createUserDirect(cpfClean, perms);
         }
         toast({ title: 'Usuário criado com sucesso!' });
+        // Save empresa link - need to find the created user id
+        if (fEmpresaId) {
+          try {
+            const db = await getSupabaseClient();
+            const { data: newUser } = await db.from('user_profiles').select('id').eq('cpf', cpfClean).maybeSingle();
+            if (newUser) {
+              await db.from('empresa_usuarios' as any).insert({ user_id: (newUser as any).id, empresa_id: fEmpresaId } as any);
+            }
+          } catch (e) { console.warn('Erro ao vincular empresa:', e); }
+        }
 
       } else if (modalMode === 'edit' && selectedUser) {
         const cpfClean = cleanCPF(fCpf);
