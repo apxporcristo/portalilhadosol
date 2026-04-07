@@ -262,17 +262,21 @@ export default function EntradaMercadoriaTab() {
         // Delete old items and re-insert
         await supabase.from('entradas_mercadoria_itens' as any).delete().eq('entrada_id', editingEntrada.id);
 
-        const rows = itens.map(item => ({
-          entrada_id: editingEntrada.id,
-          produto_id: item.produto_id,
-          produto_nome: item.produto_nome,
-          quantidade: item.quantidade,
-          valor_comprado: item.valor_comprado,
-          margem_lucro: item.margem_lucro,
-          valor_venda: calcValorVenda(item),
-          valor_total_comprado: calcTotalComprado(item),
-          valor_total_venda: calcTotalVenda(item),
-        }));
+        const rows = itens.map(item => {
+          const row: any = {
+            entrada_id: editingEntrada.id,
+            produto_id: item.produto_id,
+            produto_nome: item.produto_nome,
+            quantidade: item.quantidade,
+            valor_comprado: item.valor_comprado,
+            margem_lucro: item.margem_lucro,
+            valor_venda: calcValorVenda(item),
+            valor_total_comprado: calcTotalComprado(item),
+            valor_total_venda: calcTotalVenda(item),
+          };
+          if (empresaId) row.empresa_id = empresaId;
+          return row;
+        });
 
         const { error: errI } = await supabase.from('entradas_mercadoria_itens' as any).insert(rows as any);
         if (errI) throw errI;
@@ -280,24 +284,30 @@ export default function EntradaMercadoriaTab() {
         toast({ title: 'Entrada atualizada com sucesso!' });
       } else {
         // Insert new
+        const insertPayload: any = { numero_nota: numeroNota.trim(), data_compra: dataCompra, observacao: observacao.trim() || null, usuario_id: user?.id || null, usuario_nome: access?.nome || null };
+        if (empresaId) insertPayload.empresa_id = empresaId;
         const { data: entrada, error: errH } = await supabase
           .from('entradas_mercadoria' as any)
-          .insert({ numero_nota: numeroNota.trim(), data_compra: dataCompra, observacao: observacao.trim() || null, usuario_id: user?.id || null, usuario_nome: access?.nome || null } as any)
+          .insert(insertPayload)
           .select('id')
           .single();
         if (errH || !entrada) throw errH || new Error('Erro ao salvar cabeçalho');
 
-        const rows = itens.map(item => ({
-          entrada_id: (entrada as any).id,
-          produto_id: item.produto_id,
-          produto_nome: item.produto_nome,
-          quantidade: item.quantidade,
-          valor_comprado: item.valor_comprado,
-          margem_lucro: item.margem_lucro,
-          valor_venda: calcValorVenda(item),
-          valor_total_comprado: calcTotalComprado(item),
-          valor_total_venda: calcTotalVenda(item),
-        }));
+        const rows = itens.map(item => {
+          const row: any = {
+            entrada_id: (entrada as any).id,
+            produto_id: item.produto_id,
+            produto_nome: item.produto_nome,
+            quantidade: item.quantidade,
+            valor_comprado: item.valor_comprado,
+            margem_lucro: item.margem_lucro,
+            valor_venda: calcValorVenda(item),
+            valor_total_comprado: calcTotalComprado(item),
+            valor_total_venda: calcTotalVenda(item),
+          };
+          if (empresaId) row.empresa_id = empresaId;
+          return row;
+        });
 
         const { error: errI } = await supabase.from('entradas_mercadoria_itens' as any).insert(rows as any);
         if (errI) throw errI;

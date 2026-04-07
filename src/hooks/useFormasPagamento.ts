@@ -48,18 +48,22 @@ export function useFormasPagamento() {
 
   const updateForma = useCallback(async (id: string, data: Partial<FormaPagamento>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('formas_pagamento' as any).update(data as any).eq('id', id);
+    let query = supabase.from('formas_pagamento' as any).update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) {
       toast({ title: 'Erro', description: `Não foi possível atualizar: ${error.message}`, variant: 'destructive' });
       return false;
     }
     await fetchFormas();
     return true;
-  }, [fetchFormas]);
+  }, [empresaId, fetchFormas]);
 
   const deleteForma = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('formas_pagamento' as any).delete().eq('id', id);
+    let query = supabase.from('formas_pagamento' as any).delete().eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) {
       toast({ title: 'Erro', description: `Não foi possível excluir: ${error.message}`, variant: 'destructive' });
       return false;
@@ -67,7 +71,7 @@ export function useFormasPagamento() {
     toast({ title: 'Forma de pagamento excluída' });
     await fetchFormas();
     return true;
-  }, [fetchFormas]);
+  }, [empresaId, fetchFormas]);
 
   const formasAtivas = formas.filter(f => f.ativo);
 

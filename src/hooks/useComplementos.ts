@@ -62,21 +62,27 @@ export function useComplementos() {
 
   const fetchItems = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('complemento_itens' as any).select('*').order('nome');
+    let query = supabase.from('complemento_itens' as any).select('*').order('nome');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setItems(data as any);
-  }, []);
+  }, [empresaId]);
 
   const fetchGrupos = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('complemento_grupos' as any).select('*').order('ordem');
+    let query = supabase.from('complemento_grupos' as any).select('*').order('ordem');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setGrupos(data as any);
-  }, []);
+  }, [empresaId]);
 
   const fetchProdutoComplementos = useCallback(async () => {
     const supabase = await getSupabaseClient();
-    const { data } = await supabase.from('produto_complemento_categorias' as any).select('*').order('ordem');
+    let query = supabase.from('produto_complemento_categorias' as any).select('*').order('ordem');
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { data } = await query;
     if (data) setProdutoComplementos(data as any);
-  }, []);
+  }, [empresaId]);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -113,10 +119,12 @@ export function useComplementos() {
   // Items CRUD
   const createItem = useCallback(async (complemento_id: string, nome: string, valor: number, grupo_id?: string | null, escolha_exclusiva?: boolean) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_itens' as any).insert({ categoria_id: complemento_id, nome, valor, grupo_id: grupo_id || null, escolha_exclusiva: escolha_exclusiva || false } as any);
+    const payload: any = { categoria_id: complemento_id, nome, valor, grupo_id: grupo_id || null, escolha_exclusiva: escolha_exclusiva || false };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('complemento_itens' as any).insert(payload);
     if (error) throw error;
     await fetchItems();
-  }, [fetchItems]);
+  }, [empresaId, fetchItems]);
 
   const updateItem = useCallback(async (id: string, data: Partial<ComplementoItem>) => {
     const supabase = await getSupabaseClient();
@@ -150,12 +158,12 @@ export function useComplementos() {
     const supabase = await getSupabaseClient();
     const existingGrupos = grupos.filter(g => g.categoria_id === categoria_id);
     const nextOrdem = existingGrupos.length > 0 ? Math.max(...existingGrupos.map(g => g.ordem)) + 1 : 0;
-    const { error } = await supabase.from('complemento_grupos' as any).insert({
-      categoria_id, nome_grupo, tipo_selecao, min_escolhas, max_escolhas, ordem: nextOrdem
-    } as any);
+    const payload: any = { categoria_id, nome_grupo, tipo_selecao, min_escolhas, max_escolhas, ordem: nextOrdem };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('complemento_grupos' as any).insert(payload);
     if (error) throw error;
     await fetchGrupos();
-  }, [grupos, fetchGrupos]);
+  }, [empresaId, grupos, fetchGrupos]);
 
   const updateGrupo = useCallback(async (id: string, data: Partial<GrupoComplemento>) => {
     const supabase = await getSupabaseClient();
@@ -180,10 +188,12 @@ export function useComplementos() {
   // Produto-complemento vínculo
   const vincularComplemento = useCallback(async (produto_id: string, categoria_id: string, ordem: number) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('produto_complemento_categorias' as any).insert({ produto_id, categoria_id, ordem } as any);
+    const payload: any = { produto_id, categoria_id, ordem };
+    if (empresaId) payload.empresa_id = empresaId;
+    const { error } = await supabase.from('produto_complemento_categorias' as any).insert(payload);
     if (error) throw error;
     await fetchProdutoComplementos();
-  }, [fetchProdutoComplementos]);
+  }, [empresaId, fetchProdutoComplementos]);
 
   const desvincularComplemento = useCallback(async (produto_id: string, categoria_id: string) => {
     const supabase = await getSupabaseClient();

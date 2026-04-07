@@ -81,17 +81,21 @@ export function useComandas() {
 
   const updateComanda = useCallback(async (id: string, data: Partial<Comanda>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comandas' as any).update({ ...data, updated_at: new Date().toISOString() } as any).eq('id', id);
+    let query = supabase.from('comandas' as any).update({ ...data, updated_at: new Date().toISOString() } as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const deleteComanda = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('comandas' as any).delete().eq('id', id);
+    let query = supabase.from('comandas' as any).delete().eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const abrirComanda = useCallback(async (id: string, nomeCliente: string, telefoneCliente?: string) => {
     const supabase = await getSupabaseClient();
@@ -127,13 +131,15 @@ export function useComandas() {
     if (error) throw error;
 
     // 2. Log the closing
-    await supabase.from('comanda_alteracoes' as any).insert({
+    const logPayload: any = {
       comanda_id: id,
       tipo: 'edicao',
       descricao: `Comanda fechada - Forma: ${formaPagamentoNome} - Fechada por: ${usuarioNome || usuarioEmail}`,
       usuario_email: usuarioEmail,
       usuario_nome: usuarioNome || null,
-    } as any);
+    };
+    if (empresaId) logPayload.empresa_id = empresaId;
+    await supabase.from('comanda_alteracoes' as any).insert(logPayload as any);
 
     // 3. Reset comanda to 'livre' for reuse (clear client data but keep history in comanda_alteracoes)
     const { error: resetError } = await supabase.from('comandas' as any).update({
@@ -151,7 +157,7 @@ export function useComandas() {
     if (resetError) throw resetError;
 
     await fetchComandas();
-  }, [fetchComandas]);
+  }, [empresaId, fetchComandas]);
 
   const getItensComanda = useCallback(async (comandaId: string): Promise<ComandaItem[]> => {
     const supabase = await getSupabaseClient();
@@ -267,15 +273,17 @@ export function useComandas() {
     usuarioNome?: string
   ) => {
     const supabase = await getSupabaseClient();
-    await supabase.from('comanda_alteracoes' as any).insert({
+    const payload: any = {
       comanda_id: comandaId,
       item_id: itemId,
       tipo,
       descricao,
       usuario_email: usuarioEmail,
       usuario_nome: usuarioNome || null,
-    } as any);
-  }, []);
+    };
+    if (empresaId) payload.empresa_id = empresaId;
+    await supabase.from('comanda_alteracoes' as any).insert(payload as any);
+  }, [empresaId]);
 
   const autenticarUsuario = useCallback(async (cpf: string, senha: string): Promise<{ success: boolean; nome?: string; email?: string }> => {
     try {
