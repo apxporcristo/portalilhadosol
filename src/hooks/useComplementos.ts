@@ -179,10 +179,12 @@ export function useComplementos() {
 
   const updateGrupo = useCallback(async (id: string, data: Partial<GrupoComplemento>) => {
     const supabase = await getSupabaseClient();
-    const { error } = await supabase.from('complemento_grupos' as any).update(data as any).eq('id', id);
+    let query = supabase.from('complemento_grupos' as any).update(data as any).eq('id', id);
+    if (empresaId) query = query.eq('empresa_id', empresaId);
+    const { error } = await query;
     if (error) throw error;
     await fetchGrupos();
-  }, [fetchGrupos]);
+  }, [empresaId, fetchGrupos]);
 
   const deleteGrupo = useCallback(async (id: string) => {
     const supabase = await getSupabaseClient();
